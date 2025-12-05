@@ -24,12 +24,13 @@
     packages = with pkgs; [
       # Development
       nodejs_latest
+      neovim
 
       # CLI tools
       # nodejs
       nodePackages.pnpm
-      # ripgrep
-      # fd
+      ripgrep  # LazyVim の telescope で必要
+      fd       # LazyVim の telescope で必要
       # fzf
       # eza
       # bat
@@ -51,17 +52,23 @@
 
     # Environment variables
     sessionVariables = {
-      EDITOR = "vim";
+      EDITOR = "nvim";
     };
 
     # Dotfiles (symlinked to home directory)
     # file = {
     #   ".config/some-app".source = ./config/some-app;
     # };
-
-    # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-    stateVersion = "25.05";
   };
+
+  # XDG config files (symlinked to ~/.config/)
+  xdg.configFile = {
+    "nvim".source = ../nvim;
+    "~/Library/Application\ Support/com.mitchellh.ghostty/config".source = ../ghostty/config;
+  };
+
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  home.stateVersion = "25.05";
 
   # Git configuration
   programs.git = {
