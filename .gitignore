@@ -1,0 +1,19 @@
+# Nix build outputs
+result
+result-*
+
+# Vim/Neovim swap files
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# direnv
+.direnv/
+
+# Secrets (if any)
+secrets/
+*.age
+!*.age.pub
