@@ -1,55 +1,82 @@
 {
-  description = "Example nix-darwin system flake";
+  description = "r1ca18's nix-darwin configuration";
 
   inputs = {
+    # Nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # Stable nixpkgs (for specific packages if needed)
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixpkgs-24.05-darwin";
+
+    # nix-darwin
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+
+    # home-manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Claude Code
+    claude-code-overlay.url = "github:ryoppippi/claude-code-overlay";
+    claude-code-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
-  let
-    configuration = { pkgs, ... }: {
-      # List packages installed in system profile. To search by name, run:
-      # $ nix-env -qaP | grep wget
-      environment.systemPackages =
-        [ pkgs.vim
-        ];
+  outputs = {
+    self,
+    nixpkgs,
+    nixpkgs-stable,
+    nix-darwin,
+    home-manager,
+    claude-code-overlay,
+    ...
+  } @ inputs: let
+    # Supported systems
+    systems = [
+      "aarch64-darwin"
+      "x86_64-darwin"
+    ];
+    forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      # Necessary for using flakes on this system.
-      nix.settings.experimental-features = "nix-command flakes";
+    # Your username and hostname
+    username = "r1ca18";
+    hostname = "RMB";
+  in {
+    # Custom packages
+    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
 
-      # Enable alternative shell support in nix-darwin.
-      # programs.fish.enable = true;
+    # Formatter for nix files
+    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
-      # Set Git commit hash for darwin-version.
-      system.configurationRevision = self.rev or self.dirtyRev or null;
+    # Custom overlays
+    overlays = import ./overlays {inherit inputs;};
 
-      # Used for backwards compatibility, please read the changelog before changing.
-      # $ darwin-rebuild changelog
-      system.stateVersion = 6;
+    # Reusable darwin modules
+    darwinModules = import ./modules/darwin;
 
-      # The platform the configuration will be used on.
-      nixpkgs.hostPlatform = "aarch64-darwin";
+    # Reusable home-manager modules
+    homeManagerModules = import ./modules/home-manager;
 
-      # Ensure nix-darwin knows about the user and their home directory.
-      users.users.r1ca18.home = "/Users/r1ca18";
-
-      home-manager.users."r1ca18" = import ./home.nix;
-    };
-  in
-  {
-    # Build darwin flake using:
-    # $ darwin-rebuild build --flake .#RMB
-    darwinConfigurations."RMB" = nix-darwin.lib.darwinSystem {
+    # Darwin configuration
+    # Build with: darwin-rebuild switch --flake .#RMB
+    darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
+      system = "aarch64-darwin";
+      specialArgs = {inherit inputs username hostname;};
       modules = [ 
-        configuration
+        # Main darwin configuration
+        ./darwin/configuration.nix
+
+        # home-manager darwin module
         home-manager.darwinModules.home-manager
         {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            backupFileExtension = "backup";
+            extraSpecialArgs = {inherit inputs username;};
+            sharedModules = [
+              claude-code-overlay.homeManagerModules.default
+            ];
+            users.${username} = import ./home-manager/home.nix;
+          };
         }
         ];
     };
