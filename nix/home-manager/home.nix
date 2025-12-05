@@ -63,8 +63,8 @@
 
   # XDG config files (symlinked to ~/.config/)
   xdg.configFile = {
-    "nvim".source = ../nvim;
-    "~/Library/Application\ Support/com.mitchellh.ghostty/config".source = ../ghostty/config;
+    "nvim".source = ../../nvim;
+    "~/Library/Application\ Support/com.mitchellh.ghostty/config".source = ../../ghostty/config;
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
@@ -106,7 +106,7 @@
       "kosen" = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/20_Areas/Kosen/4y/fall_semester/";
       "downloads" = "cd ~/Downloads/";
       # Nix aliases
-      rebuild = "sudo darwin-rebuild switch --flake ~/dotfiles";
+      rebuild = "sudo darwin-rebuild switch --flake ~/dotfiles/nix";
     };
 
     # Additional zsh configuration

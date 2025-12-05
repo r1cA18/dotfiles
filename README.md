@@ -8,26 +8,31 @@ nix-darwin + home-manager による macOS 環境設定管理
 
 ```
 dotfiles/
-├── flake.nix                    # エントリポイント（全体の設計図）
-├── flake.lock                   # 依存関係のロックファイル
+├── nix/                         # Nix設定
+│   ├── flake.nix                # エントリポイント（全体の設計図）
+│   ├── flake.lock               # 依存関係のロックファイル
+│   │
+│   ├── darwin/                  # macOS/nix-darwin設定
+│   │   └── configuration.nix    # システムレベル設定
+│   │
+│   ├── home-manager/            # ユーザー環境設定
+│   │   └── home.nix             # ユーザーレベル設定
+│   │
+│   ├── modules/                 # 再利用可能なモジュール
+│   │   ├── darwin/              # darwin用モジュール
+│   │   │   └── default.nix
+│   │   └── home-manager/        # home-manager用モジュール
+│   │       └── default.nix
+│   │
+│   ├── overlays/                # パッケージのカスタマイズ
+│   │   └── default.nix          # overlay定義
+│   │
+│   └── pkgs/                    # カスタムパッケージ
+│       └── default.nix          # 自作パッケージ定義
 │
-├── darwin/                      # macOS/nix-darwin設定
-│   └── configuration.nix        # システムレベル設定
-│
-├── home-manager/                # ユーザー環境設定
-│   └── home.nix                 # ユーザーレベル設定
-│
-├── modules/                     # 再利用可能なモジュール
-│   ├── darwin/                  # darwin用モジュール
-│   │   └── default.nix
-│   └── home-manager/            # home-manager用モジュール
-│       └── default.nix
-│
-├── overlays/                    # パッケージのカスタマイズ
-│   └── default.nix              # overlay定義
-│
-└── pkgs/                        # カスタムパッケージ
-    └── default.nix              # 自作パッケージ定義
+├── ghostty/                     # Ghostty設定
+├── nvim/                        # Neovim設定
+└── README.md
 ```
 
 ---
@@ -132,7 +137,7 @@ dotfiles/
 
 3. **設定を適用**
    ```bash
-   sudo darwin-rebuild switch --flake .#RMB
+   sudo darwin-rebuild switch --flake ./nix#RMB
    ```
 
 4. **シェルを再起動**
@@ -149,10 +154,10 @@ dotfiles/
 cd ~/dotfiles
 
 # ユーザー設定を編集
-vim home-manager/home.nix
+vim nix/home-manager/home.nix
 
 # システム設定を編集
-vim darwin/configuration.nix
+vim nix/darwin/configuration.nix
 ```
 
 ### 2. 変更を適用
@@ -164,7 +169,7 @@ git add .
 rebuild
 
 # または直接
-sudo darwin-rebuild switch --flake .#RMB
+sudo darwin-rebuild switch --flake ./nix#RMB
 ```
 
 ### 3. 動作確認
@@ -299,7 +304,7 @@ system.defaults = {
 rebuild
 
 # テストビルド（適用しない）
-darwin-rebuild build --flake ~/dotfiles
+darwin-rebuild build --flake ~/dotfiles/nix
 
 # 世代を確認
 darwin-rebuild --list-generations
@@ -346,8 +351,8 @@ brew update && brew upgrade
 
 1. **ファイル作成**
    ```bash
-   mkdir -p ~/dotfiles/home-manager/programs
-   vim ~/dotfiles/home-manager/programs/zsh.nix
+   mkdir -p ~/dotfiles/nix/home-manager/programs
+   vim ~/dotfiles/nix/home-manager/programs/zsh.nix
    ```
 
 2. **zsh.nix に移動**
@@ -372,7 +377,7 @@ brew update && brew upgrade
 
 ### 推奨分割例
 ```
-home-manager/
+nix/home-manager/
 ├── home.nix              # メインファイル
 └── programs/
     ├── git.nix           # Git設定
