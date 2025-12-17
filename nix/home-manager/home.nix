@@ -41,6 +41,9 @@
       # python3
       # go
       # rustup
+
+      # TeX
+      texliveFull
     ];
 
     # PATH additions (from original .zshrc)
@@ -73,15 +76,15 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "r1cA18";
-    userEmail = "r1cA18@proton.me";
     ignores = [
       ".DS_Store"
       "*.swp"
       ".direnv"
       ".envrc"
     ];
-    extraConfig = {
+    settings = {
+      user.name = "r1cA18";
+      user.email = "r1cA18@proton.me";
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = true;
