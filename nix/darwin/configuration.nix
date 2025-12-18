@@ -126,6 +126,11 @@
         Clicking = true;
         TrackpadThreeFingerDrag = true;
       };
+
+      # Screenshot settings
+      screencapture = {
+        location = "~/Downloads";
+      };
     };
 
     # Keyboard settings
