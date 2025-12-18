@@ -26,6 +26,7 @@
       nodePackages."@antfu/ni"
       ripgrep
       fd
+      cloudflared
 
       # TeX
       texliveFull
