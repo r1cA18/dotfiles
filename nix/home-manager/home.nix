@@ -25,10 +25,11 @@
       # Development
       nodejs_latest
       neovim
+      bun
 
       # CLI tools
-      # nodejs
       nodePackages.pnpm
+      nodePackages."@antfu/ni"
       ripgrep  # LazyVim の telescope で必要
       fd       # LazyVim の telescope で必要
       # fzf
@@ -108,6 +109,8 @@
       "drive" = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/";
       "kosen" = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/20_Areas/Kosen/4y/fall_semester/";
       "downloads" = "cd ~/Downloads/";
+      # nvim aliases
+      "nv" = "nvim";
       # Nix aliases
       rebuild = "sudo darwin-rebuild switch --flake ~/dotfiles/nix";
     };

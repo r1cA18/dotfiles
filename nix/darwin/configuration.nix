@@ -64,7 +64,22 @@
     ];
     # GUI applications
     casks = [
-      # "example-app"
+      "orbstack"
+      "ghostty"
+      "raycast"
+      "karabiner-elements"
+      "alt-tab"
+      "google-chrome"
+      "google-drive"
+      "discord"
+      "obsidian"
+      "notion"
+      "visual-studio-code"
+      "cursor"
+      "ollama-app"
+      "tailscale-app"
+      "arc"
+      "linearmouse"
     ];
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
