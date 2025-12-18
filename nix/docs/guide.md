@@ -6,10 +6,12 @@
 
 1. [基本的な運用フロー](#基本的な運用フロー)
 2. [パッケージの追加・削除](#パッケージの追加削除)
-3. [設定の変更](#設定の変更)
-4. [よく使うコマンド](#よく使うコマンド)
-5. [トラブルシューティング](#トラブルシューティング)
-6. [ファイル構成](#ファイル構成)
+3. [GUI アプリの追加](#gui-アプリの追加)
+4. [macOS 設定のカスタマイズ](#macos-設定のカスタマイズ)
+5. [設定の変更](#設定の変更)
+6. [よく使うコマンド](#よく使うコマンド)
+7. [トラブルシューティング](#トラブルシューティング)
+8. [ファイル構成](#ファイル構成)
 
 ---
 
@@ -17,7 +19,7 @@
 
 ```
 1. 設定ファイルを編集
-2. rebuild で動作確認
+2. dr でリビルド
 3. 問題なければ git commit & push
 ```
 
@@ -28,7 +30,7 @@
 vim ~/dotfiles/nix/home-manager/home.nix
 
 # 2. リビルドして適用
-rebuild
+dr
 
 # 3. 動作確認して問題なければコミット
 cd ~/dotfiles
@@ -41,150 +43,197 @@ git push
 
 ## パッケージの追加・削除
 
-### パッケージを追加する
+### CLI ツールを追加する
 
 `home-manager/home.nix` の `packages` に追加：
 
 ```nix
-home = {
-  packages = with pkgs; [
-    # 既存のパッケージ
-    nodejs_latest
-    neovim
-
-    # ここに新しいパッケージを追加
-    htop        # ← 追加
-    tree        # ← 追加
-  ];
-};
+home.packages = with pkgs; [
+  nodejs_latest
+  neovim
+  htop   # ← 追加
+  tree   # ← 追加
+];
 ```
 
-追加したら `rebuild` を実行。
+追加したら `dr` を実行。
 
 ### パッケージを削除する
 
-リストから削除して `rebuild` するだけ。
-Nix は使われなくなったパッケージを自動で管理します。
+リストから削除して `dr` するだけ。
 
 ### パッケージを探す
 
 ```bash
-# パッケージ名で検索
-nix search nixpkgs パッケージ名
-
-# 例：ripgrep を探す
+ds ripgrep   # エイリアス使用
+# または
 nix search nixpkgs ripgrep
 ```
 
-または [search.nixos.org](https://search.nixos.org/packages) で検索。
+Web: [search.nixos.org](https://search.nixos.org/packages)
 
 ### よく使うパッケージ例
 
-| パッケージ名 | 説明 |
-|------------|------|
+| パッケージ | 説明 |
+|-----------|------|
 | `ripgrep` | 高速 grep |
 | `fd` | 高速 find |
 | `fzf` | ファジーファインダー |
-| `bat` | cat の代替（シンタックスハイライト付き） |
-| `eza` | ls の代替（モダン） |
+| `bat` | cat の代替 |
+| `eza` | ls の代替 |
 | `jq` | JSON 処理 |
 | `gh` | GitHub CLI |
-| `htop` | プロセスモニター |
-| `tree` | ディレクトリツリー表示 |
-| `wget` | ファイルダウンロード |
-| `tmux` | ターミナルマルチプレクサ |
+
+---
+
+## GUI アプリの追加
+
+`darwin/configuration.nix` の `homebrew.casks` に追加：
+
+```nix
+homebrew = {
+  enable = true;
+  casks = [
+    "google-chrome"
+    "visual-studio-code"
+    "slack"        # ← 追加
+    "spotify"      # ← 追加
+  ];
+};
+```
+
+### Mac App Store アプリ
+
+```nix
+homebrew.masApps = {
+  "LINE" = 539883307;
+  "Keynote" = 409183694;
+};
+```
+
+App ID の調べ方:
+```bash
+mas search "LINE"
+# 出力: 539883307  LINE (...)
+```
+
+### Nix と Homebrew の使い分け
+
+| 種類 | どこで管理 |
+|-----|-----------|
+| CLI ツール | `home.packages` (Nix) |
+| GUI アプリ | `homebrew.casks` |
+| App Store | `homebrew.masApps` |
+
+---
+
+## macOS 設定のカスタマイズ
+
+`darwin/configuration.nix` で設定：
+
+```nix
+system.defaults = {
+  # Dock
+  dock = {
+    autohide = true;
+    show-recents = false;
+  };
+
+  # Finder
+  finder = {
+    AppleShowAllExtensions = true;
+    _FXShowPosixPathInTitle = true;
+  };
+
+  # キーボード
+  NSGlobalDomain = {
+    KeyRepeat = 2;
+    InitialKeyRepeat = 15;
+  };
+
+  # トラックパッド
+  trackpad = {
+    Clicking = true;
+    TrackpadThreeFingerDrag = true;
+  };
+
+  # スクリーンショット
+  screencapture = {
+    location = "~/Downloads";
+  };
+};
+```
+
+設定オプション: [nix-darwin options](https://daiderd.com/nix-darwin/manual/index.html)
 
 ---
 
 ## 設定の変更
 
-### Git の設定
+### Git
 
-`home-manager/home.nix` 内：
+`home-manager/programs/git.nix`:
 
 ```nix
 programs.git = {
   enable = true;
-  ignores = [
-    ".DS_Store"
-    "*.swp"
-  ];
   settings = {
     user.name = "your-name";
     user.email = "your-email@example.com";
     init.defaultBranch = "main";
-    push.autoSetupRemote = true;
-    pull.rebase = true;
-    # ここに追加の設定を書ける
-    core.editor = "nvim";
   };
 };
 ```
 
-### Zsh エイリアスの追加
+### Zsh エイリアス
+
+`home-manager/programs/zsh.nix`:
 
 ```nix
-programs.zsh = {
-  shellAliases = {
-    ll = "ls -la";
-    ".." = "cd ..";
-    # 新しいエイリアスを追加
-    g = "git";
-    gs = "git status";
-    gc = "git commit";
-  };
+programs.zsh.shellAliases = {
+  ll = "ls -la";
+  g = "git";
 };
 ```
 
-### 環境変数の追加
+### 環境変数
 
 ```nix
-home = {
-  sessionVariables = {
-    EDITOR = "nvim";
-    # 新しい環境変数を追加
-    LANG = "ja_JP.UTF-8";
-    MY_VAR = "value";
-  };
+home.sessionVariables = {
+  EDITOR = "nvim";
 };
 ```
 
-### PATH の追加
+### PATH
 
 ```nix
-home = {
-  sessionPath = [
-    "$HOME/.local/bin"
-    # 新しいパスを追加
-    "$HOME/bin"
-    "/opt/homebrew/bin"
-  ];
-};
+home.sessionPath = [
+  "$HOME/.local/bin"
+];
 ```
 
 ---
 
 ## よく使うコマンド
 
-| コマンド | 説明 |
-|---------|------|
-| `rebuild` | 設定を適用（`sudo darwin-rebuild switch --flake ~/dotfiles/nix`） |
-| `nix search nixpkgs <name>` | パッケージを検索 |
-| `nix-collect-garbage` | 使われていないパッケージを削除 |
-| `nix-collect-garbage -d` | 古い世代も含めて削除（容量節約） |
-| `nix flake update` | 全パッケージを最新版に更新 |
+> 詳細は [cheatsheet.md](./cheatsheet.md) を参照
 
-### リビルドのオプション
+| Alias | 説明 |
+|-------|------|
+| `dr` | 設定を適用 (rebuild) |
+| `db` | ビルドのみ |
+| `dp` | 前のバージョンに戻す |
+| `du` | 依存を更新 |
+| `ds` | パッケージを検索 |
+| `dg` | 古い世代を削除 |
+
+### 定期的な更新
 
 ```bash
-# 通常のリビルド
-rebuild
-
-# 詳細なログを見たい場合
-sudo darwin-rebuild switch --flake ~/dotfiles/nix --show-trace
-
-# ドライラン（実際には適用しない）
-sudo darwin-rebuild build --flake ~/dotfiles/nix
+du       # 依存を更新
+dr       # リビルド
+git add flake.lock
+git commit -m "chore: update flake.lock"
 ```
 
 ---
@@ -193,50 +242,35 @@ sudo darwin-rebuild build --flake ~/dotfiles/nix
 
 ### "Git tree is dirty" 警告
 
-```
-warning: Git tree '/Users/xxx/dotfiles' is dirty
-```
-
-**意味**: コミットしていない変更がある。
-**対処**: 無視して OK。気になるなら先にコミットする。
-
-### オプション名変更の警告
-
-```
-trace: warning: The option 'programs.git.userName' has been renamed to...
-```
-
-**意味**: home-manager がオプション名を新しくした。
-**対処**: 指示通りに名前を変更する。
+**意味**: コミットしていない変更がある
+**対処**: 無視して OK
 
 ### パッケージが見つからない
 
+```bash
+ds パッケージ名   # 正しい名前を検索
 ```
-error: attribute 'xxx' not found
-```
-
-**対処**:
-1. パッケージ名が正しいか確認: `nix search nixpkgs xxx`
-2. 正しいパッケージ名を使う
 
 ### リビルドが失敗する
 
 ```bash
-# エラーの詳細を見る
+# エラー詳細を見る
 sudo darwin-rebuild switch --flake ~/dotfiles/nix --show-trace
 
-# 直前の変更を戻す
-git checkout home-manager/home.nix
+# 変更を戻す
+git checkout .
 ```
 
 ### ディスク容量が足りない
 
 ```bash
-# 古いパッケージを削除
-nix-collect-garbage -d
+dg   # 古い世代を削除
+```
 
-# さらに削除
-nix store gc
+### 設定ミスで戻したい
+
+```bash
+dp   # 前のバージョンにロールバック
 ```
 
 ---
@@ -245,68 +279,63 @@ nix store gc
 
 ```
 ~/dotfiles/nix/
-├── flake.nix              # Nix Flake のエントリーポイント
-├── flake.lock             # 依存関係のバージョン固定
+├── flake.nix                 # エントリポイント
 ├── darwin/
-│   └── configuration.nix  # macOS システム設定
+│   └── configuration.nix     # macOS システム設定
 ├── home-manager/
-│   └── home.nix           # ユーザー設定（メインで編集するファイル）
+│   ├── home.nix              # ユーザー設定（メイン）
+│   └── programs/
+│       ├── git.nix           # Git 設定
+│       └── zsh.nix           # Zsh 設定
 └── docs/
-    └── guide.md           # このガイド
+    ├── guide.md              # このガイド
+    └── cheatsheet.md         # コマンド一覧
 ```
 
-### 各ファイルの役割
+### 編集頻度
 
-| ファイル | 編集頻度 | 内容 |
-|---------|---------|------|
-| `home-manager/home.nix` | **高** | パッケージ、エイリアス、設定など |
-| `darwin/configuration.nix` | 低 | macOS システム設定 |
-| `flake.nix` | 低 | 依存関係の定義 |
-| `flake.lock` | 編集しない | 自動生成 |
-
-**基本的には `home-manager/home.nix` だけ編集すれば OK。**
+| ファイル | 頻度 | 内容 |
+|---------|------|------|
+| `home.nix` | 高 | パッケージ、環境変数 |
+| `programs/*.nix` | 中 | Git, Zsh 設定 |
+| `configuration.nix` | 低 | macOS 設定、GUI アプリ |
+| `flake.nix` | 低 | 依存関係 |
 
 ---
 
 ## 新しい Mac への移行
 
-1. Nix をインストール
-2. dotfiles を clone
-3. `rebuild` を実行
-
-これだけで同じ環境が再現されます。
-
 ```bash
-# 1. Nix インストール（Determinate Systems 版推奨）
+# 1. Nix インストール
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 
-# 2. dotfiles を clone
-git clone https://github.com/your-username/dotfiles.git ~/dotfiles
+# 2. clone
+git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 
 # 3. 初回ビルド
 cd ~/dotfiles/nix
-nix run nix-darwin -- switch --flake .
+nix run nix-darwin -- switch --flake .#RMB
 ```
+
+これだけで同じ環境が再現されます。
 
 ---
 
 ## Tips
 
-### programs で設定できるツール
+### programs.xxx を使う
 
 home-manager は多くのツールを `programs.xxx` で設定できます：
 
 ```nix
-programs.fzf.enable = true;      # fzf + シェル統合
-programs.eza.enable = true;      # eza + エイリアス
-programs.bat.enable = true;      # bat
-programs.gh.enable = true;       # GitHub CLI
-programs.tmux.enable = true;     # tmux
+programs.fzf.enable = true;   # fzf + シェル統合
+programs.eza.enable = true;   # eza + エイリアス
+programs.bat.enable = true;   # bat
 ```
 
 `packages` に追加するより設定が楽な場合があります。
 
 ### 設定オプションを調べる
 
-- [home-manager オプション検索](https://home-manager-options.extranix.com/)
-- [nix-darwin オプション](https://daiderd.com/nix-darwin/manual/index.html)
+- [home-manager options](https://home-manager-options.extranix.com/)
+- [nix-darwin options](https://daiderd.com/nix-darwin/manual/index.html)

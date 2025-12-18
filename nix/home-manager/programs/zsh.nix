@@ -9,15 +9,25 @@
       ll = "ls -la";
       ".." = "cd ..";
       "..." = "cd ../..";
-      # directory aliases
-      "dev" = "cd ~/Develop/";
-      "drive" = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/";
-      "kosen" = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/20_Areas/Kosen/4y/fall_semester/";
-      "downloads" = "cd ~/Downloads/";
-      # nvim aliases
-      "nv" = "nvim";
-      # Nix aliases
-      rebuild = "sudo darwin-rebuild switch --flake ~/dotfiles/nix";
+
+      # Directory
+      dev = "cd ~/Develop/";
+      drive = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/";
+      kosen = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/20_Areas/Kosen/4y/fall_semester/";
+      downloads = "cd ~/Downloads/";
+
+      # Neovim
+      nv = "nvim";
+
+      # Nix / Darwin
+      nx = "cd ~/dotfiles/nix";
+      dr = "sudo darwin-rebuild switch --flake ~/dotfiles/nix#RMB";
+      db = "darwin-rebuild build --flake ~/dotfiles/nix#RMB";
+      dp = "sudo darwin-rebuild switch --rollback";
+      du = "nix flake update --flake ~/dotfiles/nix";
+      ds = "nix search nixpkgs";
+      dg = "nix-collect-garbage -d";
+      nd = "nix develop";
     };
 
     initContent = ''
