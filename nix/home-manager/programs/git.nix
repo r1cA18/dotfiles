@@ -7,9 +7,9 @@
       ".direnv"
       ".envrc"
     ];
-    userName = "r1cA18";
-    userEmail = "r1cA18@proton.me";
-    extraConfig = {
+    settings = {
+      user.name = "r1cA18";
+      user.email = "r1cA18@proton.me";
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = true;

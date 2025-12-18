@@ -20,7 +20,7 @@
       rebuild = "sudo darwin-rebuild switch --flake ~/dotfiles/nix";
     };
 
-    initExtra = ''
+    initContent = ''
       # Add any additional zsh configuration here
     '';
   };
