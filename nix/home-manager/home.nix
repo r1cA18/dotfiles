@@ -69,6 +69,8 @@
   xdg.configFile = {
     "nvim".source = ../../nvim;
     "~/Library/Application\ Support/com.mitchellh.ghostty/config".source = ../../ghostty/config;
+    # Karabiner-Elements (writable symlink for GUI changes)
+    "karabiner/karabiner.json".source = config.lib.file.mkOutOfStoreSymlink "/Users/${username}/dotfiles/karabiner/karabiner.json";
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
