@@ -80,6 +80,7 @@
       "tailscale-app"
       "arc"
       "linearmouse"
+      "shortcat"
     ];
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
