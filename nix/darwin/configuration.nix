@@ -82,6 +82,7 @@
       "linearmouse"
       "shortcat"
       "claude"
+      "rustdesk"
     ];
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
