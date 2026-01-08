@@ -38,6 +38,7 @@ in {
     ++ (if isDarwin then darwinPackages else linuxPackages);
 
   home.sessionPath = [
+    "$HOME/.bun/bin"
     "$HOME/.npm-global/bin"
     "$HOME/.antigravity/antigravity/bin"
     "$HOME/.local/bin"
