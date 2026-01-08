@@ -70,7 +70,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            backupFileExtension = "backup";
+            backupFileExtension = "hm-backup";
             extraSpecialArgs = {inherit inputs username;};
             sharedModules = [
               claude-code-overlay.homeManagerModules.default
