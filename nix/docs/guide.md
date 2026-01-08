@@ -1,17 +1,18 @@
-# Nix dotfiles 運用ガイド
+# Nix dotfiles 共通ガイド
 
-このガイドでは、Nix (nix-darwin + home-manager) を使った dotfiles の運用方法を説明します。
+このガイドでは、macOS と Linux で共通の運用方法を説明します。
+
+**OS別の詳細ガイド:**
+- [macOS ガイド](./guide-macos.md)
+- [Ubuntu/Linux ガイド](./guide-ubuntu.md)
 
 ## 目次
 
 1. [基本的な運用フロー](#基本的な運用フロー)
 2. [パッケージの追加・削除](#パッケージの追加削除)
-3. [GUI アプリの追加](#gui-アプリの追加)
-4. [macOS 設定のカスタマイズ](#macos-設定のカスタマイズ)
-5. [設定の変更](#設定の変更)
-6. [よく使うコマンド](#よく使うコマンド)
-7. [トラブルシューティング](#トラブルシューティング)
-8. [ファイル構成](#ファイル構成)
+3. [設定の変更](#設定の変更)
+4. [ファイル構成](#ファイル構成)
+5. [よく使うコマンド](#よく使うコマンド)
 
 ---
 
@@ -27,7 +28,7 @@
 
 ```bash
 # 1. 設定を編集（例：パッケージ追加）
-vim ~/dotfiles/nix/home-manager/home.nix
+vim ~/dotfiles/nix/home-manager/programs/packages.nix
 
 # 2. リビルドして適用
 dr
@@ -45,7 +46,7 @@ git push
 
 ### CLI ツールを追加する
 
-`home-manager/home.nix` の `packages` に追加：
+`home-manager/programs/packages.nix` の `packages` に追加：
 
 ```nix
 home.packages = with pkgs; [
@@ -86,88 +87,6 @@ Web: [search.nixos.org](https://search.nixos.org/packages)
 
 ---
 
-## GUI アプリの追加
-
-`darwin/configuration.nix` の `homebrew.casks` に追加：
-
-```nix
-homebrew = {
-  enable = true;
-  casks = [
-    "google-chrome"
-    "visual-studio-code"
-    "slack"        # ← 追加
-    "spotify"      # ← 追加
-  ];
-};
-```
-
-### Mac App Store アプリ
-
-```nix
-homebrew.masApps = {
-  "LINE" = 539883307;
-  "Keynote" = 409183694;
-};
-```
-
-App ID の調べ方:
-```bash
-mas search "LINE"
-# 出力: 539883307  LINE (...)
-```
-
-### Nix と Homebrew の使い分け
-
-| 種類 | どこで管理 |
-|-----|-----------|
-| CLI ツール | `home.packages` (Nix) |
-| GUI アプリ | `homebrew.casks` |
-| App Store | `homebrew.masApps` |
-
----
-
-## macOS 設定のカスタマイズ
-
-`darwin/configuration.nix` で設定：
-
-```nix
-system.defaults = {
-  # Dock
-  dock = {
-    autohide = true;
-    show-recents = false;
-  };
-
-  # Finder
-  finder = {
-    AppleShowAllExtensions = true;
-    _FXShowPosixPathInTitle = true;
-  };
-
-  # キーボード
-  NSGlobalDomain = {
-    KeyRepeat = 2;
-    InitialKeyRepeat = 15;
-  };
-
-  # トラックパッド
-  trackpad = {
-    Clicking = true;
-    TrackpadThreeFingerDrag = true;
-  };
-
-  # スクリーンショット
-  screencapture = {
-    location = "~/Downloads";
-  };
-};
-```
-
-設定オプション: [nix-darwin options](https://daiderd.com/nix-darwin/manual/index.html)
-
----
-
 ## 設定の変更
 
 ### Git
@@ -190,11 +109,15 @@ programs.git = {
 `home-manager/programs/zsh.nix`:
 
 ```nix
-programs.zsh.shellAliases = {
+# commonAliases に追加
+commonAliases = {
   ll = "ls -la";
   g = "git";
+  # 新しいエイリアスを追加
 };
 ```
+
+> **Note**: OS固有のエイリアスは `darwinAliases` または `linuxAliases` に追加
 
 ### oh-my-zsh プラグイン
 
@@ -211,22 +134,9 @@ programs.zsh.oh-my-zsh = {
 };
 ```
 
-### Powerlevel10k テーマ
-
-```nix
-programs.zsh.plugins = [
-  {
-    name = "powerlevel10k";
-    src = pkgs.zsh-powerlevel10k;
-    file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-  }
-];
-```
-
-設定ウィザード: `p10k configure`
-設定ファイル: `home-manager/programs/p10k.zsh`
-
 ### 環境変数
+
+`home-manager/programs/packages.nix`:
 
 ```nix
 home.sessionVariables = {
@@ -244,18 +154,66 @@ home.sessionPath = [
 
 ---
 
+## ファイル構成
+
+```
+~/dotfiles/nix/
+├── flake.nix                 # エントリポイント
+├── darwin/
+│   └── configuration.nix     # macOS システム設定 (macOS only)
+├── home-manager/
+│   ├── home.nix              # ユーザー設定（メイン）
+│   └── programs/
+│       ├── packages.nix      # パッケージ、PATH、環境変数
+│       ├── git.nix           # Git 設定
+│       ├── zsh.nix           # Zsh 設定 (OS別エイリアス)
+│       ├── neovim.nix        # Neovim 設定
+│       ├── ghostty.nix       # Ghostty 設定 (OS別パス)
+│       └── karabiner.nix     # Karabiner (macOS only)
+└── docs/
+    ├── guide.md              # このガイド
+    ├── guide-macos.md        # macOS 専用
+    ├── guide-ubuntu.md       # Linux 専用
+    └── cheatsheet.md         # コマンド一覧
+```
+
+### 編集頻度
+
+| ファイル | 頻度 | 内容 |
+|---------|------|------|
+| `packages.nix` | 高 | パッケージ、環境変数 |
+| `programs/*.nix` | 中 | Git, Zsh 設定 |
+| `configuration.nix` | 低 | macOS 設定、GUI アプリ |
+| `flake.nix` | 低 | 依存関係 |
+
+### OS による条件分岐
+
+設定ファイル内で OS を判定:
+
+```nix
+{ pkgs, lib, ... }: {
+  # macOS のみ
+  some.option = lib.mkIf pkgs.stdenv.isDarwin "darwin value";
+
+  # Linux のみ
+  some.option = lib.mkIf pkgs.stdenv.isLinux "linux value";
+}
+```
+
+---
+
 ## よく使うコマンド
 
 > 詳細は [cheatsheet.md](./cheatsheet.md) を参照
 
-| Alias | 説明 |
-|-------|------|
-| `dr` | 設定を適用 (rebuild) |
-| `db` | ビルドのみ |
-| `dp` | 前のバージョンに戻す |
-| `du` | 依存を更新 |
-| `ds` | パッケージを検索 |
-| `dg` | 古い世代を削除 |
+| Alias | macOS | Linux | 説明 |
+|-------|:-----:|:-----:|------|
+| `dr` | ✅ | ✅ | 設定を適用 (rebuild) |
+| `db` | ✅ | - | ビルドのみ |
+| `dp` | ✅ | ✅ | ロールバック / 履歴 |
+| `du` | ✅ | ✅ | 依存を更新 |
+| `ds` | ✅ | ✅ | パッケージを検索 |
+| `dg` | ✅ | ✅ | 古い世代を削除 |
 
 ### 定期的な更新
 
@@ -265,89 +223,6 @@ dr       # リビルド
 git add flake.lock
 git commit -m "chore: update flake.lock"
 ```
-
----
-
-## トラブルシューティング
-
-### "Git tree is dirty" 警告
-
-**意味**: コミットしていない変更がある
-**対処**: 無視して OK
-
-### パッケージが見つからない
-
-```bash
-ds パッケージ名   # 正しい名前を検索
-```
-
-### リビルドが失敗する
-
-```bash
-# エラー詳細を見る
-sudo darwin-rebuild switch --flake ~/dotfiles/nix --show-trace
-
-# 変更を戻す
-git checkout .
-```
-
-### ディスク容量が足りない
-
-```bash
-dg   # 古い世代を削除
-```
-
-### 設定ミスで戻したい
-
-```bash
-dp   # 前のバージョンにロールバック
-```
-
----
-
-## ファイル構成
-
-```
-~/dotfiles/nix/
-├── flake.nix                 # エントリポイント
-├── darwin/
-│   └── configuration.nix     # macOS システム設定
-├── home-manager/
-│   ├── home.nix              # ユーザー設定（メイン）
-│   └── programs/
-│       ├── git.nix           # Git 設定
-│       └── zsh.nix           # Zsh 設定
-└── docs/
-    ├── guide.md              # このガイド
-    └── cheatsheet.md         # コマンド一覧
-```
-
-### 編集頻度
-
-| ファイル | 頻度 | 内容 |
-|---------|------|------|
-| `home.nix` | 高 | パッケージ、環境変数 |
-| `programs/*.nix` | 中 | Git, Zsh 設定 |
-| `configuration.nix` | 低 | macOS 設定、GUI アプリ |
-| `flake.nix` | 低 | 依存関係 |
-
----
-
-## 新しい Mac への移行
-
-```bash
-# 1. Nix インストール
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-
-# 2. clone
-git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
-
-# 3. 初回ビルド
-cd ~/dotfiles/nix
-nix run nix-darwin -- switch --flake .#RMB
-```
-
-これだけで同じ環境が再現されます。
 
 ---
 
@@ -368,4 +243,15 @@ programs.bat.enable = true;   # bat
 ### 設定オプションを調べる
 
 - [home-manager options](https://home-manager-options.extranix.com/)
-- [nix-darwin options](https://daiderd.com/nix-darwin/manual/index.html)
+- [nix-darwin options](https://daiderd.com/nix-darwin/manual/index.html) (macOS)
+
+### 設定の確認
+
+```bash
+# home-manager の世代を確認
+home-manager generations
+
+# nix store の容量確認
+nix store --store-size
+du -sh /nix/store
+```
