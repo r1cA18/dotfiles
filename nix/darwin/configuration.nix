@@ -118,7 +118,6 @@
 
       # Global settings
       NSGlobalDomain = {
-        AppleShowAllExtensions = true;
         # Keyboard repeat rate
         KeyRepeat = 2;
         InitialKeyRepeat = 15;

@@ -13,6 +13,8 @@ dotfiles/
 │   ├── home-manager/
 │   │   ├── home.nix              # ユーザー設定
 │   │   └── programs/             # 分割された設定
+│   │       ├── zsh.nix           # Zsh + oh-my-zsh
+│   │       └── p10k.zsh          # Powerlevel10k テーマ設定
 │   └── docs/                     # ドキュメント
 ├── nvim/                         # Neovim 設定
 ├── ghostty/                      # Ghostty 設定
@@ -42,6 +44,18 @@ dr  # rebuild
 | `du` | 依存を更新 |
 | `ds` | パッケージ検索 |
 | `dg` | ゴミ掃除 |
+
+### oh-my-zsh (git プラグイン)
+
+| Alias | Description |
+|-------|-------------|
+| `gst` | git status |
+| `gco` | git checkout |
+| `gcb` | git checkout -b |
+| `gp` | git push |
+| `gl` | git pull |
+| `ga` | git add |
+| `gcmsg` | git commit -m |
 
 詳細は [docs/cheatsheet.md](nix/docs/cheatsheet.md) を参照。
 

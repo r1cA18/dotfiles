@@ -10,6 +10,9 @@ result-*
 # macOS
 .DS_Store
 
+# home-manager backups
+*.hm-backup
+
 # direnv
 .direnv/
 
