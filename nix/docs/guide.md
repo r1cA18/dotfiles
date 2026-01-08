@@ -196,6 +196,36 @@ programs.zsh.shellAliases = {
 };
 ```
 
+### oh-my-zsh プラグイン
+
+```nix
+programs.zsh.oh-my-zsh = {
+  enable = true;
+  plugins = [
+    "git"      # git エイリアス (gst, gco, gp など)
+    "z"        # ディレクトリ高速移動
+    "docker"   # docker 補完
+    "sudo"     # ESC 2回で sudo 追加
+    "extract"  # x で解凍
+  ];
+};
+```
+
+### Powerlevel10k テーマ
+
+```nix
+programs.zsh.plugins = [
+  {
+    name = "powerlevel10k";
+    src = pkgs.zsh-powerlevel10k;
+    file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+  }
+];
+```
+
+設定ウィザード: `p10k configure`
+設定ファイル: `home-manager/programs/p10k.zsh`
+
 ### 環境変数
 
 ```nix
