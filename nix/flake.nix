@@ -1,13 +1,13 @@
 {
-  description = "r1ca18's nix-darwin configuration";
+  description = "r1ca18's cross-platform Nix configuration (macOS & Linux)";
 
   inputs = {
     # Nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     # Stable nixpkgs (for specific packages if needed)
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixpkgs-24.05-darwin";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/release-24.05";
 
-    # nix-darwin
+    # nix-darwin (macOS only)
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -29,10 +29,12 @@
     claude-code-overlay,
     ...
   } @ inputs: let
-    # Supported systems
+    # Supported systems (macOS + Linux)
     systems = [
       "aarch64-darwin"
       "x86_64-darwin"
+      "x86_64-linux"
+      "aarch64-linux"
     ];
     forAllSystems = nixpkgs.lib.genAttrs systems;
 
@@ -88,6 +90,7 @@
       extraSpecialArgs = {inherit inputs username;};
       modules = [
         ./home-manager/home.nix
+        claude-code-overlay.homeManagerModules.default
         {
           nixpkgs.overlays = [
             self.overlays.additions
