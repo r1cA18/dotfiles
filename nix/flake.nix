@@ -55,12 +55,12 @@
     # Reusable home-manager modules
     homeManagerModules = import ./modules/home-manager;
 
-    # Darwin configuration
+    # Darwin configuration (macOS)
     # Build with: darwin-rebuild switch --flake .#RMB
     darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       specialArgs = {inherit inputs username hostname;};
-      modules = [ 
+      modules = [
         # Main darwin configuration
         ./darwin/configuration.nix
 
@@ -78,7 +78,24 @@
             users.${username} = import ./home-manager/home.nix;
           };
         }
-        ];
+      ];
+    };
+
+    # Standalone home-manager configuration (Linux/Ubuntu)
+    # Build with: home-manager switch --flake .#r1ca18@linux
+    homeConfigurations."${username}@linux" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      extraSpecialArgs = {inherit inputs username;};
+      modules = [
+        ./home-manager/home.nix
+        {
+          nixpkgs.overlays = [
+            self.overlays.additions
+            self.overlays.modifications
+            self.overlays.stable-packages
+          ];
+        }
+      ];
     };
   };
 }
