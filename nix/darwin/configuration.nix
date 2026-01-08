@@ -60,7 +60,7 @@
     };
     # CLI tools from Homebrew (prefer nixpkgs when possible)
     brews = [
-      # "example-brew"
+      "opencode"
     ];
     # GUI applications
     casks = [
