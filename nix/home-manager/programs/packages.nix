@@ -14,6 +14,7 @@
     ripgrep
     fd
     cloudflared
+    tmux
   ];
 
   # macOS専用パッケージ
