@@ -1,4 +1,6 @@
 { pkgs, ... }: {
+  home.file.".p10k.zsh".source = ./p10k.zsh;
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -50,7 +52,8 @@
     };
 
     initContent = ''
-      # Add any additional zsh configuration here
+      # powerlevel10k configuration
+      [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
     '';
   };
 }
