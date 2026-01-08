@@ -40,6 +40,7 @@
 # # part of the value. For example, this will have a value of "#123abc":
 # background = #123abc
 theme = 0x96f
+font-family = JetBrainsMono Nerd Font
 #
 # # Empty values are used to reset config keys to default.
 # key =

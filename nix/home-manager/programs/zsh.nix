@@ -1,9 +1,28 @@
-{ ... }: {
+{ pkgs, ... }: {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
+
+    oh-my-zsh = {
+      enable = true;
+      plugins = [
+        "git" # git エイリアス (gst, gco, gp, gl など)
+        "z" # ディレクトリ間の高速移動
+        "docker" # docker コマンド補完
+        "sudo" # ESC 2回で sudo を先頭に追加
+        "extract" # x コマンドで様々な圧縮形式を解凍
+      ];
+    };
+
+    plugins = [
+      {
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      }
+    ];
 
     shellAliases = {
       ll = "ls -la";

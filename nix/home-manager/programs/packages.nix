@@ -13,6 +13,9 @@
 
     # TeX
     texliveFull
+
+    # Fonts
+    nerd-fonts.jetbrains-mono
   ];
 
   home.sessionPath = [
