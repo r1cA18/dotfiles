@@ -1,0 +1,177 @@
+# dotfiles アーキテクチャ & 開発ガイド
+
+このドキュメントはClaude (AI) がこのリポジトリを理解し、適切に変更を加えるためのガイド。
+
+## ディレクトリ構造
+
+```
+dotfiles/
+├── CLAUDE.md                 # Claude向け指示（このドキュメントを参照）
+├── README.md                 # ユーザー向けクイックスタート
+├── docs/                     # ドキュメント（このファイルを含む）
+│   └── architecture.md       # このファイル
+│
+├── nix/                      # Nix設定（メイン）
+│   ├── flake.nix             # エントリポイント、依存関係定義
+│   ├── flake.lock            # 依存関係のロックファイル
+│   │
+│   ├── darwin/               # macOS専用 (nix-darwin)
+│   │   └── configuration.nix # システム設定、Homebrew管理
+│   │
+│   ├── home-manager/         # ユーザー設定
+│   │   ├── home.nix          # home-managerエントリポイント
+│   │   └── programs/         # 各プログラムの設定
+│   │       ├── packages.nix  # パッケージ、PATH、環境変数
+│   │       ├── zsh.nix       # Zsh、エイリアス、oh-my-zsh
+│   │       ├── git.nix       # Git設定
+│   │       ├── neovim.nix    # Neovim（nvim/へのシンボリックリンク）
+│   │       ├── ghostty.nix   # Ghostty（ghostty/へのシンボリックリンク）
+│   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
+│   │       └── p10k.zsh      # Powerlevel10kテーマ設定
+│   │
+│   ├── modules/              # 再利用可能なモジュール（現在未使用）
+│   ├── overlays/             # Nixpkgsオーバーレイ
+│   ├── pkgs/                 # カスタムパッケージ
+│   └── docs/                 # Nix運用ドキュメント
+│       ├── guide.md          # 共通ガイド
+│       ├── guide-macos.md    # macOS専用
+│       ├── guide-ubuntu.md   # Ubuntu専用
+│       └── cheatsheet.md     # コマンド一覧
+│
+├── nvim/                     # Neovim設定（~/.config/nvim へリンク）
+│   ├── init.lua              # エントリポイント
+│   └── lua/
+│       ├── config/           # 基本設定
+│       │   ├── options.lua
+│       │   ├── keymaps.lua
+│       │   ├── autocmds.lua
+│       │   └── lazy.lua      # プラグインマネージャー設定
+│       └── plugins/          # プラグイン設定
+│
+├── ghostty/                  # Ghostty設定
+│   └── config               # 設定ファイル（macOSの場合 ~/Library/Application Support/...へリンク）
+│
+└── karabiner/               # Karabiner-Elements設定（macOS専用）
+    └── karabiner.json       # ~/.config/karabiner/へリンク
+```
+
+## シンボリックリンク管理
+
+home-managerが以下のシンボリックリンクを自動管理：
+
+| ソース | リンク先 | 管理ファイル |
+|--------|----------|--------------|
+| `nvim/` | `~/.config/nvim` | `neovim.nix` (xdg.configFile) |
+| `ghostty/config` | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file) |
+| `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
+
+## よくあるタスクと編集場所
+
+### CLIツール/パッケージを追加
+**編集:** `nix/home-manager/programs/packages.nix`
+
+```nix
+commonPackages = with pkgs; [
+  # ここに追加
+  ripgrep
+  fd
+];
+```
+
+macOS専用は `darwinPackages`、Linux専用は `linuxPackages` に追加。
+
+### GUIアプリを追加（macOS）
+**編集:** `nix/darwin/configuration.nix`
+
+```nix
+homebrew.casks = [
+  # ここに追加
+  "firefox"
+];
+```
+
+### シェルエイリアスを追加
+**編集:** `nix/home-manager/programs/zsh.nix`
+
+- 両OS共通: `commonAliases`
+- macOS専用: `darwinAliases`
+- Linux専用: `linuxAliases`
+
+### 環境変数を追加
+**編集:** `nix/home-manager/programs/packages.nix`
+
+```nix
+home.sessionVariables = {
+  EDITOR = "nvim";
+  # ここに追加
+};
+```
+
+### PATHを追加
+**編集:** `nix/home-manager/programs/packages.nix`
+
+```nix
+home.sessionPath = [
+  "$HOME/.local/bin"
+  # ここに追加
+];
+```
+
+### Git設定を変更
+**編集:** `nix/home-manager/programs/git.nix`
+
+### Neovim設定を変更
+**編集:** `nvim/` ディレクトリ内のファイル
+
+### Ghostty設定を変更
+**編集:** `ghostty/config`
+
+### Karabiner設定を変更
+**編集:** `karabiner/karabiner.json`
+
+### macOSシステム設定を変更
+**編集:** `nix/darwin/configuration.nix` の `system.defaults`
+
+## OS分岐パターン
+
+```nix
+{ pkgs, lib, ... }:
+let
+  isDarwin = pkgs.stdenv.isDarwin;
+  isLinux = pkgs.stdenv.isLinux;
+in {
+  # 条件付き設定
+  some.option = lib.mkIf isDarwin "darwin value";
+
+  # リストのマージ
+  packages = commonPkgs ++ (if isDarwin then darwinPkgs else linuxPkgs);
+}
+```
+
+## ビルドコマンド
+
+| OS | コマンド | エイリアス |
+|----|----------|-----------|
+| macOS | `darwin-rebuild switch --flake ~/dotfiles/nix#RMB` | `dr` |
+| Linux | `home-manager switch --flake ~/dotfiles/nix#r1ca18@linux` | `dr` |
+
+## 重要な注意事項
+
+1. **変更後は必ず `dr` でリビルド**
+2. **Nix設定のフォーマット**: `nix fmt` で整形可能
+3. **パッケージ検索**: `nix search nixpkgs <name>` または https://search.nixos.org/packages
+4. **home-managerオプション検索**: https://home-manager-options.extranix.com/
+5. **nix-darwinオプション検索**: https://daiderd.com/nix-darwin/manual/index.html
+
+## flake.nixの構造
+
+- `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin等）
+- `outputs`:
+  - `darwinConfigurations.RMB`: macOS設定
+  - `homeConfigurations."r1ca18@linux"`: Linux設定
+
+## 既存ドキュメント
+
+詳細な運用方法は以下を参照：
+- `nix/docs/guide.md` - 共通運用ガイド
+- `nix/docs/cheatsheet.md` - コマンドチートシート
