@@ -7,6 +7,7 @@
     # Development
     nodejs_latest
     bun
+    uv
 
     # CLI tools
     nodePackages.pnpm
