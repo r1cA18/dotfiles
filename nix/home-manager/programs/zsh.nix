@@ -29,8 +29,8 @@
   darwinAliases = {
     # Directory (macOS paths)
     dev = "cd ~/Develop/";
-    drive = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/";
-    kosen = "cd ~/Google\\ Drive/My\\ Drive/MainFolder/20_Areas/Kosen/4y/fall_semester/";
+    drive = "cd ~/Google\\ Drive/My\\ Drive/Vault/";
+    kosen = "cd ~/Google\\ Drive/My\\ Drive/Vault/20_Areas/Kosen/4y/fall_semester/";
     downloads = "cd ~/Downloads/";
 
     # Nix / Darwin
