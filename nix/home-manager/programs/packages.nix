@@ -16,6 +16,7 @@
     fd
     cloudflared
     tmux
+    ffmpeg
   ];
 
   # macOS専用パッケージ
