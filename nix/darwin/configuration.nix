@@ -58,9 +58,14 @@
       cleanup = "zap";  # Remove unlisted packages
       upgrade = true;
     };
+    # Third-party taps
+    taps = [
+      "trasta298/tap"
+    ];
     # CLI tools from Homebrew (prefer nixpkgs when possible)
     brews = [
       "opencode"
+      "trasta298/tap/keifu"
     ];
     # GUI applications
     casks = [
