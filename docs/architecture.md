@@ -80,6 +80,19 @@ commonPackages = with pkgs; [
 
 macOS専用は `darwinPackages`、Linux専用は `linuxPackages` に追加。
 
+### npmパッケージを追加（グローバル）
+**編集:** `nix/home-manager/programs/packages.nix`
+
+```nix
+globalNpmPackages = [
+  "@anthropic-ai/claude-code"
+  "agent-browser"
+  # ここに追加
+];
+```
+
+`dr`実行時にbunで自動インストール。詳細: [docs/guides/nix-npm-packages.md](guides/nix-npm-packages.md)
+
 ### GUIアプリを追加（macOS）
 **編集:** `nix/darwin/configuration.nix`
 
@@ -93,9 +106,22 @@ homebrew.casks = [
 ### シェルエイリアスを追加
 **編集:** `nix/home-manager/programs/zsh.nix`
 
-- 両OS共通: `commonAliases`
-- macOS専用: `darwinAliases`
-- Linux専用: `linuxAliases`
+エイリアスは `cmd + desc` 形式で定義（ヘルプ自動生成のため）：
+
+```nix
+generalAliases = {
+  myalias = {cmd = "some-command"; desc = "説明文";};
+};
+```
+
+カテゴリ：
+- `generalAliases` - 汎用（両OS共通）
+- `nixCommonAliases` - Nix共通
+- `nixDarwinAliases` / `nixLinuxAliases` - Nix OS別
+- `dirDarwinAliases` / `dirLinuxAliases` - ディレクトリ移動
+- `claudeAliases` - Claude Code関連
+
+詳細: [docs/guides/alias-auto-help.md](guides/alias-auto-help.md)
 
 ### 環境変数を追加
 **編集:** `nix/home-manager/programs/packages.nix`

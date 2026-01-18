@@ -20,3 +20,4 @@ result-*
 secrets/
 *.age
 !*.age.pub
+.claude/settings.local.json
