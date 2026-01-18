@@ -22,5 +22,4 @@
   };
 
   programs.home-manager.enable = true;
-  programs.claude-code.enable = true;
 }

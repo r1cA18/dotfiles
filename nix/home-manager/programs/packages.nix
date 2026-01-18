@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
 
@@ -34,6 +38,16 @@
     # htop
     # tmux
   ];
+
+  # bunでグローバルインストールするnpmパッケージ
+  # `dr`実行時に自動でインストール・更新される
+  globalNpmPackages = [
+    "@anthropic-ai/claude-code"
+    "@google/gemini-cli"
+    "@openai/codex"
+    "agent-browser"
+    "@ast-grep/cli"
+  ];
 in {
   home.packages =
     commonPackages
@@ -49,4 +63,25 @@ in {
   home.sessionVariables = {
     EDITOR = "nvim";
   };
+
+  # dr実行時にbunでグローバルパッケージをインストール・更新
+  home.activation.installGlobalNpmPackages = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    export PATH="${pkgs.bun}/bin:$PATH"
+    echo "Installing global npm packages via bun..."
+    ${pkgs.bun}/bin/bun install -g ${lib.concatStringsSep " " globalNpmPackages} || true
+  '';
+
+  # UI Skills (Claude Code等のスキルファイル)
+  home.activation.installUiSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Installing UI Skills..."
+    export PATH="${pkgs.curl}/bin:${pkgs.coreutils}/bin:$PATH"
+    ${pkgs.curl}/bin/curl -fsSL https://ui-skills.com/install | ${pkgs.bash}/bin/bash || true
+  '';
+
+  # Agent Skills (vercel-labs)
+  home.activation.installAgentSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Installing Agent Skills..."
+    export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.git}/bin:$PATH"
+    ${pkgs.bun}/bin/bunx skills i vercel-labs/agent-skills || true
+  '';
 }

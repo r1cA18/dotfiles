@@ -14,10 +14,6 @@
     # home-manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    # Claude Code
-    claude-code-overlay.url = "github:ryoppippi/claude-code-overlay";
-    claude-code-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
@@ -26,7 +22,6 @@
     nixpkgs-stable,
     nix-darwin,
     home-manager,
-    claude-code-overlay,
     ...
   } @ inputs: let
     # Supported systems (macOS + Linux)
@@ -74,9 +69,6 @@
             useUserPackages = true;
             backupFileExtension = "hm-backup";
             extraSpecialArgs = {inherit inputs username;};
-            sharedModules = [
-              claude-code-overlay.homeManagerModules.default
-            ];
             users.${username} = import ./home-manager/home.nix;
           };
         }
@@ -90,7 +82,6 @@
       extraSpecialArgs = {inherit inputs username;};
       modules = [
         ./home-manager/home.nix
-        claude-code-overlay.homeManagerModules.default
         {
           nixpkgs.overlays = [
             self.overlays.additions
