@@ -8,46 +8,121 @@
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
 
-  # Common aliases (両OS共通)
-  commonAliases = {
-    ll = "ls -la";
-    ".." = "cd ..";
-    "..." = "cd ../..";
+  # ========================================
+  # エイリアス定義 (cmd + desc)
+  # ========================================
 
-    # Neovim
-    nv = "nvim";
-
-    # Nix (共通)
-    nx = "cd ~/dotfiles/nix";
-    du = "nix flake update --flake ~/dotfiles/nix";
-    ds = "nix search nixpkgs";
-    dg = "nix-collect-garbage -d";
-    nd = "nix develop";
+  # General (両OS共通)
+  generalAliases = {
+    ll = {cmd = "ls -la"; desc = "List all files";};
+    ".." = {cmd = "cd .."; desc = "Go up one directory";};
+    "..." = {cmd = "cd ../.."; desc = "Go up two directories";};
+    nv = {cmd = "nvim"; desc = "Open Neovim";};
+    dot = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
   };
 
-  # macOS-specific aliases
-  darwinAliases = {
-    # Directory (macOS paths)
-    dev = "cd ~/Develop/";
-    drive = "cd ~/Google\\ Drive/My\\ Drive/Vault/";
-    kosen = "cd ~/Google\\ Drive/My\\ Drive/Vault/20_Areas/Kosen/4y/fall_semester/";
-    downloads = "cd ~/Downloads/";
-
-    # Nix / Darwin
-    dr = "sudo darwin-rebuild switch --flake ~/dotfiles/nix#RMB";
-    db = "darwin-rebuild build --flake ~/dotfiles/nix#RMB";
-    dp = "sudo darwin-rebuild switch --rollback";
+  # Nix (両OS共通)
+  nixCommonAliases = {
+    nx = {cmd = "cd ~/dotfiles/nix"; desc = "Go to nix config";};
+    du = {cmd = "nix flake update --flake ~/dotfiles/nix"; desc = "Update flake";};
+    ds = {cmd = "nix search nixpkgs"; desc = "Search nixpkgs";};
+    dg = {cmd = "nix-collect-garbage -d"; desc = "Garbage collect";};
+    nd = {cmd = "nix develop"; desc = "Enter nix develop shell";};
   };
 
-  # Linux-specific aliases
-  linuxAliases = {
-    # Directory (Linux paths)
-    dev = "cd ~/develop/";
-    downloads = "cd ~/Downloads/";
+  # Nix (macOS)
+  nixDarwinAliases = {
+    dr = {cmd = "sudo darwin-rebuild switch --flake ~/dotfiles/nix#RMB"; desc = "Rebuild nix config";};
+    db = {cmd = "darwin-rebuild build --flake ~/dotfiles/nix#RMB"; desc = "Build nix config";};
+    dp = {cmd = "sudo darwin-rebuild switch --rollback"; desc = "Rollback nix config";};
+  };
 
-    # home-manager (Linux)
-    dr = "home-manager switch --flake ~/dotfiles/nix#${username}@linux";
-    dp = "home-manager generations";
+  # Nix (Linux)
+  nixLinuxAliases = {
+    dr = {cmd = "home-manager switch --flake ~/dotfiles/nix#${username}@linux"; desc = "Rebuild home-manager";};
+    dp = {cmd = "home-manager generations"; desc = "List generations";};
+  };
+
+  # Directory (macOS)
+  dirDarwinAliases = {
+    dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop";};
+    drive = {cmd = "cd ~/Google\\ Drive/My\\ Drive/Vault/"; desc = "Go to Google Drive";};
+    kosen = {cmd = "cd ~/Google\\ Drive/My\\ Drive/Vault/20_Areas/Kosen/4y/fall_semester/"; desc = "Go to Kosen";};
+    downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
+  };
+
+  # Directory (Linux)
+  dirLinuxAliases = {
+    dev = {cmd = "cd ~/develop/"; desc = "Go to develop";};
+    downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
+  };
+
+  # Claude Code
+  claudeAliases = {
+    cc = {cmd = "claude"; desc = "Start Claude Code";};
+    ccc = {cmd = "claude --continue"; desc = "Continue last session";};
+    ccr = {cmd = "claude --resume"; desc = "Resume session (picker)";};
+    ccd = {cmd = "claude --dangerously-skip-permissions"; desc = "Skip all permissions";};
+    ccu = {cmd = "claude update"; desc = "Check for updates";};
+  };
+
+  # ========================================
+  # ヘルプ生成関数
+  # ========================================
+
+  # エイリアス定義からcmdだけ抽出
+  mkAliases = defs: lib.mapAttrs (name: v: v.cmd) defs;
+
+  # カテゴリ別ヘルプテキスト生成（簡潔）
+  mkCategoryHelp = category: defs: let
+    lines = lib.mapAttrsToList (name: v: "  ${name} - ${v.desc}") defs;
+  in
+    if defs == {}
+    then ""
+    else "=== ${category} ===\n${lib.concatStringsSep "\n" lines}";
+
+  # カテゴリ別ヘルプテキスト生成（詳細：コマンド内容のみ）
+  mkCategoryHelpVerbose = category: defs: let
+    lines = lib.mapAttrsToList (name: v: "  ${name} = ${v.cmd}") defs;
+  in
+    if defs == {}
+    then ""
+    else "=== ${category} ===\n${lib.concatStringsSep "\n" lines}";
+
+  # 全カテゴリのエイリアス定義をマージ
+  allDefinitions =
+    generalAliases
+    // nixCommonAliases
+    // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
+    // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
+    // claudeAliases;
+
+  # ヘルプ用エイリアス（手動定義、循環参照回避）
+  helpSection = "=== Help ===\n  h - Show this help\n  hv - Show commands";
+  helpSectionVerbose = "=== Help ===\n  h = echo '...'\n  hv = echo '...'";
+
+  # カテゴリ別ヘルプを生成（簡潔）
+  helpText = lib.concatStringsSep "\n\n" (lib.filter (x: x != "") [
+    (mkCategoryHelp "General" generalAliases)
+    (mkCategoryHelp "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
+    (mkCategoryHelp "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
+    (mkCategoryHelp "Claude Code" claudeAliases)
+    helpSection
+  ]);
+
+  # カテゴリ別ヘルプを生成（詳細）
+  helpTextVerbose = lib.concatStringsSep "\n\n" (lib.filter (x: x != "") [
+    (mkCategoryHelpVerbose "General" generalAliases)
+    (mkCategoryHelpVerbose "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
+    (mkCategoryHelpVerbose "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
+    (mkCategoryHelpVerbose "Claude Code" claudeAliases)
+    helpSectionVerbose
+  ]);
+
+  # 最終的なエイリアス
+  finalAliases = mkAliases allDefinitions // {
+    h = "echo '${helpText}'";
+    hv = "echo '${helpTextVerbose}'";
   };
 in {
   home.file.".p10k.zsh".source = ./p10k.zsh;
@@ -77,14 +152,8 @@ in {
       }
     ];
 
-    # OS別エイリアスをマージ
-    shellAliases =
-      commonAliases
-      // (
-        if isDarwin
-        then darwinAliases
-        else linuxAliases
-      );
+    # 自動生成されたエイリアス（h でヘルプ表示）
+    shellAliases = finalAliases;
 
     initContent = ''
       # powerlevel10k configuration
