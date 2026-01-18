@@ -64,6 +64,7 @@
     ccr = {cmd = "claude --resume"; desc = "Resume session (picker)";};
     ccd = {cmd = "claude --dangerously-skip-permissions"; desc = "Skip all permissions";};
     ccu = {cmd = "claude update"; desc = "Check for updates";};
+    ccs = {cmd = "bunx ccusage"; desc = "Show Claude Code usage";};
   };
 
   # ========================================
