@@ -12,6 +12,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 
 ### ガイド
 
+- [management-rules.md](guides/management-rules.md) - **管理ルール（必読）**
 - [nix-npm-packages.md](guides/nix-npm-packages.md) - npmパッケージをbunで宣言的に管理
 - [alias-auto-help.md](guides/alias-auto-help.md) - エイリアス自動ヘルプシステム（h/hv）
 
