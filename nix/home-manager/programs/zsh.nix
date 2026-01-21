@@ -46,8 +46,9 @@
   # Directory (macOS)
   dirDarwinAliases = {
     dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop";};
-    drive = {cmd = "cd ~/Google\\ Drive/My\\ Drive/Vault/"; desc = "Go to Google Drive";};
-    kosen = {cmd = "cd ~/Google\\ Drive/My\\ Drive/Vault/20_Areas/Kosen/4y/fall_semester/"; desc = "Go to Kosen";};
+    drive = {cmd = "cd ~/Google\\ Drive/My\\ Drive/"; desc = "Go to Google Drive";};
+    vault = {cmd = "cd ~/vault/"; desc = "Go to Vault";};
+    kosen = {cmd = "cd ~/vault/Areas/Kosen/4y/fall_semester/"; desc = "Go to Kosen";};
     downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
   };
 
@@ -61,6 +62,7 @@
   claudeAliases = {
     cc = {cmd = "claude"; desc = "Start Claude Code";};
     ccc = {cmd = "claude --continue"; desc = "Continue last session";};
+    cccd = {cmd = "claude --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
     ccr = {cmd = "claude --resume"; desc = "Resume session (picker)";};
     ccd = {cmd = "claude --dangerously-skip-permissions"; desc = "Skip all permissions";};
     ccu = {cmd = "claude update"; desc = "Check for updates";};
