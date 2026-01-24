@@ -47,6 +47,7 @@
   dirDarwinAliases = {
     dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop";};
     drive = {cmd = "cd ~/Google\\ Drive/My\\ Drive/"; desc = "Go to Google Drive";};
+    storage = {cmd = "cd ~/Google\\ Drive/My\\ Drive/Storage/"; desc = "Go to Storage";};
     vault = {cmd = "cd ~/vault/"; desc = "Go to Vault";};
     kosen = {cmd = "cd ~/vault/Areas/Kosen/4y/fall_semester/"; desc = "Go to Kosen";};
     downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
