@@ -64,6 +64,7 @@
     ];
     # CLI tools from Homebrew (prefer nixpkgs when possible)
     brews = [
+      "fastlane"
       "opencode"
       "trasta298/tap/keifu"
     ];
