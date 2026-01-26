@@ -10,6 +10,7 @@
     ./programs/packages.nix
     ./programs/ghostty.nix
     ./programs/karabiner.nix
+    ./programs/syncthing.nix
   ];
 
   home = {
