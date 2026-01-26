@@ -162,6 +162,9 @@ in {
     initContent = ''
       # powerlevel10k configuration
       [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+
+      # Load secrets
+      [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
     '';
   };
 }
