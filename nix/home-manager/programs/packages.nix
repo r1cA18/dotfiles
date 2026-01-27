@@ -71,17 +71,4 @@ in {
     ${pkgs.bun}/bin/bun install -g ${lib.concatStringsSep " " globalNpmPackages} || true
   '';
 
-  # UI Skills (Claude Code等のスキルファイル)
-  home.activation.installUiSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Installing UI Skills..."
-    export PATH="${pkgs.curl}/bin:${pkgs.coreutils}/bin:$PATH"
-    ${pkgs.curl}/bin/curl -fsSL https://ui-skills.com/install | ${pkgs.bash}/bin/bash || true
-  '';
-
-  # Agent Skills (vercel-labs)
-  home.activation.installAgentSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Installing Agent Skills..."
-    export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.git}/bin:$PATH"
-    ${pkgs.bun}/bin/bunx skills i vercel-labs/agent-skills || true
-  '';
 }
