@@ -2,8 +2,8 @@
 name: swift-dev-toolkit
 description: |
   Swift/iOS/macOS development automation toolkit. Build loop, project setup, localization, UI debug, Widget, App Store Connect upload.
-  Triggers: "build", "fix errors", "Bundle ID", "App Groups", "localization", "翻訳", "screenshot", "UIスクショ", "Widget", "TestFlight", "App Store", "deploy", "upload", "archive", "fastlane setup", "fastlane init"
-  日本語: 「ビルドして」「エラー直して」「Bundle ID変更」「App Groups設定」「翻訳チェック」「UIスクショ」「Widget追加」「macOSカテゴリ設定」「TestFlightアップロード」「デプロイ」「Fastlaneセットアップ」
+  Triggers: "build", "fix errors", "Bundle ID", "App Groups", "localization", "翻訳", "screenshot", "UIスクショ", "Widget", "TestFlight", "App Store", "deploy", "upload", "archive", "fastlane setup", "fastlane init", "DocC", "tutorial", "チュートリアル"
+  日本語: 「ビルドして」「エラー直して」「Bundle ID変更」「App Groups設定」「翻訳チェック」「UIスクショ」「Widget追加」「macOSカテゴリ設定」「TestFlightアップロード」「デプロイ」「Fastlaneセットアップ」「DocCチュートリアル作成」
 ---
 
 # Swift Dev Toolkit
@@ -170,6 +170,27 @@ API で不可能な操作に限定:
 
 ---
 
+## 9. DocC チュートリアル
+
+詳細 → `references/docc_tutorial.md`
+
+```bash
+# プレビュー
+xcrun docc preview Documentation.docc --port 8080
+
+# preview.sh 使用（ulimit・ポート衝突対策済み）
+./preview.sh
+```
+
+| ハマりポイント | 対処 |
+|---------------|------|
+| ulimit エラー | `ulimit -n 1024` |
+| `@State` 誤認 | バッククォートで囲む |
+| Chapter 画像なし | SVG 作成して `@Image` 追加 |
+| `@Metadata` ワーニング | articles では使わない |
+
+---
+
 ## ファイル構成
 
 ```
@@ -184,5 +205,6 @@ swift-dev-toolkit/
 └── references/
     ├── api_key_setup.md
     ├── fastlane_actions.md
+    ├── docc_tutorial.md
     └── troubleshooting.md
 ```
