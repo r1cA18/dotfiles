@@ -1,0 +1,17 @@
+# Appfile テンプレート
+# fastlane/ ディレクトリにコピーして使用
+# プレースホルダーを実際の値に置換すること
+
+# App identifier (Bundle ID)
+app_identifier("com.example.yourapp")
+
+# Apple Developer Team ID
+team_id("XXXXXXXXXX")
+
+# App Store Connect Team ID（通常は team_id と同じ）
+itc_team_id("XXXXXXXXXX")
+
+# API Key は環境変数から自動読み込み:
+#   APP_STORE_CONNECT_API_KEY_KEY_ID
+#   APP_STORE_CONNECT_API_KEY_ISSUER_ID
+#   APP_STORE_CONNECT_API_KEY_KEY

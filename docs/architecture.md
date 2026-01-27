@@ -38,6 +38,11 @@ dotfiles/
 │       ├── guide-ubuntu.md   # Ubuntu専用
 │       └── cheatsheet.md     # コマンド一覧
 │
+├── skills/                   # Agent Skills（agent-skills-nix で管理）
+│   ├── agent-browser/        # 各スキルディレクトリ
+│   ├── video-editing/        # （SKILL.md を含む）
+│   └── ...
+│
 ├── nvim/                     # Neovim設定（~/.config/nvim へリンク）
 │   ├── init.lua              # エントリポイント
 │   └── lua/
@@ -64,6 +69,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `nvim/` | `~/.config/nvim` | `neovim.nix` (xdg.configFile) |
 | `ghostty/config` | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file) |
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
+| `skills/` | `~/.claude/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
 
 ## よくあるタスクと編集場所
 
@@ -151,6 +157,26 @@ home.sessionPath = [
 
 ### Ghostty設定を変更
 **編集:** `ghostty/config`
+
+### カスタムスキルを追加
+**編集:** `skills/` に新しいディレクトリを作成し `SKILL.md` を配置
+
+```
+skills/my-new-skill/
+└── SKILL.md
+```
+
+自作スキルは `enableAll = ["custom"]` により自動で有効化される。
+
+### 公式スキルを有効化
+**編集:** `nix/home-manager/programs/agent-skills.nix`
+
+```nix
+skills.enable = [
+  "pdf"
+  "xlsx"
+];
+```
 
 ### Karabiner設定を変更
 **編集:** `karabiner/karabiner.json`

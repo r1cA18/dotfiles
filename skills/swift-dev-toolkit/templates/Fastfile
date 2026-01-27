@@ -1,0 +1,85 @@
+# Fastfile テンプレート
+# fastlane/ ディレクトリにコピーして使用
+
+default_platform(:ios)
+
+# App Store Connect API Key（環境変数から読み込み）
+def api_key
+  app_store_connect_api_key(
+    key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+    issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+    key_content: ENV["APP_STORE_CONNECT_API_KEY_KEY"],
+    is_key_content_base64: false,
+    in_house: false
+  )
+end
+
+# ========== iOS ==========
+platform :ios do
+  desc "ビルド番号増分 + TestFlight アップロード"
+  lane :beta do
+    increment_build_number(
+      build_number: latest_testflight_build_number(api_key: api_key) + 1
+    )
+
+    build_app(
+      scheme: ENV["SCHEME"] || "YourScheme",
+      export_method: "app-store"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "IPA を TestFlight にアップロード"
+  lane :upload do
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: ENV["IPA_PATH"] || "build/App.ipa",
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "最新ビルド番号を表示"
+  lane :builds do
+    build_number = latest_testflight_build_number(api_key: api_key)
+    UI.success("Latest iOS build: #{build_number}")
+  end
+end
+
+# ========== macOS ==========
+platform :mac do
+  desc "ビルド番号増分 + TestFlight アップロード"
+  lane :beta do
+    increment_build_number(
+      build_number: latest_testflight_build_number(api_key: api_key, platform: "osx") + 1
+    )
+
+    build_mac_app(
+      scheme: ENV["SCHEME"] || "YourScheme",
+      export_method: "app-store"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "最新ビルド番号を表示"
+  lane :builds do
+    build_number = latest_testflight_build_number(api_key: api_key, platform: "osx")
+    UI.success("Latest macOS build: #{build_number}")
+  end
+end
+
+# ========== 共通 ==========
+desc "テスト実行"
+lane :test do
+  run_tests(
+    scheme: ENV["SCHEME"] || "YourScheme",
+    devices: ["iPhone 16"]
+  )
+end

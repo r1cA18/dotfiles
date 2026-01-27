@@ -26,6 +26,8 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Neovim設定 | `nvim/` ディレクトリ |
 | Ghostty設定 | `ghostty/config` |
 | Karabiner設定 | `karabiner/karabiner.json` |
+| Agent Skills管理 | `nix/home-manager/programs/agent-skills.nix` |
+| スキル追加/編集 | `skills/` ディレクトリ |
 
 ## シンボリックリンク設定済み
 
@@ -34,6 +36,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 - `nvim/` -> `~/.config/nvim`
 - `ghostty/config` -> `~/Library/Application Support/com.mitchellh.ghostty/config`
 - `karabiner/karabiner.json` -> `~/.config/karabiner/karabiner.json`
+- `skills/` -> `~/.claude/skills/` (agent-skills-nix 経由で同期)
 
 ## ビルド
 

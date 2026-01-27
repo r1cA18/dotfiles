@@ -14,6 +14,15 @@
     # home-manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # agent-skills-nix (declarative Agent Skills management)
+    agent-skills-nix.url = "github:Kyure-A/agent-skills-nix";
+    agent-skills-nix.inputs.nixpkgs.follows = "nixpkgs";
+    agent-skills-nix.inputs.home-manager.follows = "home-manager";
+
+    # Anthropic official skills
+    anthropic-skills.url = "github:anthropics/skills";
+    anthropic-skills.flake = false;
   };
 
   outputs = {
@@ -22,6 +31,8 @@
     nixpkgs-stable,
     nix-darwin,
     home-manager,
+    agent-skills-nix,
+    anthropic-skills,
     ...
   } @ inputs: let
     # Supported systems (macOS + Linux)
@@ -69,7 +80,12 @@
             useUserPackages = true;
             backupFileExtension = "hm-backup";
             extraSpecialArgs = {inherit inputs username;};
-            users.${username} = import ./home-manager/home.nix;
+            users.${username} = {
+              imports = [
+                agent-skills-nix.homeManagerModules.default
+                (import ./home-manager/home.nix)
+              ];
+            };
           };
         }
       ];
@@ -81,6 +97,7 @@
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       extraSpecialArgs = {inherit inputs username;};
       modules = [
+        agent-skills-nix.homeManagerModules.default
         ./home-manager/home.nix
         {
           nixpkgs.overlays = [
