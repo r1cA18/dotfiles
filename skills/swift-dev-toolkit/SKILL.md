@@ -2,8 +2,8 @@
 name: swift-dev-toolkit
 description: |
   Swift/iOS/macOS development automation toolkit. Build loop, project setup, localization, UI debug, Widget, App Store Connect upload.
-  Triggers: "build", "fix errors", "Bundle ID", "App Groups", "localization", "翻訳", "screenshot", "UIスクショ", "Widget", "TestFlight", "App Store", "deploy", "upload", "archive", "fastlane setup", "fastlane init", "DocC", "tutorial", "チュートリアル"
-  日本語: 「ビルドして」「エラー直して」「Bundle ID変更」「App Groups設定」「翻訳チェック」「UIスクショ」「Widget追加」「macOSカテゴリ設定」「TestFlightアップロード」「デプロイ」「Fastlaneセットアップ」「DocCチュートリアル作成」
+  Triggers: "build", "fix errors", "Bundle ID", "App Groups", "localization", "翻訳", "screenshot", "UIスクショ", "Widget", "TestFlight", "App Store", "deploy", "upload", "archive", "fastlane setup", "fastlane init", "DocC", "tutorial", "チュートリアル", "xcodegen", "xcodeproj", "プロジェクト作成", "新規プロジェクト"
+  日本語: 「ビルドして」「エラー直して」「Bundle ID変更」「App Groups設定」「翻訳チェック」「UIスクショ」「Widget追加」「macOSカテゴリ設定」「TestFlightアップロード」「デプロイ」「Fastlaneセットアップ」「DocCチュートリアル作成」「プロジェクト作成」「xcodeproj生成」
 ---
 
 # Swift Dev Toolkit
@@ -170,24 +170,77 @@ API で不可能な操作に限定:
 
 ---
 
-## 9. DocC チュートリアル
+## 9. XcodeGen プロジェクト初期化
+
+Xcode GUI を使わずに CLI で `.xcodeproj` を生成する。
+
+詳細 → `references/xcodegen_guide.md`
+
+### 9.1 セットアップ
+
+```bash
+which xcodegen || brew install xcodegen
+```
+
+### 9.2 project.yml を作成
+
+```bash
+cp ~/.claude/skills/swift-dev-toolkit/templates/project.yml ./project.yml
+
+# プレースホルダーを置換
+sed -i '' 's/__APP_NAME__/MyApp/g' project.yml
+sed -i '' 's/__BUNDLE_ID__/com.example.myapp/g' project.yml
+sed -i '' 's/__PLATFORM__/macOS/g' project.yml
+sed -i '' 's/__DEPLOY_TARGET__/15.0/g' project.yml
+```
+
+### 9.3 生成 & ビルド
+
+```bash
+xcodegen generate
+xcodebuild -project MyApp.xcodeproj -scheme MyApp build
+```
+
+### 9.4 注意点
+
+- `Info.plist` と `entitlements` は sources から除外する（excludes に追加）
+- XcodeGen が entitlements を空にすることがある → 生成後に確認
+- ファイル追加/削除後は `xcodegen generate` を再実行
+- `.xcodeproj` は `.gitignore` に入れ、`project.yml` を管理する
+
+| SPM (`swift build`) | XcodeGen (`xcodegen`) |
+|---|---|
+| 実行バイナリのみ | .app バンドル生成 |
+| 権限ダイアログ出ない | 出る |
+| ライブラリ向き | アプリ向き |
+
+---
+
+## 10. DocC チュートリアル
 
 詳細 → `references/docc_tutorial.md`
 
 ```bash
-# プレビュー
+# スタンドアロン型: xcrun docc preview
 xcrun docc preview Documentation.docc --port 8080
-
-# preview.sh 使用（ulimit・ポート衝突対策済み）
 ./preview.sh
+
+# Xcode プロジェクト埋め込み型: xcodebuild docbuild
+xcodebuild docbuild \
+    -project MyApp.xcodeproj \
+    -scheme MyApp \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+    -derivedDataPath ./build-docc
 ```
 
 | ハマりポイント | 対処 |
 |---------------|------|
 | ulimit エラー | `ulimit -n 1024` |
 | `@State` 誤認 | バッククォートで囲む |
-| Chapter 画像なし | SVG 作成して `@Image` 追加 |
+| Chapter 画像なし | SVG 追加（ワーニングのみ、ビルドは成功） |
 | `@Metadata` ワーニング | articles では使わない |
+| `@Step` 複数段落 | 説明文は1段落にまとめる |
+| Watch App で docbuild 失敗 | `-sdk` ではなく `-destination` を使う |
 
 ---
 
@@ -201,10 +254,12 @@ swift-dev-toolkit/
 │   ├── Fastfile
 │   ├── Appfile
 │   ├── SharedDataManager.swift
-│   └── ExportOptions.plist
+│   ├── ExportOptions.plist
+│   └── project.yml              # XcodeGen テンプレート
 └── references/
     ├── api_key_setup.md
     ├── fastlane_actions.md
     ├── docc_tutorial.md
-    └── troubleshooting.md
+    ├── troubleshooting.md
+    └── xcodegen_guide.md         # XcodeGen 使い方
 ```

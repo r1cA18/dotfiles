@@ -64,7 +64,7 @@ MyTutorial/
 }
 ```
 
-**重要**: 各 `@Chapter` には `@Image` が必須。ないとワーニング。
+**注意**: 各 `@Chapter` に `@Image` がないとワーニングが出るが、ビルド自体は成功する。画像を用意できない場合はワーニングを無視しても動作に問題はない。
 
 ### チュートリアルファイル（.tutorial）
 
@@ -87,6 +87,19 @@ MyTutorial/
 
                 @Code(name: "表示名.swift", file: "01-01-01-example.swift")
             }
+
+            @Step {
+                インラインコードブロックも使用可能（@Code 不要）。
+
+                ```swift
+                struct Example {
+                    let name: String
+                }
+                ```
+
+                ステップの説明文は1段落のみ。2段落以上あるとワーニング。
+                説明が複数ある場合はコードブロックの前に1段落にまとめる。
+            }
         }
     }
 }
@@ -108,7 +121,35 @@ MyTutorial/
 
 ---
 
-## preview.sh テンプレート
+## Xcode プロジェクト埋め込み型 DocC
+
+Xcode プロジェクト内に `.docc` カタログを配置している場合は、`xcrun docc preview` ではなく `xcodebuild docbuild` を使う。
+
+```bash
+# DocC ビルド（Xcode プロジェクト埋め込み型）
+xcodebuild docbuild \
+    -project MyApp.xcodeproj \
+    -scheme MyApp \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+    -derivedDataPath ./build-docc
+
+# 生成された .doccarchive を開く
+open ./build-docc/Build/Products/Debug-iphonesimulator/MyApp.doccarchive
+```
+
+**注意: Watch App を含む混合プロジェクト**では `-sdk iphonesimulator` を使うと Watch ターゲットが WatchKit を解決できずビルド失敗する。`-destination` で特定シミュレータを指定すること。
+
+```bash
+# ❌ Watch App ターゲットがあるとビルド失敗
+xcodebuild docbuild -sdk iphonesimulator ...
+
+# ✅ -destination を使う
+xcodebuild docbuild -destination 'platform=iOS Simulator,name=iPhone 17 Pro' ...
+```
+
+---
+
+## preview.sh テンプレート（スタンドアロン型 DocC）
 
 ```bash
 #!/bin/bash
@@ -198,6 +239,25 @@ warning: No symbol matched 'MyTutorial'
 ### 6. ポート衝突
 
 **対処**: preview.sh に自動ポート検出を入れる（テンプレート参照）。
+
+### 7. `@Step` に複数段落
+
+```
+warning: Extraneous element: 'Step' directive should only have a single paragraph
+```
+
+**原因**: `@Step` 内の説明文が2段落以上ある
+**対処**: 説明文は1段落にまとめる。コードブロック（`@Code` またはインライン ` ``` `）の前に1段落だけ置く。
+複数の概念を説明したい場合は `**太字:**` でポイントを1段落内に列挙するか、コードブロックの後に追加のポイント説明を置く。
+
+### 8. Watch App 混合プロジェクトの docbuild 失敗
+
+```
+Unable to find module dependency: 'WatchKit'
+```
+
+**原因**: `-sdk iphonesimulator` では WatchKit SDK が利用不可
+**対処**: `-destination 'platform=iOS Simulator,name=iPhone 17 Pro'` を使う（Section「Xcode プロジェクト埋め込み型 DocC」参照）。
 
 ---
 

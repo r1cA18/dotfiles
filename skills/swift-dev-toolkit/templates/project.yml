@@ -1,0 +1,51 @@
+# XcodeGen project template
+# Usage: cp to project root, edit values, run `xcodegen generate`
+#
+# Placeholders:
+#   __APP_NAME__       → アプリ名 (例: Hanasu)
+#   __BUNDLE_ID__      → Bundle ID (例: com.hanasu.app)
+#   __PLATFORM__       → macOS or iOS
+#   __DEPLOY_TARGET__  → デプロイメントターゲット (例: 15.0, 18.0)
+#   __TEAM_ID__        → Apple Developer Team ID (例: XXXXXXXXXX)
+
+name: __APP_NAME__
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    __PLATFORM__: "__DEPLOY_TARGET__"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Automatic
+    PRODUCT_NAME: __APP_NAME__
+
+# packages:
+#   SomePackage:
+#     url: https://github.com/example/SomePackage.git
+#     from: "1.0.0"
+
+targets:
+  __APP_NAME__:
+    type: application
+    platform: __PLATFORM__
+    sources:
+      - path: __APP_NAME__
+        excludes:
+          - "Resources/Info.plist"
+          - "Resources/*.entitlements"
+    settings:
+      base:
+        INFOPLIST_FILE: __APP_NAME__/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: __APP_NAME__/Resources/__APP_NAME__.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: __BUNDLE_ID__
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
+        ENABLE_HARDENED_RUNTIME: false
+        SWIFT_STRICT_CONCURRENCY: complete
+        # DEVELOPMENT_TEAM: __TEAM_ID__
+    # dependencies:
+    #   - package: SomePackage
