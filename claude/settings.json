@@ -1,0 +1,52 @@
+{
+  "model": "opus",
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Submarine.aiff"
+          }
+        ]
+      },
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Ping.aiff"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Funk.aiff"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bunx -y ccstatusline@latest",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "document-skills@anthropic-agent-skills": true,
+    "github@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "Notion@claude-plugins-official": true
+  },
+  "language": "日本語, 敬語非使用",
+  "permissions": {
+    "allow": [
+      "mcp__pencil"
+    ]
+  }
+}

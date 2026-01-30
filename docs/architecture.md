@@ -27,6 +27,7 @@ dotfiles/
 │   │       ├── neovim.nix    # Neovim（nvim/へのシンボリックリンク）
 │   │       ├── ghostty.nix   # Ghostty（ghostty/へのシンボリックリンク）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
+│   │       ├── claude-code.nix # Claude Code（claude/へのシンボリックリンク）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
 │   ├── modules/              # 再利用可能なモジュール（現在未使用）
@@ -56,8 +57,13 @@ dotfiles/
 ├── ghostty/                  # Ghostty設定
 │   └── config               # 設定ファイル（macOSの場合 ~/Library/Application Support/...へリンク）
 │
-└── karabiner/               # Karabiner-Elements設定（macOS専用）
-    └── karabiner.json       # ~/.config/karabiner/へリンク
+├── karabiner/               # Karabiner-Elements設定（macOS専用）
+│   └── karabiner.json       # ~/.config/karabiner/へリンク
+│
+└── claude/                  # Claude Code設定（~/.claude/へリンク）
+    ├── settings.json        # 全体設定
+    ├── commands/            # スラッシュコマンド
+    └── agents/              # カスタムエージェント
 ```
 
 ## シンボリックリンク管理
@@ -70,6 +76,9 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `ghostty/config` | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file) |
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
 | `skills/` | `~/.claude/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
+| `claude/settings.json` | `~/.claude/settings.json` | `claude-code.nix` (mkOutOfStoreSymlink) |
+| `claude/commands/` | `~/.claude/commands/` | `claude-code.nix` (mkOutOfStoreSymlink) |
+| `claude/agents/` | `~/.claude/agents/` | `claude-code.nix` (mkOutOfStoreSymlink) |
 
 ## よくあるタスクと編集場所
 
@@ -180,6 +189,41 @@ skills.enable = [
 
 ### Karabiner設定を変更
 **編集:** `karabiner/karabiner.json`
+
+### Claude Code設定を変更
+**編集:** `claude/settings.json`
+
+### Claude Codeコマンドを追加
+**編集:** `claude/commands/` に `.md` ファイルを作成
+
+```markdown
+---
+name: command-name
+description: コマンドの説明
+---
+
+# Command Name
+
+コマンドの指示...
+```
+
+### Claude Codeエージェントを追加
+**編集:** `claude/agents/` に `.md` ファイルを作成
+
+```markdown
+---
+name: agent-name
+description: エージェントの説明
+model: haiku
+tools:
+  - Read
+  - Glob
+---
+
+# Agent Name
+
+エージェントの指示...
+```
 
 ### macOSシステム設定を変更
 **編集:** `nix/darwin/configuration.nix` の `system.defaults`

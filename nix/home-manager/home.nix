@@ -12,6 +12,7 @@
     ./programs/karabiner.nix
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
+    ./programs/claude-code.nix
   ];
 
   home = {
