@@ -45,8 +45,6 @@
   },
   "language": "日本語, 敬語非使用",
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": []
   }
 }
