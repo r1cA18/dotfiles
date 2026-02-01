@@ -29,6 +29,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Agent Skills管理 | `nix/home-manager/programs/agent-skills.nix` |
 | スキル追加/編集 | `skills/` ディレクトリ |
 | Codex設定 | `codex/config.toml` |
+| グローバル指示 | `shared/GLOBAL_INSTRUCTIONS.md` |
 
 ## シンボリックリンク設定済み
 

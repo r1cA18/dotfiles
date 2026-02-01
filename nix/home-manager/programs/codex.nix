@@ -11,7 +11,7 @@ in
 {
   # AGENTS.md はシンボリックリンク
   home.file = lib.mkIf pkgs.stdenv.isDarwin {
-    ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/AGENTS.md";
+    ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
   };
 
   # config.toml が存在しない場合のみテンプレートをコピー

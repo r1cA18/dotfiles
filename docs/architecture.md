@@ -80,11 +80,11 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
 | `skills/` | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
 | `claude/settings.json` | `~/.claude/settings.json` | `claude-code.nix` (mkOutOfStoreSymlink) |
-| `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | `claude-code.nix` (mkOutOfStoreSymlink) |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md` | `claude-code.nix` (mkOutOfStoreSymlink) |
 | `claude/commands/` | `~/.claude/commands/` | `claude-code.nix` (mkOutOfStoreSymlink) |
 | `claude/agents/` | `~/.claude/agents/` | `claude-code.nix` (mkOutOfStoreSymlink) |
 | `codex/config.toml` | `~/.codex/config.toml` | `codex.nix` (初回のみコピー) |
-| `codex/AGENTS.md` | `~/.codex/AGENTS.md` | `codex.nix` (mkOutOfStoreSymlink) |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md` | `codex.nix` (mkOutOfStoreSymlink) |
 
 ## よくあるタスクと編集場所
 
