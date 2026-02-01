@@ -60,10 +60,13 @@ dotfiles/
 ├── karabiner/               # Karabiner-Elements設定（macOS専用）
 │   └── karabiner.json       # ~/.config/karabiner/へリンク
 │
-└── claude/                  # Claude Code設定（~/.claude/へリンク）
-    ├── settings.json        # 全体設定
-    ├── commands/            # スラッシュコマンド
-    └── agents/              # カスタムエージェント
+├── claude/                  # Claude Code設定（~/.claude/へリンク）
+│   ├── settings.json        # 全体設定
+│   ├── commands/            # スラッシュコマンド
+│   └── agents/              # カスタムエージェント
+│
+└── codex/                   # Codex CLI設定（~/.codex/へリンク）
+    └── config.toml          # 設定ファイル（CLAUDE.md共有設定含む）
 ```
 
 ## シンボリックリンク管理
@@ -75,10 +78,11 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `nvim/` | `~/.config/nvim` | `neovim.nix` (xdg.configFile) |
 | `ghostty/config` | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file) |
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
-| `skills/` | `~/.claude/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
+| `skills/` | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
 | `claude/settings.json` | `~/.claude/settings.json` | `claude-code.nix` (mkOutOfStoreSymlink) |
 | `claude/commands/` | `~/.claude/commands/` | `claude-code.nix` (mkOutOfStoreSymlink) |
 | `claude/agents/` | `~/.claude/agents/` | `claude-code.nix` (mkOutOfStoreSymlink) |
+| `codex/config.toml` | `~/.codex/config.toml` | `codex.nix` (初回のみコピー) |
 
 ## よくあるタスクと編集場所
 
@@ -223,6 +227,17 @@ tools:
 # Agent Name
 
 エージェントの指示...
+```
+
+### Codex設定を変更
+**編集:** `codex/config.toml`
+
+```toml
+# CLAUDE.md を共有で読み込む
+project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
+
+[features]
+skills = true
 ```
 
 ### macOSシステム設定を変更

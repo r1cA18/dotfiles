@@ -1,6 +1,6 @@
 ---
 name: ios-device-build
-description: Swift/iOSアプリを実機にビルド・インストール・起動する。使用タイミング: (1)「実機にビルドして」(2)「iPhoneで動かして」(3)「デバイスにインストールして」(4)「実機で確認して」(5)「実機デプロイ」など実機デバッグが必要な時。xcodebuild → devicectl install → devicectl launchの一連のフローを自動化。
+description: "Swift/iOSアプリを実機にビルド・インストール・起動する。使用タイミング: 「実機にビルドして」「iPhoneで動かして」「デバイスにインストールして」など。xcodebuild → devicectl install → devicectl launchの一連のフローを自動化。"
 ---
 
 # iOS Device Build

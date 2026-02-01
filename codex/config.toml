@@ -1,0 +1,29 @@
+# Codex CLI Configuration
+# https://codex.openai.com/docs/cli
+
+# CLAUDE.md を読み込むようにする（Claude Code と設定共有）
+project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
+
+# 推論レベル
+model_reasoning_effort = "high"
+
+# ツール出力の最大トークン数
+tool_output_token_limit = 25000
+
+# コンテキスト自動圧縮のしきい値
+# 計算式: 273000 - (tool_output_token_limit + 15000)
+# = 273000 - (25000 + 15000) = 233000
+model_auto_compact_token_limit = 233000
+
+[features]
+# スキル機能を有効化
+skills = true
+# Web 検索を有効化
+web_search_request = true
+# シェルスナップショット
+shell_snapshot = true
+# 柔軟なパッチ適用
+apply_patch_freeform = true
+
+[projects."/Users/r1ca18"]
+trust_level = "trusted"

@@ -36,7 +36,12 @@
         enable = true;
         systems = [];
       };
-      codex.enable = false;
+      codex = {
+        dest = "$HOME/.codex/skills";
+        structure = "symlink-tree";
+        enable = true;
+        systems = [];
+      };
       opencode.enable = false;
     };
   };

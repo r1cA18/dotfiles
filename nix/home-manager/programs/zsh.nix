@@ -70,6 +70,19 @@
     ccs = {cmd = "bunx ccusage"; desc = "Show Claude Code usage";};
   };
 
+  # Codex
+  codexAliases = {
+    cx = {cmd = "codex"; desc = "Start Codex";};
+    cxc = {cmd = "codex resume --last"; desc = "Continue last session";};
+    cxr = {cmd = "codex resume"; desc = "Resume session (picker)";};
+    cxf = {cmd = "codex fork --last"; desc = "Fork last session";};
+    cxd = {cmd = "codex --dangerously-bypass-approvals-and-sandbox"; desc = "Skip all approvals";};
+    cxa = {cmd = "codex --full-auto"; desc = "Full auto (sandboxed)";};
+    cxe = {cmd = "codex exec"; desc = "Non-interactive exec";};
+    cxrev = {cmd = "codex review"; desc = "Code review";};
+    cxap = {cmd = "codex apply"; desc = "Apply latest diff";};
+  };
+
   # ========================================
   # ヘルプ生成関数
   # ========================================
@@ -99,7 +112,8 @@
     // nixCommonAliases
     // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
     // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
-    // claudeAliases;
+    // claudeAliases
+    // codexAliases;
 
   # ヘルプ用エイリアス（手動定義、循環参照回避）
   helpSection = "=== Help ===\n  h - Show this help\n  hv - Show commands";
@@ -111,6 +125,7 @@
     (mkCategoryHelp "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelp "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
     (mkCategoryHelp "Claude Code" claudeAliases)
+    (mkCategoryHelp "Codex" codexAliases)
     helpSection
   ]);
 
@@ -120,6 +135,7 @@
     (mkCategoryHelpVerbose "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelpVerbose "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
     (mkCategoryHelpVerbose "Claude Code" claudeAliases)
+    (mkCategoryHelpVerbose "Codex" codexAliases)
     helpSectionVerbose
   ]);
 
