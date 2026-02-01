@@ -16,7 +16,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # agent-skills-nix (declarative Agent Skills management)
-    agent-skills-nix.url = "github:Kyure-A/agent-skills-nix";
+    agent-skills-nix.url = "github:r1cA18/agent-skills-nix";
     agent-skills-nix.inputs.nixpkgs.follows = "nixpkgs";
     agent-skills-nix.inputs.home-manager.follows = "home-manager";
 

@@ -1,6 +1,6 @@
 ---
 name: autonomous-dev
-description: 自律的に実装を完了するワークフロー。要件整理→プランニング→TDD→レビュー→マージまで自動実行。トリガー: 「自律的に実装して」「autonomous devで進めて」「/autonomous-dev」
+description: "自律的に実装を完了するワークフロー。要件整理→プランニング→TDD→レビュー→マージまで自動実行。トリガー: 「自律的に実装して」「autonomous devで進めて」「/autonomous-dev」"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
 user-invocable: true
 ---
