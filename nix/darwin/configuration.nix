@@ -65,6 +65,7 @@
     # CLI tools from Homebrew (prefer nixpkgs when possible)
     brews = [
       "fastlane"
+      "mas"
       "opencode"
       "trasta298/tap/keifu"
     ];
@@ -86,13 +87,12 @@
       "tailscale-app"
       "arc"
       "linearmouse"
-      "shortcat"
       "claude"
       "rustdesk"
     ];
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
-      # "App Name" = app-id;
+      "RunCat" = 1429033973;
     };
   };
 
