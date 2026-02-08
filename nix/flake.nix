@@ -108,5 +108,23 @@
         }
       ];
     };
+
+    # OpenClaw VM configuration
+    # Build with: home-manager switch --flake .#openclaw@linux
+    homeConfigurations."openclaw@linux" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      extraSpecialArgs = {inherit inputs; username = "openclaw";};
+      modules = [
+        agent-skills-nix.homeManagerModules.default
+        ./home-manager/home.nix
+        {
+          nixpkgs.overlays = [
+            self.overlays.additions
+            self.overlays.modifications
+            self.overlays.stable-packages
+          ];
+        }
+      ];
+    };
   };
 }
