@@ -4,8 +4,8 @@
     source = ../../../ghostty/config;
   };
 
-  # Ghostty terminfo (Linux)
+  # Ghostty terminfo (Linux) - ncurses 6.5+ includes xterm-ghostty
   home.packages = lib.mkIf pkgs.stdenv.isLinux [
-    pkgs.ghostty.terminfo
+    pkgs.ncurses
   ];
 }
