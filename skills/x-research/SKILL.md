@@ -14,7 +14,7 @@ description: X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_s
 
 ## Prerequisites
 
-- `XAI_API_KEY` が環境変数または `~/.claude/skills/x-research/.env` に設定されていること
+- `XAI_API_KEY` が `~/vault/40_AI/x-research/.env` に設定されていること
 - `tsx` が使えること（`npx tsx` でOK）
 
 ## Intake (ask first if missing)
@@ -33,27 +33,28 @@ description: X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_s
 2. 以下のコマンドでGrok x_searchに委任:
 
 ```bash
+export $(cat ~/vault/40_AI/x-research/.env | xargs) && \
 cd ~/.claude/skills/x-research && npx tsx scripts/grok_context_research.ts \
   --topic "<TOPIC>" \
   --locale <ja|global> \
   --audience <engineer|investor|both> \
-  --out-dir <OUTPUT_DIR>
+  --out-dir ~/vault/40_AI/x-research
 ```
 
 3. 出力された Context Pack をユーザーに提示
 
 ## CLI Options
 
-| Option       | Default                 | Description                        |
-| ------------ | ----------------------- | ---------------------------------- |
-| `--topic`    | (required)              | 調査トピック                       |
-| `--locale`   | `ja`                    | `ja` or `global`                   |
-| `--audience` | `engineer`              | `engineer` / `investor` / `both`   |
-| `--goal`     | (built-in)              | リサーチ目的（カスタム）           |
-| `--days`     | `30`                    | 検索の遡り日数                     |
-| `--out-dir`  | `data/context-research` | 出力先ディレクトリ                 |
-| `--dry-run`  | -                       | リクエストペイロードを表示して終了 |
-| `--raw-json` | -                       | レスポンスJSONもstderrに出力       |
+| Option       | Default                    | Description                        |
+| ------------ | -------------------------- | ---------------------------------- |
+| `--topic`    | (required)                 | 調査トピック                       |
+| `--locale`   | `ja`                       | `ja` or `global`                   |
+| `--audience` | `engineer`                 | `engineer` / `investor` / `both`   |
+| `--goal`     | (built-in)                 | リサーチ目的（カスタム）           |
+| `--days`     | `30`                       | 検索の遡り日数                     |
+| `--out-dir`  | `~/vault/40_AI/x-research` | 出力先ディレクトリ                 |
+| `--dry-run`  | -                          | リクエストペイロードを表示して終了 |
+| `--raw-json` | -                          | レスポンスJSONもstderrに出力       |
 
 ## Output
 
