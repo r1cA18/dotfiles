@@ -28,25 +28,26 @@
 
 ### パッケージ管理の原則
 
-| 対象 | 方法 |
-|------|------|
-| CLIツール・フォーマッター | `packages.nix` の `commonPackages` に追加 |
-| グローバルnpmパッケージ | `packages.nix` の `globalNpmPackages` に追加 |
-| Pythonライブラリ | プロジェクトごとに `uv venv` + `uv pip install`（グローバル pip 禁止） |
-| Node.jsライブラリ | プロジェクトの `package.json` で管理 |
-| 開発環境 | `flake.nix` + `nix develop`（なければ作成。`nix-shell` も可） |
+| 対象                      | 方法                                                                   |
+| ------------------------- | ---------------------------------------------------------------------- |
+| CLIツール・フォーマッター | `packages.nix` の `commonPackages` に追加                              |
+| グローバルnpmパッケージ   | `packages.nix` の `globalNpmPackages` に追加                           |
+| Pythonライブラリ          | プロジェクトごとに `uv venv` + `uv pip install`（グローバル pip 禁止） |
+| Node.jsライブラリ         | プロジェクトの `package.json` で管理                                   |
+| 開発環境                  | `flake.nix` + `nix develop`（なければ作成。`nix-shell` も可）          |
 
 ### dotfiles 編集先
 
-| やりたいこと | 編集ファイル |
-|-------------|-------------|
+| やりたいこと         | 編集ファイル                                        |
+| -------------------- | --------------------------------------------------- |
 | CLIツール/パッケージ | `~/dotfiles/nix/home-manager/programs/packages.nix` |
-| GUIアプリ (macOS) | `~/dotfiles/nix/darwin/configuration.nix` |
-| エイリアス | `~/dotfiles/nix/home-manager/programs/zsh.nix` |
-| 環境変数/PATH | `~/dotfiles/nix/home-manager/programs/packages.nix` |
-| Claude Code設定 | `~/dotfiles/claude/settings.json` |
-| エージェント | `~/dotfiles/claude/agents/` |
-| グローバルスキル | `~/dotfiles/skills/<name>/SKILL.md` |
+| GUIアプリ (macOS)    | `~/dotfiles/nix/darwin/configuration.nix`           |
+| エイリアス           | `~/dotfiles/nix/home-manager/programs/zsh.nix`      |
+| 環境変数/PATH        | `~/dotfiles/nix/home-manager/programs/packages.nix` |
+| Claude Code設定      | `~/dotfiles/claude/settings.json`                   |
+| エージェント         | `~/dotfiles/claude/agents/`                         |
+| グローバルルール     | `~/dotfiles/claude/rules/`                          |
+| グローバルスキル     | `~/dotfiles/skills/<name>/SKILL.md`                 |
 
 ### symlink構造
 
