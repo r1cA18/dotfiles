@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "mcp__pencil"
@@ -108,10 +111,9 @@
     "code-review@claude-code-plugins": true,
     "context7@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "mgrep@Mixedbread-Grep": true
+    "mgrep@Mixedbread-Grep": true,
+    "sharp-aircon@sharp-aircon-plugins": false,
+    "aurochs-office@aurochs-claude-plugin": true
   },
-  "language": "日本語, 敬語非使用",
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
+  "language": "日本語, 敬語非使用"
 }
