@@ -1,23 +1,58 @@
 # Nix build outputs
 result
 result-*
+**/result
+**/result-*
 
-# Vim/Neovim swap files
+# Vim/Neovim
 *.swp
 *.swo
+*.swn
 *~
+*.un~
 
 # macOS
 .DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.AppleDouble
+.LSOverride
+Icon?
 
-# home-manager backups
+# home-manager
 *.hm-backup
 
 # direnv
 .direnv/
 
-# Secrets (if any)
+# Secrets / credentials
 secrets/
 *.age
 !*.age.pub
+**/.env
+**/.env.*
+!**/.env.example
+**/*.key
+**/*.pem
+
+# Claude Code local settings
 .claude/settings.local.json
+
+# Node.js (skills may have deps)
+**/node_modules/
+**/package-lock.json
+
+# Logs
+*.log
+
+# Editor / IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
