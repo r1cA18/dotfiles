@@ -13,7 +13,17 @@
     bun
     uv
 
+    # Formatters
+    nodePackages.prettier
+    ruff
+
+    # LSP
+    nodePackages.typescript-language-server
+    nodePackages.typescript
+    pyright
+
     # CLI tools
+    git-filter-repo
     nodePackages.pnpm
     nodePackages."@antfu/ni"
     ripgrep
