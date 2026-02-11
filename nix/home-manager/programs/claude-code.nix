@@ -14,5 +14,6 @@ in
     ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
     ".claude/commands".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/commands";
     ".claude/agents".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/agents";
+    ".claude/hooks".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/hooks";
   };
 }
