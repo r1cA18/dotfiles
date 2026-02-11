@@ -80,7 +80,7 @@ dg
 | Alias | Path |
 |-------|------|
 | `dev` | `~/Develop/` |
-| `drive` | `~/Google Drive/My Drive/MainFolder/` |
+| `drive` | `~/Library/CloudStorage/GoogleDrive-.../My Drive/` |
 | `kosen` | `.../Kosen/4y/fall_semester/` |
 | `downloads` | `~/Downloads/` |
 
