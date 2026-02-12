@@ -3,9 +3,7 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": ["mcp__pencil"]
   },
   "hooks": {
     "PreToolUse": [
@@ -66,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Submarine.aiff"
+            "command": "afplay /System/Library/Sounds/Submarine.aiff 2>/dev/null || true"
           }
         ]
       },
@@ -75,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Ping.aiff"
+            "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true"
           }
         ]
       }
@@ -85,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Funk.aiff"
+            "command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
           }
         ]
       }
@@ -112,7 +110,7 @@
     "context7@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "mgrep@Mixedbread-Grep": true,
-    "sharp-aircon@sharp-aircon-plugins": false,
+    "sharp-aircon@sharp-aircon-plugins": true,
     "aurochs-office@aurochs-claude-plugin": true
   },
   "language": "日本語, 敬語非使用"
