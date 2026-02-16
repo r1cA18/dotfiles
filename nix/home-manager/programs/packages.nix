@@ -57,6 +57,7 @@
     "@openai/codex"
     "agent-browser"
     "@ast-grep/cli"
+    "happy-coder"
   ];
 in {
   home.packages =
