@@ -14,7 +14,7 @@ description: Codebase review and refactor loop. Runs review -> refactor -> re-re
 
 ### Step 1: Review (並列)
 
-2つのサブエージェントを並列で起動:
+3つのレビューを並列で起動:
 
 **Agent A: コードレビュー (Opus)**
 
@@ -29,9 +29,15 @@ description: Codebase review and refactor loop. Runs review -> refactor -> re-re
 - 不要なコメント、過剰な抽象化、AI臭いコードを検出
 - 命名・構造の改善点を提案
 
+**Agent C: Codex Review (Bash)**
+
+- `codex review --base main` を実行（ブランチ差分がない場合は `codex review --uncommitted`）
+- Codex CLI による独立した観点でのレビュー結果を取得
+- 正確性、パフォーマンス、セキュリティ、保守性の観点
+
 ### Step 2: 問題の統合
 
-両エージェントの結果を統合し、以下の順で優先度付け:
+3つのレビュー結果を統合し、以下の順で優先度付け:
 
 1. critical (必ず修正)
 2. warning (修正推奨)
