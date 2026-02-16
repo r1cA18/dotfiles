@@ -6,6 +6,16 @@
     "allow": ["mcp__pencil"]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/sleep-guard.sh start"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -83,6 +93,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/.claude/hooks/sleep-guard.sh check"
+          },
+          {
+            "type": "command",
             "command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
           }
         ]
@@ -111,7 +125,8 @@
     "pyright-lsp@claude-plugins-official": true,
     "mgrep@Mixedbread-Grep": true,
     "sharp-aircon@sharp-aircon-plugins": true,
-    "aurochs-office@aurochs-claude-plugin": true
+    "aurochs-office@aurochs-claude-plugin": true,
+    "clangd-lsp@claude-plugins-official": true
   },
   "language": "日本語, 敬語非使用"
 }
