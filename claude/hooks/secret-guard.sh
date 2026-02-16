@@ -9,6 +9,11 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 BASENAME=$(basename "$FILE_PATH")
 BASENAME_LOWER=$(echo "$BASENAME" | tr '[:upper:]' '[:lower:]')
 
+# .env.example 等のテンプレートファイルは許可
+case "$BASENAME_LOWER" in
+  *.example|*.sample|*.template) exit 0 ;;
+esac
+
 # ブロック対象パターン
 case "$BASENAME_LOWER" in
   .env|.env.*|*.env)
