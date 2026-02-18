@@ -3,7 +3,9 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-    "allow": ["mcp__pencil"]
+    "allow": [
+      "mcp__pencil"
+    ]
   },
   "hooks": {
     "SessionStart": [
@@ -128,5 +130,6 @@
     "aurochs-office@aurochs-claude-plugin": true,
     "clangd-lsp@claude-plugins-official": true
   },
-  "language": "日本語, 敬語非使用"
+  "language": "日本語, 敬語非使用",
+  "skipDangerousModePermissionPrompt": true
 }
