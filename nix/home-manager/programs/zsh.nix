@@ -61,7 +61,7 @@
 
   # Claude Code (-w: use work API key)
   claudeAliases = {
-    cc = {cmd = "_cc"; desc = "Start Claude Code (-w for work key)";};
+    cc = {cmd = "_cc"; desc = "Start Claude Code";};
     ccc = {cmd = "_cc --continue"; desc = "Continue last session";};
     cccd = {cmd = "_cc --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
     ccr = {cmd = "_cc --resume"; desc = "Resume session (picker)";};
@@ -125,7 +125,7 @@
     (mkCategoryHelp "General" generalAliases)
     (mkCategoryHelp "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelp "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
-    (mkCategoryHelp "Claude Code" claudeAliases)
+    (mkCategoryHelp "Claude Code (add -w for work key)" claudeAliases)
     (mkCategoryHelp "Codex" codexAliases)
     helpSection
   ]);
@@ -135,7 +135,7 @@
     (mkCategoryHelpVerbose "General" generalAliases)
     (mkCategoryHelpVerbose "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelpVerbose "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
-    (mkCategoryHelpVerbose "Claude Code" claudeAliases)
+    (mkCategoryHelpVerbose "Claude Code (add -w for work key)" claudeAliases)
     (mkCategoryHelpVerbose "Codex" codexAliases)
     helpSectionVerbose
   ]);
