@@ -59,13 +59,13 @@
     downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
   };
 
-  # Claude Code
+  # Claude Code (-w: use work API key)
   claudeAliases = {
-    cc = {cmd = "claude"; desc = "Start Claude Code";};
-    ccc = {cmd = "claude --continue"; desc = "Continue last session";};
-    cccd = {cmd = "claude --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
-    ccr = {cmd = "claude --resume"; desc = "Resume session (picker)";};
-    ccd = {cmd = "claude --dangerously-skip-permissions"; desc = "Skip all permissions";};
+    cc = {cmd = "_cc"; desc = "Start Claude Code (-w for work key)";};
+    ccc = {cmd = "_cc --continue"; desc = "Continue last session";};
+    cccd = {cmd = "_cc --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
+    ccr = {cmd = "_cc --resume"; desc = "Resume session (picker)";};
+    ccd = {cmd = "_cc --dangerously-skip-permissions"; desc = "Skip all permissions";};
     ccu = {cmd = "claude update"; desc = "Check for updates";};
     ccs = {cmd = "bunx ccusage"; desc = "Show Claude Code usage";};
   };
@@ -74,6 +74,7 @@
   codexAliases = {
     cx = {cmd = "codex"; desc = "Start Codex";};
     cxc = {cmd = "codex resume --last"; desc = "Continue last session";};
+    cxcd = {cmd = "codex resume --last --dangerously-bypass-approvals-and-sandbox"; desc = "Continue + skip approvals";};
     cxr = {cmd = "codex resume"; desc = "Resume session (picker)";};
     cxf = {cmd = "codex fork --last"; desc = "Fork last session";};
     cxd = {cmd = "codex --dangerously-bypass-approvals-and-sandbox"; desc = "Skip all approvals";};
@@ -181,6 +182,25 @@ in {
 
       # Load secrets
       [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
+      [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env
+
+      # Claude Code launcher (-w: use work API key)
+      _cc() {
+        local args=()
+        local use_alt=0
+        for arg in "$@"; do
+          if [[ "$arg" == "-w" ]]; then
+            use_alt=1
+          else
+            args+=("$arg")
+          fi
+        done
+        if (( use_alt )); then
+          ANTHROPIC_API_KEY="''${CLAUDE_CSTYLE_API_KEY}" claude "''${args[@]}"
+        else
+          claude "''${args[@]}"
+        fi
+      }
     '';
   };
 }
