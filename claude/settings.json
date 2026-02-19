@@ -131,5 +131,6 @@
     "clangd-lsp@claude-plugins-official": true
   },
   "language": "日本語, 敬語非使用",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "model": "opus[1m]"
 }
