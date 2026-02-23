@@ -19,6 +19,7 @@
     "..." = {cmd = "cd ../.."; desc = "Go up two directories";};
     nv = {cmd = "nvim"; desc = "Open Neovim";};
     dot = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
+    gacm = {cmd = "git add -A && git commit -m"; desc = "Add all + commit";};
   };
 
   # Nix (両OS共通)
