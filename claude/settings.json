@@ -129,7 +129,8 @@
     "feature-dev@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "playground@claude-plugins-official": true
+    "playground@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
   },
   "language": "日本語, 敬語非使用",
   "skipDangerousModePermissionPrompt": true
