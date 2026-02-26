@@ -60,39 +60,76 @@
     };
     # Third-party taps
     taps = [
-      "trasta298/tap"
+      "manaflow-ai/cmux"
     ];
-    # CLI tools from Homebrew (prefer nixpkgs when possible)
+    # CLI tools from Homebrew
     brews = [
-      "fastlane"
-      "mas"
-      "opencode"
-      "trasta298/tap/keifu"
     ];
     # GUI applications
     casks = [
-      "orbstack"
-      "ghostty"
-      "raycast"
-      "karabiner-elements"
-      "alt-tab"
+      # Browsers
+      "arc"
       "google-chrome"
-      "google-drive"
-      "discord"
-      "obsidian"
-      "notion"
+      "thebrowsercompany-dia"
+      # Terminals
+      "ghostty"
+      "cmux"
+      # Development
       "visual-studio-code"
       "cursor"
-      "ollama-app"
-      "tailscale-app"
-      "arc"
-      "linearmouse"
+      "orbstack"
+      "codex"
+      "figma"
+      "kicad"
+      "autodesk-fusion"
+      # AI
       "claude"
+      "chatgpt-atlas"
+      "ollama-app"
+      "amical"
+      # Communication
+      "discord"
+      "beeper"
+      "microsoft-teams"
+      "zoom"
+      # Productivity
+      "raycast"
+      "obsidian"
+      "notion"
+      "google-drive"
+      "onedrive"
+      "nani"
+      # Microsoft Office
+      "microsoft-word"
+      "microsoft-excel"
+      "microsoft-powerpoint"
+      "microsoft-outlook"
+      "microsoft-onenote"
+      # System utilities
+      "karabiner-elements"
+      "alt-tab"
+      "linearmouse"
+      "tailscale-app"
       "rustdesk"
+      # Media / Other
+      "steam"
+      "balenaetcher"
+      "affinity"
     ];
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
       "RunCat" = 1429033973;
+      "Xcode" = 497799835;
+      "Final Cut Pro" = 1631624924;
+      "Logic Pro" = 1615087040;
+      "Goodnotes" = 1444383602;
+      "Developer" = 640199958;
+      "TestFlight" = 899247664;
+      "Swift Playgrounds" = 1496833156;
+      "Compressor" = 6746516157;
+      "MainStage" = 6746637089;
+      "Motion" = 6746637149;
+      "Pixelmator Pro" = 6746662575;
     };
   };
 

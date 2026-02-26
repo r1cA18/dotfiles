@@ -23,10 +23,9 @@
     pyright
 
     # CLI tools
+    ast-grep
     fzf
     ghq
-    git-filter-repo
-    nodePackages.pnpm
     nodePackages."@antfu/ni"
     ripgrep
     fd
@@ -42,6 +41,10 @@
 
     # Fonts (macOS側でレンダリングするので必要)
     nerd-fonts.jetbrains-mono
+
+    # brew から移行
+    fastlane
+    mas
   ];
 
   # Linux/Server専用パッケージ
@@ -58,8 +61,6 @@
     "@google/gemini-cli"
     "@openai/codex"
     "agent-browser"
-    "@ast-grep/cli"
-    "happy-coder"
   ];
 in {
   home.packages =
