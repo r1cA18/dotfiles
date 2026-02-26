@@ -62,6 +62,8 @@ dotfiles/
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
 │   ├── settings.json        # 全体設定
+│   ├── rules/               # ドメイン別ルール（常時ロード）
+│   ├── hooks/               # 自動実行フック
 │   ├── commands/            # スラッシュコマンド
 │   └── agents/              # カスタムエージェント
 │
@@ -73,22 +75,48 @@ dotfiles/
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース | リンク先 | 管理ファイル |
-|--------|----------|--------------|
-| `nvim/` | `~/.config/nvim` | `neovim.nix` (xdg.configFile) |
-| `ghostty/config` | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file) |
-| `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | `karabiner.nix` (mkOutOfStoreSymlink) |
-| `skills/` | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix rsync) |
-| `claude/settings.json` | `~/.claude/settings.json` | `claude-code.nix` (mkOutOfStoreSymlink) |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md` | `claude-code.nix` (mkOutOfStoreSymlink) |
-| `claude/commands/` | `~/.claude/commands/` | `claude-code.nix` (mkOutOfStoreSymlink) |
-| `claude/agents/` | `~/.claude/agents/` | `claude-code.nix` (mkOutOfStoreSymlink) |
-| `codex/config.toml` | `~/.codex/config.toml` | `codex.nix` (初回のみコピー) |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md` | `codex.nix` (mkOutOfStoreSymlink) |
+| ソース                          | リンク先                                                     | 管理ファイル                                |
+| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------- |
+| `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)               |
+| `ghostty/config`                | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file)                   |
+| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)       |
+| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix rsync) |
+| `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `claude/rules/`                 | `~/.claude/rules/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `claude/hooks/`                 | `~/.claude/hooks/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `claude/commands/`              | `~/.claude/commands/`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)     |
+| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (初回のみコピー)                |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)           |
+
+## Claude Code 指示の強度階層
+
+Claude への指示は強度順に以下の仕組みで管理する:
+
+```
+Hook (自動強制)  > Rule (常時ロード)  > CLAUDE.md (人格)  > Skill (オンデマンド)
+claude/hooks/      claude/rules/        shared/GLOBAL_...    skills/*/SKILL.md
+```
+
+| 階層      | 配置先                          | 役割                               | 例                                          |
+| --------- | ------------------------------- | ---------------------------------- | ------------------------------------------- |
+| Hook      | `claude/hooks/*.sh`             | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard    |
+| Rule      | `claude/rules/*.md`             | ドメイン別の明示的指示             | code-conventions, workflow, nix-environment |
+| CLAUDE.md | `shared/GLOBAL_INSTRUCTIONS.md` | 人格・行動原則（薄く保つ）         | 忖度禁止、調査と検証の義務                  |
+| Skill     | `skills/*/SKILL.md`             | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
+
+学習内容の蓄積先も同じ階層で選択する:
+
+- 自動防止できるもの → Hook 作成
+- 明示的な指示が必要 → Rule 作成/更新
+- 複雑なワークフロー知識 → Skill 作成
+- CLAUDE.md への lessons 蓄積は避ける
 
 ## よくあるタスクと編集場所
 
 ### CLIツール/パッケージを追加
+
 **編集:** `nix/home-manager/programs/packages.nix`
 
 ```nix
@@ -102,6 +130,7 @@ commonPackages = with pkgs; [
 macOS専用は `darwinPackages`、Linux専用は `linuxPackages` に追加。
 
 ### npmパッケージを追加（グローバル）
+
 **編集:** `nix/home-manager/programs/packages.nix`
 
 ```nix
@@ -115,6 +144,7 @@ globalNpmPackages = [
 `dr`実行時にbunで自動インストール。詳細: [docs/guides/nix-npm-packages.md](guides/nix-npm-packages.md)
 
 ### GUIアプリを追加（macOS）
+
 **編集:** `nix/darwin/configuration.nix`
 
 ```nix
@@ -125,6 +155,7 @@ homebrew.casks = [
 ```
 
 ### シェルエイリアスを追加
+
 **編集:** `nix/home-manager/programs/zsh.nix`
 
 エイリアスは `cmd + desc` 形式で定義（ヘルプ自動生成のため）：
@@ -136,6 +167,7 @@ generalAliases = {
 ```
 
 カテゴリ：
+
 - `generalAliases` - 汎用（両OS共通）
 - `nixCommonAliases` - Nix共通
 - `nixDarwinAliases` / `nixLinuxAliases` - Nix OS別
@@ -145,6 +177,7 @@ generalAliases = {
 詳細: [docs/guides/alias-auto-help.md](guides/alias-auto-help.md)
 
 ### 環境変数を追加
+
 **編集:** `nix/home-manager/programs/packages.nix`
 
 ```nix
@@ -155,6 +188,7 @@ home.sessionVariables = {
 ```
 
 ### PATHを追加
+
 **編集:** `nix/home-manager/programs/packages.nix`
 
 ```nix
@@ -165,15 +199,19 @@ home.sessionPath = [
 ```
 
 ### Git設定を変更
+
 **編集:** `nix/home-manager/programs/git.nix`
 
 ### Neovim設定を変更
+
 **編集:** `nvim/` ディレクトリ内のファイル
 
 ### Ghostty設定を変更
+
 **編集:** `ghostty/config`
 
 ### カスタムスキルを追加
+
 **編集:** `skills/` に新しいディレクトリを作成し `SKILL.md` を配置
 
 ```
@@ -184,6 +222,7 @@ skills/my-new-skill/
 自作スキルは `enableAll = ["custom"]` により自動で有効化される。
 
 ### 公式スキルを有効化
+
 **編集:** `nix/home-manager/programs/agent-skills.nix`
 
 ```nix
@@ -194,12 +233,15 @@ skills.enable = [
 ```
 
 ### Karabiner設定を変更
+
 **編集:** `karabiner/karabiner.json`
 
 ### Claude Code設定を変更
+
 **編集:** `claude/settings.json`
 
 ### Claude Codeコマンドを追加
+
 **編集:** `claude/commands/` に `.md` ファイルを作成
 
 ```markdown
@@ -214,6 +256,7 @@ description: コマンドの説明
 ```
 
 ### Claude Codeエージェントを追加
+
 **編集:** `claude/agents/` に `.md` ファイルを作成
 
 ```markdown
@@ -232,6 +275,7 @@ tools:
 ```
 
 ### Codex設定を変更
+
 **編集:** `codex/config.toml`
 
 ```toml
@@ -243,6 +287,7 @@ skills = true
 ```
 
 ### macOSシステム設定を変更
+
 **編集:** `nix/darwin/configuration.nix` の `system.defaults`
 
 ## OS分岐パターン
@@ -263,10 +308,10 @@ in {
 
 ## ビルドコマンド
 
-| OS | コマンド | エイリアス |
-|----|----------|-----------|
-| macOS | `darwin-rebuild switch --flake ~/dotfiles/nix#RMB` | `dr` |
-| Linux | `home-manager switch --flake ~/dotfiles/nix#r1ca18@linux` | `dr` |
+| OS    | コマンド                                                  | エイリアス |
+| ----- | --------------------------------------------------------- | ---------- |
+| macOS | `darwin-rebuild switch --flake ~/dotfiles/nix#RMB`        | `dr`       |
+| Linux | `home-manager switch --flake ~/dotfiles/nix#r1ca18@linux` | `dr`       |
 
 ## 重要な注意事項
 
@@ -286,5 +331,6 @@ in {
 ## 既存ドキュメント
 
 詳細な運用方法は以下を参照：
+
 - `nix/docs/guide.md` - 共通運用ガイド
 - `nix/docs/cheatsheet.md` - コマンドチートシート
