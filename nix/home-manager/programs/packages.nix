@@ -23,6 +23,8 @@
     pyright
 
     # CLI tools
+    fzf
+    ghq
     git-filter-repo
     nodePackages.pnpm
     nodePackages."@antfu/ni"

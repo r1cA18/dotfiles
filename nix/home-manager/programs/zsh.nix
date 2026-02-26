@@ -46,7 +46,7 @@
 
   # Directory (macOS)
   dirDarwinAliases = {
-    dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop";};
+    dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop (use 'devg' for repo picker)";};
     drive = {cmd = "cd ~/Library/CloudStorage/GoogleDrive-ryo20061018@gmail.com/My\\ Drive/"; desc = "Go to Google Drive";};
     storage = {cmd = "cd ~/Library/CloudStorage/GoogleDrive-ryo20061018@gmail.com/My\\ Drive/Storage/"; desc = "Go to Storage";};
     vault = {cmd = "cd ~/vault/"; desc = "Go to Vault";};
@@ -60,7 +60,7 @@
     downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
   };
 
-  # Claude Code (-w: use work API key)
+  # Claude Code (-w: work API key, -s: sub account)
   claudeAliases = {
     cc = {cmd = "_cc"; desc = "Start Claude Code";};
     ccc = {cmd = "_cc --continue"; desc = "Continue last session";};
@@ -126,7 +126,7 @@
     (mkCategoryHelp "General" generalAliases)
     (mkCategoryHelp "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelp "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
-    (mkCategoryHelp "Claude Code (add -w for work key)" claudeAliases)
+    (mkCategoryHelp "Claude Code (-w: work key, -s: sub account)" claudeAliases)
     (mkCategoryHelp "Codex" codexAliases)
     helpSection
   ]);
@@ -136,7 +136,7 @@
     (mkCategoryHelpVerbose "General" generalAliases)
     (mkCategoryHelpVerbose "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelpVerbose "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
-    (mkCategoryHelpVerbose "Claude Code (add -w for work key)" claudeAliases)
+    (mkCategoryHelpVerbose "Claude Code (-w: work key, -s: sub account)" claudeAliases)
     (mkCategoryHelpVerbose "Codex" codexAliases)
     helpSectionVerbose
   ]);
@@ -185,19 +185,30 @@ in {
       [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
       [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env
 
-      # Claude Code launcher (-w: use work API key)
+      # ghq + fzf repo picker (git repos + local projects)
+      devg() {
+        local repo=$( (ghq list -p; find ~/Develop/local -maxdepth 1 -mindepth 1 -type d) 2>/dev/null | fzf --reverse --height 40%)
+        [ -n "$repo" ] && cd "$repo"
+      }
+
+      # Claude Code launcher (-w: work API key, -s: sub account)
       _cc() {
         local args=()
         local use_alt=0
+        local use_sub=0
         for arg in "$@"; do
           if [[ "$arg" == "-w" ]]; then
             use_alt=1
+          elif [[ "$arg" == "-s" ]]; then
+            use_sub=1
           else
             args+=("$arg")
           fi
         done
         if (( use_alt )); then
           ANTHROPIC_API_KEY="''${CLAUDE_CSTYLE_API_KEY}" claude "''${args[@]}"
+        elif (( use_sub )); then
+          CLAUDE_CONFIG_DIR=~/.claude-sub claude "''${args[@]}"
         else
           claude "''${args[@]}"
         fi
