@@ -4,10 +4,10 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 
 ## サポート環境
 
-| OS | 管理方法 | ビルドコマンド |
-|----|---------|---------------|
-| **macOS** | nix-darwin + home-manager | `dr` |
-| **Ubuntu/Linux** | home-manager (standalone) | `dr` |
+| OS               | 管理方法                  | ビルドコマンド |
+| ---------------- | ------------------------- | -------------- |
+| **macOS**        | nix-darwin + home-manager | `dr`           |
+| **Ubuntu/Linux** | home-manager (standalone) | `dr`           |
 
 ## クイックスタート
 
@@ -29,6 +29,21 @@ nix run nix-darwin -- switch --flake .#RMB
 # Linux
 nix run home-manager -- switch --flake .#r1ca18@linux
 ```
+
+> **Linux初回セットアップの注意点**
+>
+> `nix run` がエラーになる場合は experimental features を有効化してから再実行:
+>
+> ```bash
+> echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
+> sudo systemctl restart nix-daemon
+> ```
+>
+> Ghostty を使っている場合、SSH先に terminfo を転送する（Mac側で実行）:
+>
+> ```bash
+> infocmp -x xterm-ghostty | ssh USER@HOST 'tic -x /dev/stdin'
+> ```
 
 ### 3. 以降の更新
 
@@ -81,6 +96,7 @@ dotfiles/
 ### npmパッケージ（bun経由）
 
 `dr`実行時に自動インストール：
+
 - `@anthropic-ai/claude-code`
 - `@google/gemini-cli`
 - `@openai/codex`
@@ -95,11 +111,11 @@ dotfiles/
 
 ## ドキュメント
 
-| ドキュメント | 説明 |
-|-------------|------|
-| [docs/README.md](docs/README.md) | ドキュメント目次 |
+| ドキュメント                                 | 説明               |
+| -------------------------------------------- | ------------------ |
+| [docs/README.md](docs/README.md)             | ドキュメント目次   |
 | [docs/architecture.md](docs/architecture.md) | アーキテクチャ詳細 |
-| [docs/guides/](docs/guides/) | 各種ガイド |
+| [docs/guides/](docs/guides/)                 | 各種ガイド         |
 
 ## 参考
 
