@@ -42,5 +42,6 @@
 ## 開発環境
 
 開発環境は `~/dotfiles/` で Nix (nix-darwin + home-manager) により宣言的に管理。
-`npm install -g`, `pip install`, `brew install` でグローバルインストール禁止。必ず Nix 経由。
+JS/TS は Bun 優先。グローバルインストール（pip, npm -g, brew 等）は禁止。
+一時利用は `nix run` / `nix shell`、プロジェクト環境は `flake.nix` + `nix develop`。
 詳細は rules/nix-environment.md を参照。
