@@ -1,70 +1,133 @@
 ---
 name: x-article-publisher
-description: "Markdown -> X Articles clipboard publisher. Convert article to rich text HTML and copy to clipboard for pasting into X Articles editor."
+description: "Markdown -> X Articles publisher via agent-browser. Parse article, open editor, inject HTML into contenteditable."
 triggers:
   - "x article"
   - "X記事"
   - "x-article"
-  - "クリップボードにコピー"
   - "publish to x"
   - "x articles"
+  - "x記事に投稿"
 ---
 
 # X Article Publisher
 
-Markdown記事をリッチテキストHTMLに変換し、クリップボードにコピーする。
-X Articles エディタに Cmd+V で貼り付けられる。
+Markdown記事をHTMLに変換し、agent-browser経由でX Articlesエディタに流し込む。
 
 ## Prerequisites
 
-- nix (pyobjc-framework-Cocoa, Pillow を nix shell 経由で使用)
-- macOS (AppKit NSPasteboard を使用)
-
-## Usage
-
-### Quick: Zenn/Qiita記事をX Articlesへ
-
-```bash
-bash ~/.claude/skills/x-article-publisher/scripts/publish_to_clipboard.sh <markdown_file>
-```
-
-### Step by step
-
-1. **Parse**: Markdownをパースして構造化データ(JSON)を取得
-
-```bash
-NIX_EXPR='(import <nixpkgs> {}).python313.withPackages (ps: [ ps.pyobjc-framework-Cocoa ps.pillow ])'
-nix shell --impure --expr "$NIX_EXPR" --command python3 \
-  ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file>
-```
-
-2. **Copy**: HTMLをクリップボードにコピー
-
-```bash
-nix shell --impure --expr "$NIX_EXPR" --command python3 \
-  ~/.claude/skills/x-article-publisher/scripts/copy_to_clipboard.py html "<html_content>"
-```
-
-3. **Paste**: X Articles エディタで Cmd+V
+- agent-browser (Playwright CLI)
+- Python 3 (parse_markdown.py用。nix不要、標準ライブラリのみ使用)
 
 ## Workflow
 
-1. `publish_to_clipboard.sh` を実行
-2. X Articles エディタを開く (https://x.com/compose/articles)
-3. タイトルを手動入力 (スクリプトが表示する)
-4. 本文エリアで Cmd+V
-5. カバー画像・コンテンツ画像は手動でアップロード
-6. 区切り線 (dividers) は X Articles の Insert > Divider メニューで手動挿入
+### Step 1: Parse Markdown
 
-## Limitations
+```bash
+python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file>
+```
 
-- X Articles のタイトルはリッチテキスト貼り付けでは設定できない (手動入力)
-- 画像はクリップボード経由では挿入できない (手動アップロード)
-- テーブルは X Articles 非対応 (画像変換が必要な場合は table_to_image.py を使用)
-- 区切り線 (---) は HTML <hr> では挿入できない (X Articles のメニューから挿入)
+JSON出力から `title` と `html` を取得する。
+
+### Step 2: Open X Articles Editor
+
+新規記事の場合:
+
+```bash
+agent-browser --headed open "https://x.com/compose/articles"
+```
+
+既存記事の編集:
+
+```bash
+agent-browser --headed open "https://x.com/compose/articles/edit/<article_id>"
+```
+
+初回はログインが必要。`--headed` でブラウザを表示し、ユーザーがログインする。
+ログイン完了を `agent-browser wait --load networkidle` で待機。
+
+### Step 3: Snapshot & Identify Editor
+
+```bash
+agent-browser snapshot -i
+```
+
+X Articles エディタの構造を確認し、タイトル入力欄と本文エリア (contenteditable) の ref を特定する。
+
+### Step 4: Set Title
+
+```bash
+agent-browser click @<title_ref>
+agent-browser fill @<title_ref> "<title>"
+```
+
+### Step 5: Inject HTML into Body
+
+本文の contenteditable 要素にHTMLを挿入する。
+
+**方法A: insertHTML (推奨)**
+
+```bash
+agent-browser click @<body_ref>
+agent-browser eval "document.execCommand('insertHTML', false, '<h2>Section</h2><p>Content</p>')"
+```
+
+**方法B: innerHTML直接設定**
+
+```bash
+agent-browser eval "
+  const editor = document.querySelector('[data-testid=\"articleBodyEditor\"]') || document.querySelector('[contenteditable=\"true\"]');
+  if (editor) {
+    editor.focus();
+    editor.innerHTML = '<h2>Section</h2><p>Content</p>';
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+"
+```
+
+**方法C: Clipboard API経由 (フォールバック)**
+
+```bash
+agent-browser eval "
+  const html = '<h2>Section</h2><p>Content</p>';
+  const blob = new Blob([html], { type: 'text/html' });
+  const item = new ClipboardItem({ 'text/html': blob });
+  await navigator.clipboard.write([item]);
+"
+agent-browser click @<body_ref>
+agent-browser press Meta+v
+```
+
+### Step 6: Verify
+
+```bash
+agent-browser screenshot /tmp/x-article-preview.png
+```
+
+スクリーンショットを確認して、フォーマットが正しく反映されているか検証する。
+
+### Step 7: Images (Manual)
+
+カバー画像とコンテンツ画像は手動アップロードが必要。
+parse_markdown.py の出力に画像パスとblock_index（挿入位置）が含まれる。
+
+## Notes
+
+- X Articles はテーブル非対応。テーブルがある場合はリスト形式に変換するか、画像として挿入する
+- 区切り線 (---) は X Articles の Insert > Divider メニューから手動挿入
+- `document.execCommand` が効かない場合は方法B/Cにフォールバック
+- HTML内のシングルクォートは `eval` のクォーティングに注意。長いHTMLはファイル経由で渡す:
+  ```bash
+  # HTMLをファイルに保存
+  python3 parse_markdown.py article.md --html-only > /tmp/article.html
+  # ファイルから読み込んで挿入
+  agent-browser eval "
+    const html = await (await fetch('file:///tmp/article.html')).text();
+    document.querySelector('[contenteditable]').focus();
+    document.execCommand('insertHTML', false, html);
+  "
+  ```
 
 ## Files
 
-- `scripts/parse_markdown.py` - Markdown parser (title, images, dividers, HTML extraction)
-- `scripts/copy_to_clipboard.py` - Clipboard copier (HTML/image, macOS/Windows)
-- `scripts/publish_to_clipboard.sh` - End-to-end wrapper script
+- `scripts/parse_markdown.py` - Markdown parser (frontmatter title対応済み)
