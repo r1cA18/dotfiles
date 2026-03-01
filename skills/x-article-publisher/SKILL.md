@@ -1,6 +1,6 @@
 ---
 name: x-article-publisher
-description: "Markdown -> X Articles publisher via agent-browser. Parse article, open editor, inject HTML into contenteditable."
+description: "Markdown -> X Articles publisher via agent-browser. Parse article, open editor, inject HTML via paste or JS eval."
 triggers:
   - "x article"
   - "X記事"
@@ -17,9 +17,27 @@ Markdown記事をHTMLに変換し、agent-browser経由でX Articlesエディタ
 ## Prerequisites
 
 - agent-browser (Playwright CLI)
-- Python 3 (parse_markdown.py用。nix不要、標準ライブラリのみ使用)
+- Python 3 (parse_markdown.py用。標準ライブラリのみ)
+- X Premium Plus (Articles機能に必要)
+
+## Login (初回のみ)
+
+永続プロファイルを使い、初回だけ手動ログインする。
+
+```bash
+# 初回: headed + profile でログイン
+agent-browser --headed --profile ~/.agent-browser/x-profile open "https://x.com/login"
+# ユーザーが手動でログイン → プロファイルに保存される
+
+# 2回目以降: 同じprofileを使えばログイン済み
+agent-browser --headed --profile ~/.agent-browser/x-profile open "https://x.com/compose/articles"
+```
+
+全コマンドに `--headed --profile ~/.agent-browser/x-profile` を付けること。以降のコマンド例では省略する。
 
 ## Workflow
+
+**戦略: テキスト先、画像後、区切り線最後**
 
 ### Step 1: Parse Markdown
 
@@ -27,65 +45,111 @@ Markdown記事をHTMLに変換し、agent-browser経由でX Articlesエディタ
 python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file>
 ```
 
-JSON出力から `title` と `html` を取得する。
+JSON出力:
+
+```json
+{
+  "title": "Article Title",
+  "cover_image": "/path/to/cover.jpg",
+  "content_images": [
+    { "path": "/path/to/img.jpg", "block_index": 5, "after_text": "context..." }
+  ],
+  "dividers": [{ "block_index": 7, "after_text": "context..." }],
+  "html": "<p>Content...</p><h2>Section</h2>...",
+  "total_blocks": 45
+}
+```
+
+HTML単体出力:
+
+```bash
+python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file> --html-only > /tmp/article.html
+```
 
 ### Step 2: Open X Articles Editor
 
-新規記事の場合:
-
 ```bash
-agent-browser --headed open "https://x.com/compose/articles"
+# 新規記事
+agent-browser open "https://x.com/compose/articles"
+# ドラフト一覧が表示される → "create" ボタンをクリック
+
+# 既存記事編集
+agent-browser open "https://x.com/compose/articles/edit/<article_id>"
 ```
-
-既存記事の編集:
-
-```bash
-agent-browser --headed open "https://x.com/compose/articles/edit/<article_id>"
-```
-
-初回はログインが必要。`--headed` でブラウザを表示し、ユーザーがログインする。
-ログイン完了を `agent-browser wait --load networkidle` で待機。
-
-### Step 3: Snapshot & Identify Editor
 
 ```bash
 agent-browser snapshot -i
+# create ボタンの ref を見つけてクリック
+agent-browser click @<create_ref>
 ```
 
-X Articles エディタの構造を確認し、タイトル入力欄と本文エリア (contenteditable) の ref を特定する。
-
-### Step 4: Set Title
+### Step 3: Upload Cover Image (画像がある場合)
 
 ```bash
-agent-browser click @<title_ref>
-agent-browser fill @<title_ref> "<title>"
+agent-browser snapshot -i
+# "添加照片或视频" / "Add photo or video" ボタンを見つける
+agent-browser click @<upload_ref>
+agent-browser upload @<file_input_ref> /path/to/cover.jpg
 ```
 
-### Step 5: Inject HTML into Body
-
-本文の contenteditable 要素にHTMLを挿入する。
-
-**方法A: insertHTML (推奨)**
+### Step 4: Fill Title
 
 ```bash
+agent-browser snapshot -i
+# タイトル入力欄を見つける (placeholder: "添加标题" / "Add a title")
+agent-browser fill @<title_ref> "Article Title"
+```
+
+### Step 5: Paste HTML Content
+
+**方法A: JavaScript insertHTML (推奨)**
+
+HTMLをJavaScript経由でエディタに直接挿入する。長いHTMLはファイルから読み込む。
+
+```bash
+# HTMLファイルを生成
+python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py article.md --html-only > /tmp/article.html
+
+# エディタ本文をクリック
 agent-browser click @<body_ref>
-agent-browser eval "document.execCommand('insertHTML', false, '<h2>Section</h2><p>Content</p>')"
+
+# JavaScript でHTMLを挿入
+agent-browser eval "
+  const resp = await fetch('file:///tmp/article.html');
+  const html = await resp.text();
+  const editor = document.querySelector('[contenteditable=\"true\"]');
+  if (editor) {
+    editor.focus();
+    document.execCommand('insertHTML', false, html);
+  }
+"
 ```
 
-**方法B: innerHTML直接設定**
+`file://` が使えない場合:
+
+```bash
+# HTMLをインラインで渡す (シングルクォート内にダブルクォートを使う)
+HTML_CONTENT=$(cat /tmp/article.html | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+agent-browser eval "
+  const html = ${HTML_CONTENT};
+  const editor = document.querySelector('[contenteditable=\"true\"]');
+  if (editor) { editor.focus(); document.execCommand('insertHTML', false, html); }
+"
+```
+
+**方法B: innerHTML 直接設定**
 
 ```bash
 agent-browser eval "
-  const editor = document.querySelector('[data-testid=\"articleBodyEditor\"]') || document.querySelector('[contenteditable=\"true\"]');
+  const editor = document.querySelector('[contenteditable=\"true\"]');
   if (editor) {
-    editor.focus();
     editor.innerHTML = '<h2>Section</h2><p>Content</p>';
     editor.dispatchEvent(new Event('input', { bubbles: true }));
   }
 "
 ```
 
-**方法C: Clipboard API経由 (フォールバック)**
+**方法C: Clipboard API + Paste**
 
 ```bash
 agent-browser eval "
@@ -98,35 +162,49 @@ agent-browser click @<body_ref>
 agent-browser press Meta+v
 ```
 
-### Step 6: Verify
+### Step 6: Insert Content Images (reverse order)
+
+`content_images` の block_index が大きい順に挿入する。
+
+```bash
+# 1. snapshot で after_text を含む段落の ref を探す
+agent-browser snapshot -i
+
+# 2. 段落をクリックして End キーで行末へ
+agent-browser click @<paragraph_ref>
+agent-browser press End
+
+# 3. 画像をアップロード (ドラッグ&ドロップまたはファイルアップロードメニュー)
+# agent-browser upload で直接ファイル指定は状況依存
+```
+
+### Step 7: Insert Dividers (reverse order)
+
+区切り線は X Articles の Insert > Divider メニューから手動挿入。HTML `<hr>` は無視される。
+
+### Step 8: Verify & Save
 
 ```bash
 agent-browser screenshot /tmp/x-article-preview.png
 ```
 
-スクリーンショットを確認して、フォーマットが正しく反映されているか検証する。
+ドラフトは自動保存される。公開は手動で行う (NEVER auto-publish)。
 
-### Step 7: Images (Manual)
+## Supported Formatting
 
-カバー画像とコンテンツ画像は手動アップロードが必要。
-parse_markdown.py の出力に画像パスとblock_index（挿入位置）が含まれる。
-
-## Notes
-
-- X Articles はテーブル非対応。テーブルがある場合はリスト形式に変換するか、画像として挿入する
-- 区切り線 (---) は X Articles の Insert > Divider メニューから手動挿入
-- `document.execCommand` が効かない場合は方法B/Cにフォールバック
-- HTML内のシングルクォートは `eval` のクォーティングに注意。長いHTMLはファイル経由で渡す:
-  ```bash
-  # HTMLをファイルに保存
-  python3 parse_markdown.py article.md --html-only > /tmp/article.html
-  # ファイルから読み込んで挿入
-  agent-browser eval "
-    const html = await (await fetch('file:///tmp/article.html')).text();
-    document.querySelector('[contenteditable]').focus();
-    document.execCommand('insertHTML', false, html);
-  "
-  ```
+| Element           | Support       | Notes                       |
+| ----------------- | ------------- | --------------------------- |
+| H2 (`##`)         | Native        | Section headers             |
+| H3 (`###`)        | Native        | Sub-headers                 |
+| Bold (`**`)       | Native        | Strong emphasis             |
+| Italic (`*`)      | Native        | Emphasis                    |
+| Links (`[](url)`) | Native        | Hyperlinks                  |
+| Ordered lists     | Native        | 1. 2. 3.                    |
+| Unordered lists   | Native        | - bullets                   |
+| Blockquotes (`>`) | Native        | Quoted text                 |
+| Code blocks       | Converted     | -> Blockquotes              |
+| Tables            | Not supported | -> PNG image or list format |
+| Dividers (`---`)  | Menu insert   | -> Insert > Divider         |
 
 ## Files
 
