@@ -1,17 +1,40 @@
 # Nix Environment
 
 開発環境は `~/dotfiles/` で Nix (nix-darwin + home-manager) により宣言的に管理。
-`npm install -g`, `pip install`, `brew install` でグローバルインストール禁止。必ず Nix 経由。
+JS/TS ランタイムは Bun 優先。環境を汚すグローバルインストールは禁止。
 
-## パッケージ管理の原則
+## 禁止操作
 
-| 対象                       | 方法                                                                   |
-| -------------------------- | ---------------------------------------------------------------------- |
-| CLI ツール・フォーマッター | `packages.nix` の `commonPackages` に追加                              |
-| グローバル npm パッケージ  | `packages.nix` の `globalNpmPackages` に追加                           |
-| Python ライブラリ          | プロジェクトごとに `uv venv` + `uv pip install`（グローバル pip 禁止） |
-| Node.js ライブラリ         | プロジェクトの `package.json` で管理                                   |
-| 開発環境                   | `flake.nix` + `nix develop`（なければ作成。`nix-shell` も可）          |
+以下のコマンドでのグローバルインストールは禁止。環境を汚染する。
+
+- `pip install` / `pip install --user` / `uv pip install`（グローバル）
+- `npm install -g` / `pnpm add -g` / `yarn global add`
+- `brew install` / `brew install --cask`
+- `cargo install` / `go install` / `gem install`（グローバル目的）
+
+## 永続的なツール追加
+
+| 対象                       | 方法                                             |
+| -------------------------- | ------------------------------------------------ |
+| CLI ツール・フォーマッター | `packages.nix` の `commonPackages` に追加 → `dr` |
+| グローバル npm パッケージ  | `packages.nix` の `globalNpmPackages` に追加     |
+| GUI アプリ (macOS)         | `configuration.nix` の `homebrew.casks` に追加   |
+
+## 一時利用（環境を汚さず試す）
+
+| 目的               | コマンド                                  |
+| ------------------ | ----------------------------------------- |
+| 1回だけ実行        | `nix run nixpkgs#<pkg> -- <args>`         |
+| 一時的に PATH 追加 | `nix shell nixpkgs#<pkg1> nixpkgs#<pkg2>` |
+
+## プロジェクト開発環境
+
+| 対象     | 方法                                                                    |
+| -------- | ----------------------------------------------------------------------- |
+| 開発環境 | `flake.nix` + `nix develop`（`.envrc` に `use flake` で direnv 自動化） |
+| JS/TS    | Bun 優先。`bun install` で依存管理（node_modules は .gitignore）        |
+| Python   | devShell で `python3.withPackages` を使用（pip/uv/venv 不要）           |
+| Node.js  | Bun 非対応の場合のみフォールバック                                      |
 
 ## dotfiles 編集先
 
