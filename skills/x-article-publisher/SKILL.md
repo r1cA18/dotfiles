@@ -1,6 +1,6 @@
 ---
 name: x-article-publisher
-description: "Markdown -> X Articles publisher via agent-browser. Parse article, open editor, inject HTML via paste or JS eval."
+description: "Markdown -> X Articles publisher via claude-in-chrome MCP. Parse article to HTML, inject into Draft.js editor via ClipboardEvent paste simulation."
 triggers:
   - "x article"
   - "X記事"
@@ -12,28 +12,19 @@ triggers:
 
 # X Article Publisher
 
-Markdown記事をHTMLに変換し、agent-browser経由でX Articlesエディタに流し込む。
+Markdown記事をHTMLに変換し、claude-in-chrome MCP経由でX Articlesエディタに流し込む。
 
 ## Prerequisites
 
-- agent-browser (Playwright CLI)
+- claude-in-chrome MCP (Chrome拡張)
 - Python 3 (parse_markdown.py用。標準ライブラリのみ)
 - X Premium Plus (Articles機能に必要)
+- Xにログイン済みのChromeブラウザ
 
-## Login (初回のみ)
+## Why claude-in-chrome (not agent-browser)
 
-永続プロファイルを使い、初回だけ手動ログインする。
-
-```bash
-# 初回: headed + profile でログイン
-agent-browser --headed --profile ~/.agent-browser/x-profile open "https://x.com/login"
-# ユーザーが手動でログイン → プロファイルに保存される
-
-# 2回目以降: 同じprofileを使えばログイン済み
-agent-browser --headed --profile ~/.agent-browser/x-profile open "https://x.com/compose/articles"
-```
-
-全コマンドに `--headed --profile ~/.agent-browser/x-profile` を付けること。以降のコマンド例では省略する。
+agent-browser (Playwright) はXのbot検知でログインがブロックされる。
+claude-in-chromeはユーザーの実Chromeブラウザを使うためbot検知を回避できる。
 
 ## Workflow
 
@@ -68,115 +59,69 @@ python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown
 
 ### Step 2: Open X Articles Editor
 
-```bash
-# 新規記事
-agent-browser open "https://x.com/compose/articles"
-# ドラフト一覧が表示される → "create" ボタンをクリック
+claude-in-chromeでタブを作成し、X Articlesエディタを開く。
+
+```
+# タブコンテキスト取得
+mcp__claude-in-chrome__tabs_context_mcp
+
+# 新規タブ作成
+mcp__claude-in-chrome__tabs_create_mcp -> https://x.com/compose/articles
 
 # 既存記事編集
-agent-browser open "https://x.com/compose/articles/edit/<article_id>"
+mcp__claude-in-chrome__navigate -> https://x.com/compose/articles/edit/<article_id>
 ```
 
-```bash
-agent-browser snapshot -i
-# create ボタンの ref を見つけてクリック
-agent-browser click @<create_ref>
+新規記事の場合、ドラフト一覧から「create」ボタンをクリック。
+
+### Step 3: Fill Title
+
+javascript_toolでタイトルを設定:
+
+```javascript
+// タイトル入力欄を見つけてフォーカス → type で入力
 ```
 
-### Step 3: Upload Cover Image (画像がある場合)
+またはread_page/findでタイトル欄を特定してから入力。
 
-```bash
-agent-browser snapshot -i
-# "添加照片或视频" / "Add photo or video" ボタンを見つける
-agent-browser click @<upload_ref>
-agent-browser upload @<file_input_ref> /path/to/cover.jpg
+### Step 4: Inject HTML Content (ClipboardEvent paste)
+
+X ArticlesはDraft.jsエディタを使用。innerHTML や insertHTML は動作しない。
+ClipboardEvent の paste イベントシミュレーションが唯一の動作する方法。
+
+```javascript
+const articleHtml = "<h2>Section</h2><p>Content with <strong>bold</strong></p>";
+const editor = document.querySelector(".public-DraftEditor-content");
+editor.focus();
+const clipboardData = new DataTransfer();
+clipboardData.setData("text/html", articleHtml);
+clipboardData.setData("text/plain", "");
+const pasteEvent = new ClipboardEvent("paste", {
+  bubbles: true,
+  cancelable: true,
+  clipboardData: clipboardData,
+});
+editor.dispatchEvent(pasteEvent);
 ```
 
-### Step 4: Fill Title
+HTMLが長い場合、Unicode escapeした文字列をJavaScript内に直接埋め込む:
 
 ```bash
-agent-browser snapshot -i
-# タイトル入力欄を見つける (placeholder: "添加标题" / "Add a title")
-agent-browser fill @<title_ref> "Article Title"
-```
-
-### Step 5: Paste HTML Content
-
-**方法A: JavaScript insertHTML (推奨)**
-
-HTMLをJavaScript経由でエディタに直接挿入する。長いHTMLはファイルから読み込む。
-
-```bash
-# HTMLファイルを生成
+# HTML生成
 python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py article.md --html-only > /tmp/article.html
 
-# エディタ本文をクリック
-agent-browser click @<body_ref>
-
-# JavaScript でHTMLを挿入
-agent-browser eval "
-  const resp = await fetch('file:///tmp/article.html');
-  const html = await resp.text();
-  const editor = document.querySelector('[contenteditable=\"true\"]');
-  if (editor) {
-    editor.focus();
-    document.execCommand('insertHTML', false, html);
-  }
-"
+# JSON escape (JavaScript文字列リテラル用)
+python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/article.html > /tmp/article-escaped.txt
 ```
 
-`file://` が使えない場合:
+### Step 5: Upload Cover Image (画像がある場合)
 
-```bash
-# HTMLをインラインで渡す (シングルクォート内にダブルクォートを使う)
-HTML_CONTENT=$(cat /tmp/article.html | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
-agent-browser eval "
-  const html = ${HTML_CONTENT};
-  const editor = document.querySelector('[contenteditable=\"true\"]');
-  if (editor) { editor.focus(); document.execCommand('insertHTML', false, html); }
-"
-```
-
-**方法B: innerHTML 直接設定**
-
-```bash
-agent-browser eval "
-  const editor = document.querySelector('[contenteditable=\"true\"]');
-  if (editor) {
-    editor.innerHTML = '<h2>Section</h2><p>Content</p>';
-    editor.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-"
-```
-
-**方法C: Clipboard API + Paste**
-
-```bash
-agent-browser eval "
-  const html = '<h2>Section</h2><p>Content</p>';
-  const blob = new Blob([html], { type: 'text/html' });
-  const item = new ClipboardItem({ 'text/html': blob });
-  await navigator.clipboard.write([item]);
-"
-agent-browser click @<body_ref>
-agent-browser press Meta+v
-```
+カバー画像は手動アップロード、またはclaude-in-chromeのcomputer toolでファイル選択ダイアログを操作。
 
 ### Step 6: Insert Content Images (reverse order)
 
 `content_images` の block_index が大きい順に挿入する。
-
-```bash
-# 1. snapshot で after_text を含む段落の ref を探す
-agent-browser snapshot -i
-
-# 2. 段落をクリックして End キーで行末へ
-agent-browser click @<paragraph_ref>
-agent-browser press End
-
-# 3. 画像をアップロード (ドラッグ&ドロップまたはファイルアップロードメニュー)
-# agent-browser upload で直接ファイル指定は状況依存
-```
+画像はエディタ内の該当位置にカーソルを置いてからアップロード。
 
 ### Step 7: Insert Dividers (reverse order)
 
@@ -184,11 +129,19 @@ agent-browser press End
 
 ### Step 8: Verify & Save
 
-```bash
-agent-browser screenshot /tmp/x-article-preview.png
+```
+mcp__claude-in-chrome__computer -> screenshot
 ```
 
 ドラフトは自動保存される。公開は手動で行う (NEVER auto-publish)。
+
+## Technical Notes
+
+- X Articles エディタは Draft.js (`public-DraftEditor-content` class)
+- Draft.js は innerHTML/insertHTML/execCommand に反応しない
+- ClipboardEvent('paste') + DataTransfer.setData('text/html', html) が唯一の方法
+- NSPasteboard (macOS clipboard) 経由のペーストも HTML がプレーンテキスト化される
+- agent-browser (Playwright) は X の bot 検知でブロックされる
 
 ## Supported Formatting
 
