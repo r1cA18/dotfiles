@@ -45,6 +45,7 @@
     # brew から移行
     fastlane
     mas
+    xcodegen
   ];
 
   # Linux/Server専用パッケージ
