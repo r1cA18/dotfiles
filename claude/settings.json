@@ -4,21 +4,9 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
   },
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": ["mcp__pencil"]
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/sleep-guard.sh start"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -96,11 +84,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/sleep-guard.sh check"
-          },
+            "command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
+            "command": "bun x cc-nametag hook"
           }
         ]
       }
@@ -108,7 +102,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bun x ccusage statusline"
+    "command": "bun x cc-nametag --prepend 'bun x ccusage statusline'"
   },
   "enabledPlugins": {
     "document-skills@anthropic-agent-skills": true,
