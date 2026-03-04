@@ -4,13 +4,14 @@ description: "Rename the current session's status line label"
 argument-hint: "[new-name]"
 ---
 
-Rename the status line session label. Run this Bash command, replacing NEW_NAME with the user's argument:
+Rename the status line session label. Determine the tmpdir and find the state file:
 
 ```bash
-STATE_FILE=$(ls -t /tmp/cc-status-*.json 2>/dev/null | head -1)
+TMPDIR=$(node -e "process.stdout.write(require('os').tmpdir())")
+STATE_FILE=$(ls -t "${TMPDIR}"/cc-nametag-*.json 2>/dev/null | head -1)
 if [ -n "$STATE_FILE" ]; then
-  printf '{"name":"%s","source":"manual"}\n' "$ARGUMENTS" > "$STATE_FILE"
-  echo "Renamed to: $ARGUMENTS"
+  SESSION_ID=$(basename "$STATE_FILE" | sed 's/^cc-nametag-//;s/\.json$//')
+  bun x cc-nametag set-name "$ARGUMENTS" --session "$SESSION_ID"
 else
   echo "No active session state file found"
 fi
