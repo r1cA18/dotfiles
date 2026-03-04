@@ -20,6 +20,10 @@
     agent-skills-nix.inputs.nixpkgs.follows = "nixpkgs";
     agent-skills-nix.inputs.home-manager.follows = "home-manager";
 
+    # nix-index-database (for comma)
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
     # Anthropic official skills
     anthropic-skills.url = "github:anthropics/skills";
     anthropic-skills.flake = false;
@@ -32,6 +36,7 @@
     nix-darwin,
     home-manager,
     agent-skills-nix,
+    nix-index-database,
     anthropic-skills,
     ...
   } @ inputs: let
@@ -83,6 +88,7 @@
             users.${username} = {
               imports = [
                 agent-skills-nix.homeManagerModules.default
+                nix-index-database.homeModules.nix-index
                 (import ./home-manager/home.nix)
               ];
             };
@@ -98,6 +104,7 @@
       extraSpecialArgs = {inherit inputs username;};
       modules = [
         agent-skills-nix.homeManagerModules.default
+        nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
           nixpkgs.overlays = [
@@ -116,6 +123,7 @@
       extraSpecialArgs = {inherit inputs; username = "openclaw";};
       modules = [
         agent-skills-nix.homeManagerModules.default
+        nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
           nixpkgs.overlays = [

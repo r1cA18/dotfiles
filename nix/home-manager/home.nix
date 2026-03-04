@@ -14,6 +14,7 @@
     ./programs/agent-skills.nix
     ./programs/claude-code.nix
     ./programs/codex.nix
+    ./programs/nix-index.nix
   ];
 
   home = {
