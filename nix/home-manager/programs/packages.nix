@@ -62,6 +62,7 @@
     "@google/gemini-cli"
     "@openai/codex"
     "agent-browser"
+    "difit"
     "portless"
   ];
 in {
