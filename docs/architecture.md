@@ -28,6 +28,7 @@ dotfiles/
 │   │       ├── ghostty.nix   # Ghostty（ghostty/へのシンボリックリンク）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude Code（claude/へのシンボリックリンク）
+│   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
 │   ├── modules/              # 再利用可能なモジュール（現在未使用）
@@ -323,7 +324,7 @@ in {
 
 ## flake.nixの構造
 
-- `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin等）
+- `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
 - `outputs`:
   - `darwinConfigurations.RMB`: macOS設定
   - `homeConfigurations."r1ca18@linux"`: Linux設定
