@@ -1,0 +1,32 @@
+{
+  "skill_name": "design-capture",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/design-capture https://linear.app/ なんかこのUIめっちゃ好きでさ、ダークテーマの使い方がすごい上手いっていうかシュッとしてるんだよね、あとアニメーションがぬるぬるで気持ちいい",
+      "expected_output": "1. slug = linear-app\n2. agent-browser opens https://linear.app/, takes full-page screenshot saved to ~/vault/91_attachments/web-design-ref-linear-app.png\n3. extract-design-tokens.js runs in browser, returns JSON with colors/fonts/spacing/animations\n4. Screenshot is visually analyzed (multimodal Read)\n5. tag-taxonomy.md is read for tag selection\n6. Knowledge note written to ~/vault/20_Knowledge/web-design-ref-linear-app.md with:\n   - frontmatter: title contains 'Linear', notetype: literature, tags include web-design-ref + dark-theme + app + micro-interaction, design-category: app\n   - All 7 sections present: Screenshot, Color Palette, Typography, Layout, Animation & Interaction, My Take, Use As\n   - My Take section contains the user's messy voice-input impressions verbatim in a blockquote\n7. Completion report with file paths, top 3 colors, tags",
+      "files": [
+        "~/vault/91_attachments/web-design-ref-linear-app.png",
+        "~/vault/20_Knowledge/web-design-ref-linear-app.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/design-capture https://stripe.com/jp",
+      "expected_output": "1. slug = stripe-com\n2. agent-browser opens https://stripe.com/jp, screenshots to ~/vault/91_attachments/web-design-ref-stripe-com.png\n3. Token extraction + visual analysis as normal\n4. Knowledge note at ~/vault/20_Knowledge/web-design-ref-stripe-com.md with:\n   - tags include web-design-ref + gradient + landing-page, design-category: landing-page\n   - My Take section contains '> (no impressions)' or similar placeholder since user gave no impressions\n   - All 7 sections still present, none omitted\n5. Completion report",
+      "files": [
+        "~/vault/91_attachments/web-design-ref-stripe-com.png",
+        "~/vault/20_Knowledge/web-design-ref-stripe-com.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "https://vercel.com/home このサイトのデザインまじでかっこいいんだけど",
+      "expected_output": "The skill should be triggered implicitly because the user shared a URL and expressed admiration for its design ('かっこいい'). The description explicitly lists this pattern as a trigger.\n1. slug = vercel-com\n2. Full capture flow: browser visit, screenshot to ~/vault/91_attachments/web-design-ref-vercel-com.png, token extraction, visual analysis\n3. Knowledge note at ~/vault/20_Knowledge/web-design-ref-vercel-com.md with:\n   - tags include web-design-ref + dark-theme + landing-page + scroll-animation (Vercel's characteristic style)\n   - My Take: '> このサイトのデザインまじでかっこいいんだけど'\n   - All 7 sections present\n4. Completion report\nKey validation: the skill must activate without the user saying '/design-capture' or 'capture' or 'save'",
+      "files": [
+        "~/vault/91_attachments/web-design-ref-vercel-com.png",
+        "~/vault/20_Knowledge/web-design-ref-vercel-com.md"
+      ]
+    }
+  ]
+}
