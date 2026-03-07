@@ -15,8 +15,6 @@
   # General (両OS共通)
   generalAliases = {
     ll = {cmd = "ls -la"; desc = "List all files";};
-    ".." = {cmd = "cd .."; desc = "Go up one directory";};
-    "..." = {cmd = "cd ../.."; desc = "Go up two directories";};
     nv = {cmd = "nvim"; desc = "Open Neovim";};
     dot = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
     gacm = {cmd = "git add -A && git commit -m"; desc = "Add all + commit";};
@@ -62,13 +60,13 @@
 
   # Claude Code (-w: work API key, -s: sub account)
   claudeAliases = {
-    cc = {cmd = "_cc"; desc = "Start Claude Code";};
-    ccc = {cmd = "_cc --continue"; desc = "Continue last session";};
-    cccd = {cmd = "_cc --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
-    ccr = {cmd = "_cc --resume"; desc = "Resume session (picker)";};
-    ccd = {cmd = "_cc --dangerously-skip-permissions"; desc = "Skip all permissions";};
-    ccu = {cmd = "claude update"; desc = "Check for updates";};
-    ccs = {cmd = "bunx ccusage"; desc = "Show Claude Code usage";};
+    cl = {cmd = "_cl"; desc = "Start Claude Code";};
+    clc = {cmd = "_cl --continue"; desc = "Continue last session";};
+    clcd = {cmd = "_cl --continue --dangerously-skip-permissions"; desc = "Continue + skip permissions";};
+    clr = {cmd = "_cl --resume"; desc = "Resume session (picker)";};
+    cld = {cmd = "_cl --dangerously-skip-permissions"; desc = "Skip all permissions";};
+    clu = {cmd = "claude update"; desc = "Check for updates";};
+    cls = {cmd = "bunx ccusage"; desc = "Show Claude Code usage";};
   };
 
   # Codex
@@ -84,6 +82,26 @@
     cxrev = {cmd = "codex review"; desc = "Code review";};
     cxap = {cmd = "codex apply"; desc = "Apply latest diff";};
   };
+
+  # abbr 非対応のエイリアス（特殊文字を含む名前）
+  aliasOnlyDefs = {
+    ".." = {cmd = "cd .."; desc = "Go up one directory";};
+    "..." = {cmd = "cd ../.."; desc = "Go up two directories";};
+  };
+
+  # abbr 対応のエイリアス（aliasOnlyDefs 以外すべて）
+  abbrDefs =
+    (lib.filterAttrs (n: _: n != ".." && n != "...") generalAliases)
+    // nixCommonAliases
+    // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
+    // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
+    // claudeAliases
+    // codexAliases;
+
+  # abbr 定義の initContent 用テキスト生成
+  mkAbbrInit = defs: lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: v: "abbr -S -qq ${name}='${v.cmd}'") defs
+  );
 
   # ========================================
   # ヘルプ生成関数
@@ -108,22 +126,13 @@
     then ""
     else "=== ${category} ===\n${lib.concatStringsSep "\n" lines}";
 
-  # 全カテゴリのエイリアス定義をマージ
-  allDefinitions =
-    generalAliases
-    // nixCommonAliases
-    // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
-    // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
-    // claudeAliases
-    // codexAliases;
-
   # ヘルプ用エイリアス（手動定義、循環参照回避）
   helpSection = "=== Help ===\n  h - Show this help\n  hv - Show commands";
   helpSectionVerbose = "=== Help ===\n  h = echo '...'\n  hv = echo '...'";
 
   # カテゴリ別ヘルプを生成（簡潔）
   helpText = lib.concatStringsSep "\n\n" (lib.filter (x: x != "") [
-    (mkCategoryHelp "General" generalAliases)
+    (mkCategoryHelp "General" (generalAliases // aliasOnlyDefs))
     (mkCategoryHelp "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelp "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
     (mkCategoryHelp "Claude Code (-w: work key, -s: sub account)" claudeAliases)
@@ -133,7 +142,7 @@
 
   # カテゴリ別ヘルプを生成（詳細）
   helpTextVerbose = lib.concatStringsSep "\n\n" (lib.filter (x: x != "") [
-    (mkCategoryHelpVerbose "General" generalAliases)
+    (mkCategoryHelpVerbose "General" (generalAliases // aliasOnlyDefs))
     (mkCategoryHelpVerbose "Nix" (nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases)))
     (mkCategoryHelpVerbose "Directory" (if isDarwin then dirDarwinAliases else dirLinuxAliases))
     (mkCategoryHelpVerbose "Claude Code (-w: work key, -s: sub account)" claudeAliases)
@@ -141,11 +150,6 @@
     helpSectionVerbose
   ]);
 
-  # 最終的なエイリアス
-  finalAliases = mkAliases allDefinitions // {
-    h = "echo '${helpText}'";
-    hv = "echo '${helpTextVerbose}'";
-  };
 in {
   home.file.".p10k.zsh".source = ./p10k.zsh;
 
@@ -172,14 +176,25 @@ in {
         src = pkgs.zsh-powerlevel10k;
         file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       }
+      {
+        name = "zsh-abbr";
+        src = pkgs.zsh-abbr;
+        file = "share/zsh/zsh-abbr/zsh-abbr.plugin.zsh";
+      }
     ];
 
-    # 自動生成されたエイリアス（h でヘルプ表示）
-    shellAliases = finalAliases;
+    # alias: 特殊文字名 + ヘルプのみ、他は abbr で管理
+    shellAliases = mkAliases aliasOnlyDefs // {
+      h = "echo '${helpText}'";
+      hv = "echo '${helpTextVerbose}'";
+    };
 
     initContent = ''
       # powerlevel10k configuration
       [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+
+      # Abbreviations (auto-expand on Enter)
+      ${mkAbbrInit abbrDefs}
 
       # Load secrets
       [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
@@ -192,7 +207,7 @@ in {
       }
 
       # Claude Code launcher (-w: work API key, -s: sub account)
-      _cc() {
+      _cl() {
         local args=()
         local use_alt=0
         local use_sub=0
