@@ -81,14 +81,14 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)               |
 | `ghostty/config`                | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file)                   |
 | `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)       |
-| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix rsync) |
+| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix symlink-tree) |
 | `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)     |
 | `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
 | `claude/rules/`                 | `~/.claude/rules/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
 | `claude/hooks/`                 | `~/.claude/hooks/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
 | `claude/commands/`              | `~/.claude/commands/`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
 | `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (初回のみコピー)                |
+| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (mkOutOfStoreSymlink)           |
 | `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)           |
 
 ## Claude Code 指示の強度階層
@@ -130,19 +130,13 @@ commonPackages = with pkgs; [
 
 macOS専用は `darwinPackages`、Linux専用は `linuxPackages` に追加。
 
-### npmパッケージを追加（グローバル）
+### Node系CLIを追加
 
 **編集:** `nix/home-manager/programs/packages.nix`
 
-```nix
-globalNpmPackages = [
-  "@anthropic-ai/claude-code"
-  "agent-browser"
-  # ここに追加
-];
-```
-
-`dr`実行時にbunで自動インストール。詳細: [docs/guides/nix-npm-packages.md](guides/nix-npm-packages.md)
+`nixpkgs` にある CLI は `commonPackages` / `darwinPackages` / `linuxPackages` に追加。
+`nixpkgs` にない npm CLI は `nix/pkgs/<name>/` に custom package を作ってから `commonPackages` に追加。
+詳細: [docs/guides/nix-npm-packages.md](guides/nix-npm-packages.md)
 
 ### GUIアプリを追加（macOS）
 

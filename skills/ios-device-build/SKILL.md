@@ -14,7 +14,8 @@ iOS実機へのビルド・インストール・起動を自動化するスキ�
 まず設定ファイルの存在を確認:
 
 ```bash
-cat ~/.claude/skills/ios-device-build/config/settings.conf 2>/dev/null || echo "NOT_FOUND"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/agent-skills/ios-device-build"
+cat "$CONFIG_DIR/settings.conf" 2>/dev/null || echo "NOT_FOUND"
 ```
 
 ### Step 2: 設定がない場合 → ユーザーに質問
@@ -26,15 +27,16 @@ cat ~/.claude/skills/ios-device-build/config/settings.conf 2>/dev/null || echo "
 xcrun devicectl list devices 2>/dev/null
 ```
 
-2. **AskUserQuestion ツールを使ってユーザーに質問**:
+2. ユーザーに質問:
    - 「どのデバイスをデフォルトとして使用しますか？」
    - 取得したデバイス一覧から選択肢を提示
    - 選択肢に「自動検出（毎回最初のデバイスを使用）」も含める
 
 3. **設定ファイルを作成**:
 ```bash
-mkdir -p ~/.claude/skills/ios-device-build/config
-cat > ~/.claude/skills/ios-device-build/config/settings.conf << 'EOF'
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/agent-skills/ios-device-build"
+mkdir -p "$CONFIG_DIR"
+cat > "$CONFIG_DIR/settings.conf" << 'EOF'
 # iOS Device Build - 設定ファイル
 DEFAULT_DEVICE_NAME="<ユーザーが選んだデバイス名>"
 DEFAULT_SCHEME=""
@@ -48,7 +50,7 @@ EOF
 設定が確認できたら、ビルドスクリプトを実行:
 
 ```bash
-bash ~/.claude/skills/ios-device-build/scripts/device_build.sh <project_path> [scheme] [device_name] [bundle_id]
+bash "$(agent-skill-path ios-device-build scripts/device_build.sh)" <project_path> [scheme] [device_name] [bundle_id]
 ```
 
 ## パラメータ
@@ -68,15 +70,17 @@ bash ~/.claude/skills/ios-device-build/scripts/device_build.sh <project_path> [s
 
 1. 現在の設定を表示:
 ```bash
-cat ~/.claude/skills/ios-device-build/config/settings.conf
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/agent-skills/ios-device-build"
+cat "$CONFIG_DIR/settings.conf"
 ```
 
-2. AskUserQuestion で新しい設定を確認
+2. ユーザーに新しい設定を確認
 3. 設定ファイルを更新
 
 ## 設定ファイル形式
 
-`~/.claude/skills/ios-device-build/config/settings.conf`:
+`$XDG_CONFIG_HOME/agent-skills/ios-device-build/settings.conf`
+(`XDG_CONFIG_HOME` 未設定時は `~/.config/agent-skills/ios-device-build/settings.conf`):
 
 ```bash
 # デフォルトのデバイス名（部分一致で検索）
@@ -136,11 +140,13 @@ xcrun devicectl device process launch --device <UDID> <bundle_id>
 ## ファイル構成
 
 ```
-~/.claude/skills/ios-device-build/
-├── SKILL.md                          # このファイル
+skills/ios-device-build/
+├── SKILL.md
 ├── config/
-│   ├── settings.conf                 # ユーザー設定（Claudeが生成）
-│   └── settings.conf.example         # 設定例
+│   └── settings.conf.example
 └── scripts/
-    └── device_build.sh               # メインスクリプト
+    └── device_build.sh
+
+$XDG_CONFIG_HOME/agent-skills/ios-device-build/
+└── settings.conf
 ```

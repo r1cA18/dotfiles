@@ -14,7 +14,7 @@
 | 種類 | 編集ファイル | 例 |
 |------|-------------|-----|
 | CLI（Nix） | `packages.nix` の `commonPackages` | ripgrep, fd |
-| CLI（npm） | `packages.nix` の `globalNpmPackages` | claude-code |
+| CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix` | firecrawl-cli |
 | GUI（macOS） | `darwin/configuration.nix` の `homebrew.casks` | discord |
 | macOS専用 | `packages.nix` の `darwinPackages` | texliveFull |
 
@@ -47,7 +47,7 @@ myAliases = {
 |--------|---------|
 | curl系 | `packages.nix` に activation script 追加 |
 | npx/bunx系 | `packages.nix` に activation script 追加 |
-| 手動 | `~/.claude/skills/` に直接配置 |
+| カスタム | `skills/` に追加し `agent-skills.nix` で同期 |
 
 activation scriptのテンプレート：
 ```nix
@@ -113,8 +113,8 @@ h  # エイリアス確認
 
 ### activation script がエラー
 
-1. PATHに必要なツールを追加（git, curl, nodejs等）
-2. `|| true` でエラーを無視
+1. activation に依存していないか確認
+2. custom package 化できるものは `nix/pkgs/` に移す
 
 ### エイリアスが反映されない
 

@@ -1,11 +1,11 @@
-# Claude Code Skills
+# Agent Skills
 
-`~/.claude/skills/` を agent-skills-nix で宣言的に管理。
+`skills/` を agent-skills-nix で宣言的に管理。
 
 ## 概要
 
-Skills は Claude Code の能力を拡張するための定義ファイル。
-このディレクトリの内容は Nix store を経由して `~/.claude/skills/` に同期される。
+Skills はエージェントの能力を拡張するための定義ファイル。
+このディレクトリの内容は Nix store を経由して `~/.claude/skills/` と `~/.codex/skills/` に同期される。
 
 ## ディレクトリ構造
 
@@ -40,17 +40,12 @@ agent-skills-nix が提供するスキル。
   programs.agent-skills = {
     enable = true;
 
-    # 公式スキルを有効化
-    skills.enable = [
-      "pdf"
-      "xlsx"
-    ];
+    sources.custom.path = ../../../skills;
 
-    # カスタムスキルのソースディレクトリ
-    customSkillsDir = ../../../skills;
-
-    # カスタムスキルを自動有効化
-    enableAll = ["custom"];
+    skills = {
+      enableAll = ["custom"];
+      enable = [ "pdf" "xlsx" ];
+    };
   };
 }
 ```
@@ -101,11 +96,13 @@ agent-skills-nix が提供するスキル。
 
 ## 注意事項
 
-- skills は Nix store 経由で同期されるため **read-only**
+- skills 本体は Nix store 経由で同期されるため **read-only**
+- 設定やキャッシュが必要なスキルは `~/.config/agent-skills/` や `~/.local/share/agent-skills/` を使う
 - 編集は `dotfiles/skills/` で行い、`dr` で適用が必要
-- `~/.claude/skills/` を直接編集しても次回の `dr` で上書きされる
+- `~/.claude/skills/` / `~/.codex/skills/` を直接編集しても次回の `dr` で上書きされる
+- 同梱ファイル参照は `agent-skill-path <skill> [relative/path]` を使う
 
 ## 参考
 
-- [agent-skills-nix](https://github.com/anthropics/agent-skills-nix)
+- [agent-skills-nix](https://github.com/Kyure-A/agent-skills-nix)
 - Claude Code ドキュメント

@@ -1,7 +1,7 @@
 ---
 name: session-documentation
 description: セッションの内容をdocs/にドキュメント化。「ドキュメント化して」「まとめて」「記録して」「docsに残して」で自動実行。テンプレート指定可（ADR/research/guide/session-log）
-allowed-tools: Read, Write, Glob, Bash(git:*), AskUserQuestion
+allowed-tools: Read, Write, Glob, Bash(git:*)
 user-invocable: true
 ---
 
@@ -23,7 +23,7 @@ user-invocable: true
 ## 選択フロー
 
 1. ユーザーの指示からテンプレートを推測
-2. 明確に判断できない場合 → AskUserQuestionでテンプレート選択を提示
+2. 明確に判断できない場合 → ユーザーにテンプレート選択を確認
 3. 何も指定がなければ → **default（guide形式）**を使用
 
 ## ドキュメント分割ルール
@@ -73,7 +73,7 @@ user-invocable: true
 
 2. **テンプレート選択**
    - ユーザー指示に基づいてテンプレートを選択
-   - 不明な場合はAskUserQuestionで確認
+   - 不明な場合はユーザーに確認
 
 3. **ドキュメント生成**
    - 選択したテンプレート（`templates/*.md`）を参照

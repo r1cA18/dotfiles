@@ -11,7 +11,7 @@
 #
 # Requirements:
 #   - claude CLI on PATH
-#   - Skill must be synced to ~/.claude/skills/
+#   - Skill must be synced via agent-skills-nix
 #
 # Note: This is a best-effort script. The claude CLI API may change.
 #       If this script stops working, check `claude --help` for current flags.
@@ -30,7 +30,12 @@ if ! command -v claude &>/dev/null; then
 fi
 
 # Verify skill exists
-SKILL_DIR="$HOME/.claude/skills/${SKILL_NAME}"
+if ! command -v agent-skill-path &>/dev/null; then
+  echo "ERROR: agent-skill-path not found on PATH"
+  exit 2
+fi
+
+SKILL_DIR="$(agent-skill-path "$SKILL_NAME")"
 if [ ! -d "$SKILL_DIR" ]; then
   echo "ERROR: Skill directory not found: ${SKILL_DIR}"
   echo "Have you run 'dr' to sync?"

@@ -26,7 +26,7 @@ Webサイトのデザインをキャプチャし、AIコーディング時に即
 | `references/tag-taxonomy.md`       | タグ分類と判定基準                   | Step 4               |
 | `references/example-output.md`     | 完成形の参考例                       | 初回実行時・迷った時 |
 
-スクリプトの参照パスは `~/.claude/skills/design-capture/` をベースにする。
+同梱スクリプトは `agent-skill-path design-capture ...` で解決する。
 
 ## Usage
 
@@ -117,7 +117,7 @@ agent-browser screenshot --full ~/vault/91_attachments/web-design-ref-<slug>.png
 `scripts/extract-design-tokens.js` を `agent-browser eval --stdin` で実行する:
 
 ```bash
-cat ~/.claude/skills/design-capture/scripts/extract-design-tokens.js | agent-browser eval --stdin
+cat "$(agent-skill-path design-capture scripts/extract-design-tokens.js)" | agent-browser eval --stdin
 ```
 
 結果は JSON 文字列で返ってくる（colors, fonts, spacing, animations, animationLibraries, keyframes, title）。

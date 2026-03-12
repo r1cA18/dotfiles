@@ -50,14 +50,14 @@ xctrace record \
 
 ```bash
 # パーサースクリプトで要約（top 20 hotspots）
-python3 ~/.claude/skills/swift-dev-toolkit/scripts/parse_profile.py \
+python3 "$(agent-skill-path swift-dev-toolkit scripts/parse_profile.py)" \
   --input /tmp/profile.trace --top 20
 
 # TOC確認（利用可能なテーブル一覧）
 xctrace export --input /tmp/profile.trace --toc
 
 # 生データ出力
-python3 ~/.claude/skills/swift-dev-toolkit/scripts/parse_profile.py \
+python3 "$(agent-skill-path swift-dev-toolkit scripts/parse_profile.py)" \
   --input /tmp/profile.trace --raw
 ```
 

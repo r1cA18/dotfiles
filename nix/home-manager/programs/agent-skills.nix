@@ -1,4 +1,5 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   programs.agent-skills = {
     enable = true;
 
@@ -17,7 +18,7 @@
 
     skills = {
       # 自作スキルは全て有効化
-      enableAll = ["custom"];
+      enableAll = [ "custom" ];
 
       # 公式スキルは個別に有効化 (必要に応じて追加)
       enable = [
@@ -34,13 +35,13 @@
         dest = "\${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills";
         structure = "symlink-tree";
         enable = true;
-        systems = [];
+        systems = [ ];
       };
       codex = {
-        dest = "$HOME/.codex/skills";
+        dest = "\${CODEX_HOME:-$HOME/.codex}/skills";
         structure = "symlink-tree";
         enable = true;
-        systems = [];
+        systems = [ ];
       };
       opencode.enable = false;
     };

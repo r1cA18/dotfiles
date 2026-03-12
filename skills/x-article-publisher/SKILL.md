@@ -27,7 +27,7 @@ Markdown記事をHTMLに変換し、claude-in-chrome MCP経由でX Articlesエ�
 ## Quick Reference
 
 ```
-1. Parse:   python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py article.md --html-only > /tmp/article.html
+1. Parse:   python3 "$(agent-skill-path x-article-publisher scripts/parse_markdown.py)" article.md --html-only > /tmp/article.html
 2. Open:    claude-in-chrome -> tabs_create_mcp -> navigate to X Articles editor
 3. Title:   claude-in-chrome -> find title input -> type title
 4. Inject:  claude-in-chrome -> javascript_tool -> ClipboardEvent paste (see Step 4)
@@ -39,13 +39,13 @@ Markdown記事をHTMLに変換し、claude-in-chrome MCP経由でX Articlesエ�
 ### Step 1: Parse Markdown to HTML
 
 ```bash
-python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file> --html-only > /tmp/article.html
+python3 "$(agent-skill-path x-article-publisher scripts/parse_markdown.py)" <markdown_file> --html-only > /tmp/article.html
 ```
 
 JSON出力が必要な場合（画像・区切り線の位置情報付き）:
 
 ```bash
-python3 ~/.claude/skills/x-article-publisher/scripts/parse_markdown.py <markdown_file>
+python3 "$(agent-skill-path x-article-publisher scripts/parse_markdown.py)" <markdown_file>
 ```
 
 parse_markdown.pyはYAML frontmatterからのtitle抽出、画像パスの自動探索（~/Downloads, ~/Desktop等）、コードブロックのblockquote変換に対応。
