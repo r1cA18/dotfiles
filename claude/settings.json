@@ -8,7 +8,6 @@
       "mcp__pencil"
     ]
   },
-  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -146,6 +145,5 @@
     }
   },
   "language": "日本語, 敬語非使用",
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high"
+  "skipDangerousModePermissionPrompt": true
 }

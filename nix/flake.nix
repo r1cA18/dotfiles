@@ -107,6 +107,7 @@
         nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
+          nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             self.overlays.additions
             self.overlays.modifications
@@ -126,6 +127,7 @@
         nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
+          nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             self.overlays.additions
             self.overlays.modifications
