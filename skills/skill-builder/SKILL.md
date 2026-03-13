@@ -1,5 +1,5 @@
 ---
-name: skill-creator
+name: skill-builder
 description: |
   Create new skills, improve existing skills, and validate skill quality for ~/dotfiles/skills/.
   Interactive workflow: use-case discovery, architecture selection, SKILL.md generation, self-review, iteration.
