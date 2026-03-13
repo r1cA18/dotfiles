@@ -100,14 +100,13 @@
     # Standalone home-manager configuration (Linux/Ubuntu)
     # Build with: home-manager switch --flake .#r1ca18@linux
     homeConfigurations."${username}@linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
       extraSpecialArgs = {inherit inputs username;};
       modules = [
         agent-skills-nix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
-          nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             self.overlays.additions
             self.overlays.modifications
@@ -120,14 +119,13 @@
     # OpenClaw VM configuration
     # Build with: home-manager switch --flake .#openclaw@linux
     homeConfigurations."openclaw@linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
       extraSpecialArgs = {inherit inputs; username = "openclaw";};
       modules = [
         agent-skills-nix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
         ./home-manager/home.nix
         {
-          nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             self.overlays.additions
             self.overlays.modifications
