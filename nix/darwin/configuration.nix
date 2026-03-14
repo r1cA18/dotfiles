@@ -84,6 +84,7 @@
       "autodesk-fusion"
       # AI
       "claude"
+      "claude-code"
       "chatgpt-atlas"
       "ollama-app"
       "amical"
@@ -203,4 +204,3 @@
   # The platform the configuration will be used on
   nixpkgs.hostPlatform = "aarch64-darwin";
 }
-
