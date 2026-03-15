@@ -54,7 +54,8 @@
 
   # Directory (Linux)
   dirLinuxAliases = {
-    dev = {cmd = "cd ~/develop/"; desc = "Go to develop";};
+    dev = {cmd = "cd ~/Develop/"; desc = "Go to Develop (use 'devg' for repo picker)";};
+    vault = {cmd = "cd /home/${username}/vault/"; desc = "Go to Vault";};
     downloads = {cmd = "cd ~/Downloads/"; desc = "Go to Downloads";};
   };
 
@@ -201,7 +202,9 @@ in {
 
       # ghq + fzf repo picker (git repos + local projects)
       devg() {
-        local repo=$( (ghq list -p; find ~/Develop/local -maxdepth 1 -mindepth 1 -type d) 2>/dev/null | fzf --reverse --height 40%)
+        local ghq_root
+        ghq_root="$(ghq root 2>/dev/null || printf '%s\n' "$HOME/Develop")"
+        local repo=$( (ghq list -p; find "$ghq_root/local" -maxdepth 1 -mindepth 1 -type d) 2>/dev/null | awk '!seen[$0]++' | fzf --reverse --height 40%)
         [ -n "$repo" ] && cd "$repo"
       }
 
