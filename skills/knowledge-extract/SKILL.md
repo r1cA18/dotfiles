@@ -3,7 +3,7 @@ name: knowledge-extract
 description: >-
   セッション内の壁打ち・議論・学びからナレッジを抽出してvaultに保存。
   「ナレッジに保存して」「知見をまとめて」「save knowledge」「学んだことを記録して」で使用。
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep
 user-invocable: true
 ---
 
@@ -40,7 +40,7 @@ Grep("候補キーワード", path="20_Knowledge/", output_mode="files_with_matc
 重複がある場合:
 
 - 完全重複 -> ユーザーに報告してスキップ
-- 部分重複 -> 既存ノートへの追記を提案 (AskUserQuestion)
+- 部分重複 -> 既存ノートへの追記を提案して確認
 - 関連あり -> `related` フィールドでリンク
 
 ### 4. ドラフト作成
@@ -76,7 +76,7 @@ related:
 
 ### 5. ユーザー確認
 
-AskUserQuestion でドラフトの確認を取る:
+ドラフト内容をユーザーに確認する:
 
 - タイトル・タグは適切か
 - 内容に過不足はないか

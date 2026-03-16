@@ -13,7 +13,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 ### ガイド
 
 - [management-rules.md](guides/management-rules.md) - **管理ルール（必読）**
-- [nix-npm-packages.md](guides/nix-npm-packages.md) - npmパッケージをbunで宣言的に管理
+- [nix-npm-packages.md](guides/nix-npm-packages.md) - Node系CLIをNixで固定管理
 - [alias-auto-help.md](guides/alias-auto-help.md) - エイリアス自動ヘルプシステム（h/hv）
 
 ### Nix運用
@@ -38,7 +38,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | やりたいこと | 編集ファイル |
 |-------------|-------------|
 | CLIツール追加 | `nix/home-manager/programs/packages.nix` |
-| npmパッケージ追加 | `packages.nix`の`globalNpmPackages` |
+| Node系CLI追加 | `nix/pkgs/` と `nix/home-manager/programs/packages.nix` |
 | GUIアプリ追加 (macOS) | `nix/darwin/configuration.nix`の`homebrew.casks` |
 | エイリアス追加 | `nix/home-manager/programs/zsh.nix` |
 | 環境変数/PATH | `nix/home-manager/programs/packages.nix` |

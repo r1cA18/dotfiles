@@ -21,7 +21,7 @@ which xcodegen || brew install xcodegen
 ## project.yml を作成
 
 ```bash
-cp ~/.claude/skills/swift-dev-toolkit/templates/project.yml ./project.yml
+cp "$(agent-skill-path swift-dev-toolkit templates/project.yml)" ./project.yml
 
 # プレースホルダーを置換
 sed -i '' 's/__APP_NAME__/MyApp/g' project.yml

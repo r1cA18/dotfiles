@@ -10,7 +10,7 @@ description: X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_s
 任意のトピックについて、xAI (Grok) の x_search を使ってX上の情報を検索し、
 一次情報/定義/反論/関連事例を集めた **Context Pack** (構造化Markdown) を生成する。
 
-スクリプト本体: `~/.claude/skills/x-research/scripts/grok_context_research.ts`
+スクリプト本体: `agent-skill-path x-research scripts/grok_context_research.ts`
 
 ## Prerequisites
 
@@ -34,7 +34,7 @@ description: X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_s
 
 ```bash
 export $(cat ~/vault/40_AI/x-research/.env | xargs) && \
-cd ~/.claude/skills/x-research && npx tsx scripts/grok_context_research.ts \
+cd "$(agent-skill-path x-research)" && npx tsx scripts/grok_context_research.ts \
   --topic "<TOPIC>" \
   --locale <ja|global> \
   --audience <engineer|investor|both> \

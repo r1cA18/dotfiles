@@ -7,6 +7,7 @@
   pkgs,
   username,
   hostname,
+  system,
   ...
 }: {
   # Import other darwin modules here
@@ -84,6 +85,7 @@
       "autodesk-fusion"
       # AI
       "claude"
+      "claude-code"
       "chatgpt-atlas"
       "ollama-app"
       "amical"
@@ -201,6 +203,5 @@
   programs.zsh.enable = true;
 
   # The platform the configuration will be used on
-  nixpkgs.hostPlatform = "aarch64-darwin";
+  nixpkgs.hostPlatform = system;
 }
-

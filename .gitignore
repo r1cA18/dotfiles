@@ -43,6 +43,8 @@ secrets/
 # Node.js (skills may have deps)
 **/node_modules/
 **/package-lock.json
+!nix/pkgs/**/package-lock.json
+.firecrawl/
 
 # Logs
 *.log

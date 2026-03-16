@@ -49,9 +49,34 @@
     ];
     forAllSystems = nixpkgs.lib.genAttrs systems;
 
-    # Your username and hostname
+    # Your username
     username = "r1ca18";
-    hostname = "RMB";
+
+    # Helper to build a darwin configuration
+    mkDarwinConfig = { hostname, system ? "aarch64-darwin" }:
+      nix-darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = { inherit inputs username hostname system; };
+        modules = [
+          ./darwin/configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "hm-backup";
+              extraSpecialArgs = { inherit inputs username; };
+              users.${username} = {
+                imports = [
+                  agent-skills-nix.homeManagerModules.default
+                  nix-index-database.homeModules.nix-index
+                  (import ./home-manager/home.nix)
+                ];
+              };
+            };
+          }
+        ];
+      };
   in {
     # Custom packages
     packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
@@ -68,39 +93,17 @@
     # Reusable home-manager modules
     homeManagerModules = import ./modules/home-manager;
 
-    # Darwin configuration (macOS)
-    # Build with: darwin-rebuild switch --flake .#RMB
-    darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
-      system = "aarch64-darwin";
-      specialArgs = {inherit inputs username hostname;};
-      modules = [
-        # Main darwin configuration
-        ./darwin/configuration.nix
-
-        # home-manager darwin module
-        home-manager.darwinModules.home-manager
-        {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            backupFileExtension = "hm-backup";
-            extraSpecialArgs = {inherit inputs username;};
-            users.${username} = {
-              imports = [
-                agent-skills-nix.homeManagerModules.default
-                nix-index-database.homeModules.nix-index
-                (import ./home-manager/home.nix)
-              ];
-            };
-          };
-        }
-      ];
+    # Darwin configurations (macOS)
+    # Build with: darwin-rebuild switch --flake .#<hostname>
+    darwinConfigurations = {
+      RMB = mkDarwinConfig { hostname = "RMB"; };
+      r1ca18lab = mkDarwinConfig { hostname = "r1ca18lab"; };
     };
 
     # Standalone home-manager configuration (Linux/Ubuntu)
     # Build with: home-manager switch --flake .#r1ca18@linux
     homeConfigurations."${username}@linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
       extraSpecialArgs = {inherit inputs username;};
       modules = [
         agent-skills-nix.homeManagerModules.default
@@ -120,7 +123,7 @@
     # OpenClaw VM configuration
     # Build with: home-manager switch --flake .#openclaw@linux
     homeConfigurations."openclaw@linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
       extraSpecialArgs = {inherit inputs; username = "openclaw";};
       modules = [
         agent-skills-nix.homeManagerModules.default

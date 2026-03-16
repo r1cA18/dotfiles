@@ -1,8 +1,8 @@
-# NixでnpmパッケージをBunで宣言的に管理
+# NixでNode系CLIを宣言的に管理
 
 ## 概要
 
-グローバルnpmパッケージをNixで宣言的に管理し、`dr`実行時に自動でインストール・更新する仕組み。
+Node系CLIはできるだけ Nix package として管理する。`dr` 時の `bun install -g` のような mutable activation は使わない。
 
 ## 背景・課題
 
@@ -14,58 +14,46 @@
 
 ### 問題点
 
-- `~/.npm-global/`, `~/.bun/install/global/`, pnpmのグローバルなど場所が分散
-- 手動でインストールが必要
-- バージョン管理ができない
+- `~/.npm-global/`, `~/.bun/bin` など配置場所が分散する
+- activation 成功と実インストール成功がズレやすい
+- `|| true` を入れると壊れても気づきにくい
 
 ## 解決策
 
 ### 方針
 
-1. **bunに統一** - 高速で、`~/.bun/bin`がPATHに入っている
-2. **Nixで宣言的に管理** - packages.nixにリストを定義
-3. **activation scriptで自動インストール** - `dr`時に自動実行
+1. **nixpkgs にあるCLIはそのまま使う**
+2. **nixpkgs にない npm CLI は `nix/pkgs/` で custom package 化する**
+3. **skills から参照する補助スクリプトは `agent-skill-path` で解決する**
 
 ### 実装
 
 **packages.nix:**
 
 ```nix
-# bunでグローバルインストールするnpmパッケージ
-globalNpmPackages = [
-  "@anthropic-ai/claude-code"
-  "@google/gemini-cli"
-  "@openai/codex"
-  "agent-browser"
-  "@ast-grep/cli"
+# 例: nixpkgs にあるもの + custom package
+commonPackages = with pkgs; [
+  codex
+  gemini-cli
+  firecrawl-cli
+  agent-browser
 ];
-
-# dr実行時にbunでグローバルパッケージをインストール・更新
-home.activation.installGlobalNpmPackages = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  export PATH="${pkgs.bun}/bin:$PATH"
-  echo "Installing global npm packages via bun..."
-  ${pkgs.bun}/bin/bun install -g ${lib.concatStringsSep " " globalNpmPackages} || true
-'';
 ```
 
-### スキル/プラグインのインストール
-
-curlやbunxで外部スキルもactivation scriptで管理：
+custom package は `buildNpmPackage` で npm tarball + `package-lock.json` を固定する:
 
 ```nix
-# UI Skills
-home.activation.installUiSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  echo "Installing UI Skills..."
-  export PATH="${pkgs.curl}/bin:${pkgs.coreutils}/bin:$PATH"
-  ${pkgs.curl}/bin/curl -fsSL https://ui-skills.com/install | ${pkgs.bash}/bin/bash || true
-'';
-
-# Agent Skills (vercel-labs)
-home.activation.installAgentSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  echo "Installing Agent Skills..."
-  export PATH="${pkgs.bun}/bin:$PATH"
-  ${pkgs.bun}/bin/bunx skills i vercel-labs/agent-skills || true
-'';
+buildNpmPackage rec {
+  pname = "firecrawl-cli";
+  version = "1.9.8";
+  src = fetchzip { ... };
+  npmDepsHash = "sha256-...";
+  postPatch = ''
+    cp ${./package-lock.json} package-lock.json
+  '';
+  dontNpmBuild = true;
+  npmInstallFlags = [ "--omit=dev" "--ignore-scripts" ];
+}
 ```
 
 ## まとめ
@@ -73,12 +61,13 @@ home.activation.installAgentSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
 | 項目 | 内容 |
 |------|------|
 | 管理ファイル | `nix/home-manager/programs/packages.nix` |
-| インストール先 | `~/.bun/bin` |
-| 実行タイミング | `dr`（darwin-rebuild switch）時 |
-| パッケージ追加方法 | `globalNpmPackages`リストに追加 |
+| custom package 定義 | `nix/pkgs/<name>/default.nix` |
+| lockfile | `nix/pkgs/<name>/package-lock.json` |
+| 実行タイミング | Nix build 時 |
+| パッケージ追加方法 | nixpkgs か `nix/pkgs/` に追加 |
 
 ## 注意点
 
-- nixpkgsにあるnpmパッケージは`nodePackages.xxx`で入れる方が純粋
-- 頻繁に更新されるCLI（claude-codeなど）はbunの方が最新を追いやすい
-- `|| true`で失敗してもdr全体は止まらないようにする
+- `nixpkgs` にあるものを優先する
+- npm CLI を custom package 化する時は tarball hash と `npmDepsHash` の両方を固定する
+- skill 本体は read-only なので、設定ファイルは XDG 配下に置く

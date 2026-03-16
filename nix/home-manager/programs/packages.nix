@@ -2,16 +2,67 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
+  agentSkillPath = pkgs.writeShellApplication {
+    name = "agent-skill-path";
+    text = ''
+      set -euo pipefail
+
+      if [ "$#" -lt 1 ]; then
+        echo "usage: agent-skill-path <skill-name> [relative/path]" >&2
+        exit 64
+      fi
+
+      skill_name="$1"
+      shift
+      relative_path="''${1-}"
+
+      declare -a roots=()
+
+      if [ -n "''${AGENT_SKILLS_DIR:-}" ]; then
+        roots+=("''${AGENT_SKILLS_DIR}")
+      fi
+      if [ -n "''${CLAUDE_CONFIG_DIR:-}" ]; then
+        roots+=("''${CLAUDE_CONFIG_DIR}/skills")
+      fi
+      if [ -n "''${CODEX_HOME:-}" ]; then
+        roots+=("''${CODEX_HOME}/skills")
+      fi
+
+      roots+=(
+        "$HOME/.claude/skills"
+        "$HOME/.codex/skills"
+      )
+
+      for root in "''${roots[@]}"; do
+        candidate="$root/$skill_name"
+        if [ -e "$candidate" ]; then
+          if [ -n "$relative_path" ]; then
+            printf '%s\n' "$candidate/$relative_path"
+          else
+            printf '%s\n' "$candidate"
+          fi
+          exit 0
+        fi
+      done
+
+      echo "agent-skill-path: skill not found: $skill_name" >&2
+      exit 1
+    '';
+  };
 
   # 共通パッケージ (両OS)
   commonPackages = with pkgs; [
     # Development
     nodejs_latest
     bun
+    pnpm
     uv
+    codex
+    gemini-cli
 
     # Formatters
     nodePackages.prettier
@@ -32,6 +83,10 @@
     cloudflared
     tmux
     ffmpeg
+    yt-dlp
+    firecrawl-cli
+    agent-browser
+    agentSkillPath
   ];
 
   # macOS専用パッケージ
@@ -55,24 +110,11 @@
     # tmux
   ];
 
-  # bunでグローバルインストールするnpmパッケージ
-  # `dr`実行時に自動でインストール・更新される
-  globalNpmPackages = [
-    "@anthropic-ai/claude-code"
-    "@google/gemini-cli"
-    "@openai/codex"
-    "agent-browser"
-    "difit"
-    "portless"
-  ];
-in {
-  home.packages =
-    commonPackages
-    ++ (if isDarwin then darwinPackages else linuxPackages);
+in
+{
+  home.packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
 
   home.sessionPath = [
-    "$HOME/.bun/bin"
-    "$HOME/.npm-global/bin"
     "$HOME/.antigravity/antigravity/bin"
     "$HOME/.local/bin"
   ];
@@ -80,12 +122,4 @@ in {
   home.sessionVariables = {
     EDITOR = "nvim";
   };
-
-  # dr実行時にbunでグローバルパッケージをインストール・更新
-  home.activation.installGlobalNpmPackages = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    export PATH="${pkgs.bun}/bin:$PATH"
-    echo "Installing global npm packages via bun..."
-    ${pkgs.bun}/bin/bun install -g ${lib.concatStringsSep " " globalNpmPackages} || true
-  '';
-
 }

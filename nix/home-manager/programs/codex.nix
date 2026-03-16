@@ -6,22 +6,14 @@
   ...
 }:
 let
-  dotfilesDir = "/Users/${username}/dotfiles";
+  dotfilesDir =
+    if pkgs.stdenv.isDarwin then "/Users/${username}/dotfiles" else "/home/${username}/dotfiles";
 in
 {
-  # AGENTS.md はシンボリックリンク
-  home.file = lib.mkIf pkgs.stdenv.isDarwin {
-    ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
-  };
-
-  # config.toml が存在しない場合のみテンプレートをコピー
-  home.activation = lib.mkIf pkgs.stdenv.isDarwin {
-    codexConfigSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if [ ! -f "$HOME/.codex/config.toml" ]; then
-        mkdir -p "$HOME/.codex"
-        cp "${dotfilesDir}/codex/config.toml" "$HOME/.codex/config.toml"
-        echo "Codex config.toml created from template"
-      fi
-    '';
+  home.file = {
+    ".codex/AGENTS.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
+    ".codex/config.toml".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/config.toml";
   };
 }

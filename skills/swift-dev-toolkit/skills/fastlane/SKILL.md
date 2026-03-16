@@ -36,8 +36,8 @@ grep "DEVELOPMENT_TEAM" *.xcodeproj/project.pbxproj | head -1 | sed 's/.*= //' |
 
 ```bash
 mkdir -p fastlane
-cp ~/.claude/skills/swift-dev-toolkit/templates/Fastfile fastlane/Fastfile
-cp ~/.claude/skills/swift-dev-toolkit/templates/Appfile fastlane/Appfile
+cp "$(agent-skill-path swift-dev-toolkit templates/Fastfile)" fastlane/Fastfile
+cp "$(agent-skill-path swift-dev-toolkit templates/Appfile)" fastlane/Appfile
 
 # 値を置換（検出した値を使う）
 sed -i '' 's/com\.example\.yourapp/<BUNDLE_ID>/g' fastlane/Appfile

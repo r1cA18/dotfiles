@@ -1,5 +1,25 @@
 # Tool Preferences
 
+## Web Search / ページ取得
+
+Web 検索・ページ内容取得はデフォルトで Firecrawl スキルを使う。組み込みの `WebSearch` ツールは使わない。
+
+| タスク                               | ツール              |
+| ------------------------------------ | ------------------- |
+| Web 検索                             | `/firecrawl-search` |
+| URL のコンテンツ取得（静的）         | `/firecrawl-scrape` |
+| サイト全体のクロール                 | `/firecrawl-crawl`  |
+| サイトの URL 一覧取得                | `/firecrawl-map`    |
+| 構造化データ抽出                     | `/firecrawl-agent`  |
+| ページ操作（クリック・フォーム入力） | `/agent-browser`    |
+| JS描画・ログイン・動的サイト         | `/agent-browser`    |
+
+判断フロー:
+
+1. ページを読む / 検索する -> Firecrawl スキルを使う
+2. ページを操作する（クリック・入力・スクロール・スクリーンショット） -> `/agent-browser` を使う
+3. `WebSearch` の直接使用は禁止（Firecrawl に統一）
+
 ## Browser Automation
 
 URL を開く・Web ページを見る・ページ内容を読む・フォーム操作・スクリーンショット等、
