@@ -8,6 +8,8 @@
   username,
   hostname,
   system,
+  # Set to false when using Determinate Nix installer
+  nixEnable ? true,
   ...
 }: {
   # Import other darwin modules here
@@ -28,9 +30,20 @@
   };
 
   # Nix settings
-  # nix.enable = false is required when using Determinate Nix installer,
-  # which manages the Nix daemon itself and conflicts with nix-darwin's management.
-  nix.enable = false;
+  # nix.enable = false when using Determinate Nix installer (manages its own daemon)
+  # nix.enable = true (default) for standard Nix installation
+  nix = {
+    enable = nixEnable;
+    settings = lib.mkIf nixEnable {
+      experimental-features = "nix-command flakes";
+    };
+    optimise.automatic = lib.mkIf nixEnable true;
+    gc = lib.mkIf nixEnable {
+      automatic = true;
+      interval = { Weekday = 0; Hour = 2; Minute = 0; };
+      options = "--delete-older-than 30d";
+    };
+  };
 
   # System packages (available system-wide)
   environment.systemPackages = with pkgs; [

@@ -50,10 +50,10 @@
     forAllSystems = nixpkgs.lib.genAttrs systems;
 
     # Helper to build a darwin configuration
-    mkDarwinConfig = { hostname, username, system ? "aarch64-darwin" }:
+    mkDarwinConfig = { hostname, username, system ? "aarch64-darwin", nixEnable ? true }:
       nix-darwin.lib.darwinSystem {
         inherit system;
-        specialArgs = { inherit inputs username hostname system; };
+        specialArgs = { inherit inputs username hostname system nixEnable; };
         modules = [
           ./darwin/configuration.nix
           home-manager.darwinModules.home-manager
@@ -94,7 +94,7 @@
     # Build with: darwin-rebuild switch --flake .#<hostname>
     darwinConfigurations = {
       RMB = mkDarwinConfig { hostname = "RMB"; username = "r1ca18"; };
-      r1ca18lab = mkDarwinConfig { hostname = "r1ca18lab"; username = "r1ca18lab"; };
+      r1ca18lab = mkDarwinConfig { hostname = "r1ca18lab"; username = "r1ca18lab"; nixEnable = false; };
     };
 
     # Standalone home-manager configuration (Linux/Ubuntu)
