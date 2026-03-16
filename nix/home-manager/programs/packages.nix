@@ -83,6 +83,7 @@ let
     cloudflared
     tmux
     ffmpeg
+    yt-dlp
     firecrawl-cli
     agent-browser
     agentSkillPath
