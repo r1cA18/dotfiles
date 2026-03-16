@@ -49,11 +49,8 @@
     ];
     forAllSystems = nixpkgs.lib.genAttrs systems;
 
-    # Your username
-    username = "r1ca18";
-
     # Helper to build a darwin configuration
-    mkDarwinConfig = { hostname, system ? "aarch64-darwin" }:
+    mkDarwinConfig = { hostname, username, system ? "aarch64-darwin" }:
       nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = { inherit inputs username hostname system; };
@@ -96,15 +93,15 @@
     # Darwin configurations (macOS)
     # Build with: darwin-rebuild switch --flake .#<hostname>
     darwinConfigurations = {
-      RMB = mkDarwinConfig { hostname = "RMB"; };
-      r1ca18lab = mkDarwinConfig { hostname = "r1ca18lab"; };
+      RMB = mkDarwinConfig { hostname = "RMB"; username = "r1ca18"; };
+      r1ca18lab = mkDarwinConfig { hostname = "r1ca18lab"; username = "r1ca18lab"; };
     };
 
     # Standalone home-manager configuration (Linux/Ubuntu)
     # Build with: home-manager switch --flake .#r1ca18@linux
-    homeConfigurations."${username}@linux" = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations."r1ca18@linux" = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
-      extraSpecialArgs = {inherit inputs username;};
+      extraSpecialArgs = {inherit inputs; username = "r1ca18";};
       modules = [
         agent-skills-nix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
