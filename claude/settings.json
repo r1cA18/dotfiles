@@ -4,9 +4,7 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
   },
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": ["mcp__pencil"]
   },
   "hooks": {
     "PreToolUse": [
