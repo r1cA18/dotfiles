@@ -7,6 +7,7 @@
   pkgs,
   username,
   hostname,
+  system,
   ...
 }: {
   # Import other darwin modules here
@@ -202,5 +203,5 @@
   programs.zsh.enable = true;
 
   # The platform the configuration will be used on
-  nixpkgs.hostPlatform = "aarch64-darwin";
+  nixpkgs.hostPlatform = system;
 }
