@@ -11,7 +11,7 @@
 ```nix
 commonAliases = {
   ll = "eza -la";
-  dr = "nh darwin switch";
+  dr = "nh darwin switch -H RMB";
 };
 ```
 
@@ -48,8 +48,15 @@ generalAliases = {
 };
 
 nixCommonAliases = {
-  dr = {cmd = "nh darwin switch"; desc = "Apply Darwin config";};
   du = {cmd = "nix flake update --flake ~/dotfiles"; desc = "Update flake";};
+};
+
+nixDarwinAliases = {
+  dr = {cmd = "nh darwin switch -H ${hostname}"; desc = "Apply Darwin config";};
+};
+
+nixLinuxAliases = {
+  dr = {cmd = "nh home switch -c ${username}@linux"; desc = "Apply Home Manager config";};
 };
 
 claudeAliases = {

@@ -70,12 +70,12 @@ fc-cache -fv
 
 | Alias | 説明 |
 |-------|------|
-| `dr` | `darwin-rebuild switch` - 設定を適用 |
-| `db` | `darwin-rebuild build` - ビルドのみ |
+| `dr` | `nh darwin switch -H <hostname>` - 設定を適用 |
+| `db` | `nh darwin build -H <hostname>` - ビルドのみ |
 | `dp` | `darwin-rebuild --rollback` - 戻す |
 | `du` | 依存を更新 (flake.lock) |
 | `ds` | パッケージ検索 |
-| `dg` | 古い世代を削除 |
+| `dg` | 古い世代と store path を削除 |
 
 ### 定期メンテナンス
 

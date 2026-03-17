@@ -1,4 +1,5 @@
 {
+  hostname ? null,
   pkgs,
   lib,
   username,
@@ -51,11 +52,11 @@ let
 
   nixDarwinAliases = {
     dr = {
-      cmd = "nh darwin switch";
+      cmd = "nh darwin switch -H ${hostname}";
       desc = "Apply Darwin config";
     };
     db = {
-      cmd = "nh darwin build";
+      cmd = "nh darwin build -H ${hostname}";
       desc = "Build Darwin config";
     };
     dp = {
@@ -66,11 +67,11 @@ let
 
   nixLinuxAliases = {
     dr = {
-      cmd = "nh home switch";
+      cmd = "nh home switch -c ${username}@linux";
       desc = "Apply Home Manager config";
     };
     db = {
-      cmd = "home-manager build --flake ~/dotfiles#${username}@linux";
+      cmd = "nh home build -c ${username}@linux";
       desc = "Build Home Manager config";
     };
     dp = {

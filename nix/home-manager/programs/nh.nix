@@ -14,8 +14,8 @@ in
     clean.enable = true;
     clean.dates = "weekly";
 
-    darwinFlake = if pkgs.stdenv.isDarwin && hostname != null then "${flakePath}#${hostname}" else null;
+    darwinFlake = if pkgs.stdenv.isDarwin then flakePath else null;
 
-    homeFlake = if pkgs.stdenv.isLinux then "${flakePath}#${username}@linux" else null;
+    homeFlake = if pkgs.stdenv.isLinux then flakePath else null;
   };
 }

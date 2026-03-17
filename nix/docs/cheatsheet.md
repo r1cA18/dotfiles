@@ -11,22 +11,23 @@
 | `nx` | `cd ~/dotfiles` | flake ルートへ移動 |
 | `du` | `nix flake update ...` | 依存パッケージを最新に |
 | `ds` | `nix search nixpkgs` | パッケージを検索 |
-| `dg` | `nix-collect-garbage -d` | 古いバージョンを削除 |
+| `dg` | `nh clean all --keep-since 14d --keep 5` | 古い generation と store path を削除 |
 | `nd` | `nix develop` | 開発環境に入る |
 
 ### macOS 専用 (nix-darwin)
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `dr` | `darwin-rebuild switch ...` | 設定を適用 (rebuild) |
-| `db` | `darwin-rebuild build ...` | ビルドのみ (適用しない) |
+| `dr` | `nh darwin switch -H <hostname>` | 設定を適用 (rebuild) |
+| `db` | `nh darwin build -H <hostname>` | ビルドのみ (適用しない) |
 | `dp` | `darwin-rebuild switch --rollback` | 前のバージョンに戻す |
 
 ### Linux 専用 (home-manager)
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `dr` | `home-manager switch ...` | 設定を適用 |
+| `dr` | `nh home switch -c <user>@linux` | 設定を適用 |
+| `db` | `nh home build -c <user>@linux` | ビルドのみ |
 | `dp` | `home-manager generations` | 世代一覧を表示 |
 
 ---

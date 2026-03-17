@@ -301,8 +301,8 @@ in {
 
 | OS    | コマンド                      | エイリアス |
 | ----- | ----------------------------- | ---------- |
-| macOS | `nh darwin switch`            | `dr`       |
-| Linux | `nh home switch`              | `dr`       |
+| macOS | `nh darwin switch -H <hostname>` | `dr`    |
+| Linux | `nh home switch -c <user>@linux` | `dr`   |
 
 ## 重要な注意事項
 
