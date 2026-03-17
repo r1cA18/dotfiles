@@ -76,20 +76,20 @@ dotfiles/
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース                          | リンク先                                                     | 管理ファイル                                |
-| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------- |
-| `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)               |
-| `ghostty/config`                | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file)                   |
-| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)       |
+| ソース                          | リンク先                                                     | 管理ファイル                                       |
+| ------------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
+| `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)                      |
+| `ghostty/config`                | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file)                          |
+| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)              |
 | `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `claude/rules/`                 | `~/.claude/rules/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `claude/hooks/`                 | `~/.claude/hooks/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `claude/commands/`              | `~/.claude/commands/`                                        | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)     |
-| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (mkOutOfStoreSymlink)           |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)           |
+| `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                                        | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/rules/`                 | `~/.claude/rules/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/hooks/`                 | `~/.claude/hooks/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/commands/`              | `~/.claude/commands/`                                        | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (mkOutOfStoreSymlink)                  |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Claude Code 指示の強度階層
 
@@ -323,9 +323,26 @@ in {
   - `darwinConfigurations.RMB`: macOS設定
   - `homeConfigurations."r1ca18@linux"`: Linux設定
 
+### プロジェクトごとの開発環境を作る
+
+dotfilesにはプロジェクト固有ツール（nodejs, pnpm, uv等）を入れない。各プロジェクトに `flake.nix` + `.envrc` を置く。
+
+```bash
+cd my-project
+nix flake init -t github:akirak/flake-templates#minimal
+git add flake.nix
+echo "use flake" > .envrc
+direnv allow
+```
+
+他人のリポジトリでも `flake.nix` と `.envrc` はglobal gitignoreに設定済みなので追跡されない。
+詳細: [docs/guides/project-env.md](guides/project-env.md)
+
 ## 既存ドキュメント
 
 詳細な運用方法は以下を参照：
 
+- `docs/guides/project-env.md` - プロジェクトごとの開発環境（flake + direnv + agent-skills）
+- `docs/guides/skills.md` - Agent Skills運用ガイド（スキル一覧・追加方法）
 - `nix/docs/guide.md` - 共通運用ガイド
 - `nix/docs/cheatsheet.md` - コマンドチートシート

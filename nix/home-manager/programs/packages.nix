@@ -57,33 +57,19 @@ let
   # 共通パッケージ (両OS)
   commonPackages = with pkgs; [
     # Development
-    nodejs_latest
     bun
-    pnpm
-    uv
     codex
     gemini-cli
-
-    # Formatters
-    nodePackages.prettier
-    ruff
-
-    # LSP
-    nodePackages.typescript-language-server
-    nodePackages.typescript
-    pyright
 
     # CLI tools
     ast-grep
     fzf
     ghq
-    nodePackages."@antfu/ni"
     ripgrep
     fd
     cloudflared
     tmux
     ffmpeg
-    yt-dlp
     firecrawl-cli
     agent-browser
     agentSkillPath
@@ -113,6 +99,11 @@ let
 in
 {
   home.packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 
   home.sessionPath = [
     "$HOME/.antigravity/antigravity/bin"

@@ -10,6 +10,8 @@
       "*.swp"
       ".direnv"
       ".envrc"
+      "flake.nix"
+      "flake.lock"
     ];
     settings = {
       user.name = "r1cA18";
