@@ -31,7 +31,7 @@ git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 ### 3. 初回ビルド
 
 ```bash
-cd ~/dotfiles/nix
+cd ~/dotfiles
 nix run home-manager -- switch --flake .#r1ca18@linux
 ```
 
@@ -191,14 +191,14 @@ echo $PATH | grep nix
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 # または nix run で実行
-nix run home-manager -- switch --flake ~/dotfiles/nix#r1ca18@linux
+nix run home-manager -- switch --flake ~/dotfiles#r1ca18@linux
 ```
 
 ### リビルドが失敗する
 
 ```bash
 # 詳細エラーを確認
-home-manager switch --flake ~/dotfiles/nix#r1ca18@linux --show-trace
+home-manager switch --flake ~/dotfiles#r1ca18@linux --show-trace
 
 # 変更を戻す
 cd ~/dotfiles && git checkout .
@@ -236,7 +236,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 
 # 3. ビルド
-cd ~/dotfiles/nix
+cd ~/dotfiles
 nix run home-manager -- switch --flake .#r1ca18@linux
 
 # 4. デフォルトシェル変更

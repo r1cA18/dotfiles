@@ -2,7 +2,7 @@
 
 ## 概要
 
-エイリアスを`cmd + desc`形式で定義し、`h`コマンドでカテゴリ別ヘルプを自動生成する仕組み。
+エイリアスを`cmd + desc`形式で定義し、`h` / `hv`コマンドでカテゴリ別ヘルプを自動生成する仕組み。
 
 ## 背景・課題
 
@@ -10,8 +10,8 @@
 
 ```nix
 commonAliases = {
-  ll = "ls -la";
-  dr = "sudo darwin-rebuild switch ...";
+  ll = "eza -la";
+  dr = "nh darwin switch";
 };
 ```
 
@@ -42,20 +42,20 @@ ll = { cmd = "ls -la"; desc = "List all files"; };
 ```nix
 # カテゴリ別にエイリアス定義
 generalAliases = {
-  ll = {cmd = "ls -la"; desc = "List all files";};
+  ll = {cmd = "eza -la"; desc = "List files with eza";};
   nv = {cmd = "nvim"; desc = "Open Neovim";};
   dot = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
 };
 
 nixCommonAliases = {
-  dr = {cmd = "sudo darwin-rebuild switch --flake ~/dotfiles/nix#RMB"; desc = "Rebuild nix config";};
-  du = {cmd = "nix flake update --flake ~/dotfiles/nix"; desc = "Update flake";};
+  dr = {cmd = "nh darwin switch"; desc = "Apply Darwin config";};
+  du = {cmd = "nix flake update --flake ~/dotfiles"; desc = "Update flake";};
 };
 
 claudeAliases = {
-  cc = {cmd = "claude"; desc = "Start Claude Code";};
-  ccc = {cmd = "claude --continue"; desc = "Continue last session";};
-  ccd = {cmd = "claude --dangerously-skip-permissions"; desc = "Skip all permissions";};
+  clc = {cmd = "cl --continue"; desc = "Continue last Claude session";};
+  clr = {cmd = "cl --resume"; desc = "Resume Claude session from picker";};
+  cld = {cmd = "cl --dangerously-skip-permissions"; desc = "Start Claude without prompts";};
 };
 
 # ヘルプ生成関数
@@ -69,11 +69,7 @@ mkCategoryHelpVerbose = category: defs: let
   lines = lib.mapAttrsToList (name: v: "  ${name} = ${v.cmd}") defs;
 in "=== ${category} ===\n${lib.concatStringsSep "\n" lines}";
 
-# 最終的なエイリアス
-finalAliases = mkAliases allDefinitions // {
-  h = "echo '${helpText}'";
-  hv = "echo '${helpTextVerbose}'";
-};
+# `h` / `hv` は shell function で生成文字列を出す
 ```
 
 ### 使い方
@@ -81,25 +77,25 @@ finalAliases = mkAliases allDefinitions // {
 ```bash
 # 簡潔なヘルプ（説明付き）
 $ h
-=== General ===
-  ll - List all files
+[General]
+  ll - List files with eza
   nv - Open Neovim
   dot - Go to dotfiles
 
-=== Nix ===
-  dr - Rebuild nix config
+[Nix]
+  dr - Apply Darwin config
   du - Update flake
   ...
 
-=== Claude Code ===
-  cc - Start Claude Code
-  ccc - Continue last session
+[Claude Code]
+  clc - Continue last Claude session
+  clr - Resume Claude session from picker
   ...
 
 # 詳細ヘルプ（コマンド内容）
 $ hv
-=== General ===
-  ll = ls -la
+[General]
+  ll = eza -la
   nv = nvim
   dot = cd ~/dotfiles
   ...
@@ -112,8 +108,8 @@ $ hv
 | General | 汎用（ll, nv, dot, ..） |
 | Nix | Nix関連（dr, du, ds, dg, nd, db, dp） |
 | Directory | ディレクトリ移動（dev, drive, downloads） |
-| Claude Code | Claude Code関連（cc, ccc, ccr, ccd, ccu） |
-| Help | ヘルプ自身（h, hv） |
+| Claude Code | Claude Code関連（clc, clr, cld, cls） |
+| Codex | Codex関連（cx, cxc, cxr, cxrev） |
 
 ## エイリアス追加方法
 
@@ -127,14 +123,13 @@ $ hv
 
 2. 新カテゴリを作る場合：
    - 定義を追加
-   - `allDefinitions`にマージ
-   - `helpText`/`helpTextVerbose`にカテゴリ追加
+   - `helpSections`にカテゴリ追加
 
 ## まとめ
 
 | 項目 | 内容 |
 |------|------|
 | 管理ファイル | `nix/home-manager/programs/zsh.nix` |
-| ヘルプコマンド | `h`（簡潔）, `hv`（詳細） |
+| ヘルプコマンド | `h`（説明）, `hv`（コマンド）, `h <query>`（絞り込み） |
 | 追加方法 | `{cmd, desc}`形式で定義に追加 |
-| 自動生成 | Nix関数で`h`, `hv`の中身を生成 |
+| 自動生成 | Nix関数で静的テキストを組み立て、shell functionから表示 |

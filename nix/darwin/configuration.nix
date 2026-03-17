@@ -3,7 +3,6 @@
 {
   inputs,
   lib,
-  config,
   pkgs,
   username,
   hostname,
@@ -11,18 +10,83 @@
   # Set to false when using Determinate Nix installer
   nixEnable ? true,
   ...
-}: {
-  # Import other darwin modules here
-  imports = [
-    # ./homebrew.nix  # Uncomment when ready
+}:
+let
+  isMainHost = hostname == "RMB";
+
+  browserCasks = [
+    "arc"
+    "google-chrome"
+    "thebrowsercompany-dia"
   ];
+
+  terminalCasks = [
+    "ghostty"
+    "cmux"
+  ];
+
+  developmentCasks = [
+    "visual-studio-code"
+    "cursor"
+    "orbstack"
+    "codex"
+    "figma"
+    "kicad"
+    "autodesk-fusion"
+  ];
+
+  aiCasks = [
+    "claude"
+    "claude-code"
+    "chatgpt-atlas"
+    "ollama-app"
+    "amical"
+  ];
+
+  communicationCasks = [
+    "discord"
+    "beeper"
+    "microsoft-teams"
+    "zoom"
+  ];
+
+  productivityCasks = [
+    "raycast"
+    "obsidian"
+    "notion"
+    "google-drive"
+    "onedrive"
+    "nani"
+  ];
+
+  officeCasks = [
+    "microsoft-word"
+    "microsoft-excel"
+    "microsoft-powerpoint"
+    "microsoft-outlook"
+    "microsoft-onenote"
+  ];
+
+  utilityCasks = [
+    "karabiner-elements"
+    "alt-tab"
+    "linearmouse"
+    "tailscale-app"
+    "rustdesk"
+  ];
+
+  mediaCasks = [
+    "steam"
+    "balenaetcher"
+    "affinity"
+  ];
+in
+{
 
   # Nixpkgs configuration
   nixpkgs = {
     overlays = [
       inputs.self.overlays.additions
-      inputs.self.overlays.modifications
-      inputs.self.overlays.stable-packages
     ];
     config = {
       allowUnfree = true;
@@ -40,7 +104,11 @@
     optimise.automatic = lib.mkIf nixEnable true;
     gc = lib.mkIf nixEnable {
       automatic = true;
-      interval = { Weekday = 0; Hour = 2; Minute = 0; };
+      interval = {
+        Weekday = 0;
+        Hour = 2;
+        Minute = 0;
+      };
       options = "--delete-older-than 30d";
     };
   };
@@ -55,11 +123,11 @@
 
   # Homebrew configuration
   # This manages Homebrew packages, casks, and Mac App Store apps
-  homebrew = {
+  homebrew = lib.mkIf isMainHost {
     enable = true;
     onActivation = {
       autoUpdate = true;
-      cleanup = "zap";  # Remove unlisted packages
+      cleanup = "zap"; # Remove unlisted packages
       upgrade = true;
     };
     # Third-party taps
@@ -70,57 +138,16 @@
     brews = [
     ];
     # GUI applications
-    casks = [
-      # Browsers
-      "arc"
-      "google-chrome"
-      "thebrowsercompany-dia"
-      # Terminals
-      "ghostty"
-      "cmux"
-      # Development
-      "visual-studio-code"
-      "cursor"
-      "orbstack"
-      "codex"
-      "figma"
-      "kicad"
-      "autodesk-fusion"
-      # AI
-      "claude"
-      "claude-code"
-      "chatgpt-atlas"
-      "ollama-app"
-      "amical"
-      # Communication
-      "discord"
-      "beeper"
-      "microsoft-teams"
-      "zoom"
-      # Productivity
-      "raycast"
-      "obsidian"
-      "notion"
-      "google-drive"
-      "onedrive"
-      "nani"
-      # Microsoft Office
-      "microsoft-word"
-      "microsoft-excel"
-      "microsoft-powerpoint"
-      "microsoft-outlook"
-      "microsoft-onenote"
-      # System utilities
-      "karabiner-elements"
-      "alt-tab"
-      "linearmouse"
-      "tailscale-app"
-      "rustdesk"
-      # Media / Other
-      "steam"
-      "balenaetcher"
-      "affinity"
-    ];
+    casks =
+      browserCasks
+      ++ terminalCasks
+      ++ developmentCasks
+      ++ aiCasks
+      ++ communicationCasks
+      ++ productivityCasks
+      ++ officeCasks
+      ++ utilityCasks
+      ++ mediaCasks;
     # Mac App Store apps (requires `mas` CLI)
     masApps = {
       "RunCat" = 1429033973;

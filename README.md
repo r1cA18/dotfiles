@@ -21,7 +21,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 
 ```bash
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
-cd ~/dotfiles/nix
+cd ~/dotfiles
 
 # macOS (RMB)
 nix run nix-darwin -- switch --flake .#RMB
@@ -58,53 +58,55 @@ dr  # rebuild
 
 ```bash
 h      # エイリアス一覧（説明付き）
-hv     # エイリアス一覧（コマンド表示）
-dr     # Nixリビルド
+hv nix # エイリアス一覧を絞り込み
+dr     # Nixリビルド (nh経由)
 du     # flake更新
 ```
 
 ### Claude Code
 
 ```bash
-cc     # Claude Code起動
-ccc    # 前回のセッション継続
-ccr    # セッション選択して再開
-ccd    # 承認スキップモード
+cl     # Claude Code起動
+clc    # 前回のセッション継続
+clr    # セッション選択して再開
+cld    # 承認スキップモード
 ```
 
 ## 構造
 
 ```
 dotfiles/
+├── flake.nix                     # flake エントリポイント
+├── flake.lock                    # 依存ロック
 ├── nix/
-│   ├── flake.nix                 # エントリポイント
 │   ├── darwin/configuration.nix  # macOS設定、Homebrew
 │   └── home-manager/
 │       ├── home.nix              # ユーザー設定
 │       └── programs/
-│           ├── packages.nix      # パッケージ、PATH、npmパッケージ
+│           ├── packages.nix      # CLIパッケージ、PATH
 │           ├── zsh.nix           # エイリアス（自動ヘルプ付き）
+│           ├── nh.nix            # nh設定
 │           ├── git.nix           # Git
 │           ├── neovim.nix        # Neovim
-│           ├── ghostty.nix       # Ghostty
+│           ├── ghostty.nix       # Ghostty設定
 │           └── karabiner.nix     # Karabiner
 ├── nvim/                         # Neovim設定
-├── ghostty/                      # Ghostty設定
 ├── karabiner/                    # Karabiner設定
 └── docs/                         # ドキュメント
 ```
 
 ## 自動インストールされるもの
 
-### npmパッケージ（bun経由）
+### CLIツール（Nix経由）
 
 `dr`実行時に自動インストール：
 
-- `@anthropic-ai/claude-code`
-- `@google/gemini-cli`
-- `@openai/codex`
+- `nh`
+- `claude-code`
+- `gemini-cli`
+- `codex`
 - `agent-browser`
-- `@ast-grep/cli`
+- `ast-grep`
 
 ### Skills
 

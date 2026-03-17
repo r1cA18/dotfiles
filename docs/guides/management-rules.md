@@ -38,8 +38,8 @@ myAliases = {
 
 新カテゴリ作成時：
 1. 定義を追加
-2. `allDefinitions`にマージ
-3. `helpText` / `helpTextVerbose`にカテゴリ追加
+2. `helpSections`にカテゴリ追加
+3. `abbrDefs` に入れるかどうかを決める
 
 ### Skills追加
 
@@ -100,7 +100,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 ```bash
 # ビルドテスト
-darwin-rebuild build --flake ~/dotfiles/nix#RMB
+nh darwin build
 
 # 適用
 dr

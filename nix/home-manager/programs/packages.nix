@@ -1,11 +1,9 @@
 {
   pkgs,
-  lib,
   ...
 }:
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
+  inherit (pkgs.stdenv) isDarwin;
   agentSkillPath = pkgs.writeShellApplication {
     name = "agent-skill-path";
     text = ''
@@ -63,8 +61,12 @@ let
 
     # CLI tools
     ast-grep
+    bat
+    bottom
+    eza
     fzf
     ghq
+    jq
     ripgrep
     fd
     cloudflared
@@ -83,34 +85,27 @@ let
     # Fonts (macOS側でレンダリングするので必要)
     nerd-fonts.jetbrains-mono
 
-    # brew から移行
+    # CLI-only macOS tools
     fastlane
     mas
     xcodegen
   ];
 
-  # Linux/Server専用パッケージ
-  linuxPackages = with pkgs; [
-    # 必要に応じて追加
-    # htop
-    # tmux
-  ];
-
 in
 {
-  home.packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
+  home = {
+    packages = commonPackages ++ (if isDarwin then darwinPackages else [ ]);
+    sessionPath = [
+      "$HOME/.antigravity/antigravity/bin"
+      "$HOME/.local/bin"
+    ];
+    sessionVariables = {
+      EDITOR = "nvim";
+    };
+  };
 
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;
-  };
-
-  home.sessionPath = [
-    "$HOME/.antigravity/antigravity/bin"
-    "$HOME/.local/bin"
-  ];
-
-  home.sessionVariables = {
-    EDITOR = "nvim";
   };
 }

@@ -2,10 +2,14 @@
   username,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
+    ./programs/nh.nix
     ./programs/git.nix
     ./programs/zsh.nix
+    ./programs/atuin.nix
+    ./programs/zoxide.nix
     ./programs/neovim.nix
     ./programs/packages.nix
     ./programs/ghostty.nix
@@ -18,11 +22,8 @@
   ];
 
   home = {
-    username = username;
-    homeDirectory =
-      if pkgs.stdenv.isDarwin
-      then "/Users/${username}"
-      else "/home/${username}";
+    inherit username;
+    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
     stateVersion = "25.05";
   };
 

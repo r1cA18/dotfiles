@@ -8,7 +8,7 @@
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `nx` | `cd ~/dotfiles/nix` | flake ディレクトリへ移動 |
+| `nx` | `cd ~/dotfiles` | flake ルートへ移動 |
 | `du` | `nix flake update ...` | 依存パッケージを最新に |
 | `ds` | `nix search nixpkgs` | パッケージを検索 |
 | `dg` | `nix-collect-garbage -d` | 古いバージョンを削除 |

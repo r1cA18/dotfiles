@@ -31,7 +31,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | `h` | エイリアス一覧（簡潔） |
 | `hv` | エイリアス一覧（コマンド表示） |
 | `dot` | dotfilesディレクトリへ移動 |
-| `nx` | nix設定ディレクトリへ移動 |
+| `nx` | flake ルートへ移動 |
 
 ### 編集場所
 
@@ -41,8 +41,9 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Node系CLI追加 | `nix/pkgs/` と `nix/home-manager/programs/packages.nix` |
 | GUIアプリ追加 (macOS) | `nix/darwin/configuration.nix`の`homebrew.casks` |
 | エイリアス追加 | `nix/home-manager/programs/zsh.nix` |
+| `nh` 設定 | `nix/home-manager/programs/nh.nix` |
 | 環境変数/PATH | `nix/home-manager/programs/packages.nix` |
 | Git設定 | `nix/home-manager/programs/git.nix` |
 | Neovim設定 | `nvim/`ディレクトリ |
-| Ghostty設定 | `ghostty/config` |
+| Ghostty設定 | `nix/home-manager/programs/ghostty.nix` |
 | Karabiner設定 | `karabiner/karabiner.json` |

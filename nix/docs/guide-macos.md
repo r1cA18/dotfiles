@@ -31,7 +31,7 @@ git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 ### 3. 初回ビルド
 
 ```bash
-cd ~/dotfiles/nix
+cd ~/dotfiles
 nix run nix-darwin -- switch --flake .#RMB
 ```
 
@@ -195,7 +195,7 @@ mas search "アプリ名"
 
 ```bash
 # 詳細エラーを確認
-sudo darwin-rebuild switch --flake ~/dotfiles/nix --show-trace
+sudo darwin-rebuild switch --flake ~/dotfiles --show-trace
 
 # 変更を戻す
 cd ~/dotfiles && git checkout .
@@ -232,7 +232,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 
 # 3. ビルド
-cd ~/dotfiles/nix
+cd ~/dotfiles
 nix run nix-darwin -- switch --flake .#RMB
 ```
 

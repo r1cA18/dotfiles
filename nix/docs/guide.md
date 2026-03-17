@@ -157,7 +157,7 @@ home.sessionPath = [
 ## ファイル構成
 
 ```
-~/dotfiles/nix/
+~/dotfiles/
 ├── flake.nix                 # エントリポイント
 ├── darwin/
 │   └── configuration.nix     # macOS システム設定 (macOS only)

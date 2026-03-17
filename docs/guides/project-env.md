@@ -31,12 +31,12 @@ direnv allow
 
 ### 他人のプロジェクト（リポジトリを汚さない）
 
-`flake.nix` と `.envrc` はglobal gitignoreに設定済みなので、gitに追跡されない。
+`.envrc` はプロジェクトごとに `.gitignore` かローカル除外で扱う。`flake.nix` は普通に追跡していい。
 
 ```bash
 cd someone-elses-project
 
-# flake.nixを自分で追加（gitignore済みなので追跡されない）
+# flake.nixを自分で追加
 cat > flake.nix << 'EOF'
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -160,13 +160,10 @@ nix search nixpkgs <name>
 }
 ```
 
-## global gitignoreの設定（設定済み）
+## `.envrc` と `.direnv` の扱い
 
-以下はglobal gitignoreに設定済みなので全リポジトリで追跡されない：
+全リポジトリで一律に global gitignore する前提にはしない。
 
-- `flake.nix`
-- `flake.lock`
-- `.envrc`
-- `.direnv/`
-
-自分のプロジェクトでflake.nixをコミットしたい場合は `git add -f flake.nix` で強制追加する。
+- `flake.nix` / `flake.lock` は通常どおり追跡する
+- `.envrc` は共有したいなら追跡、個人用ならそのプロジェクトの `.gitignore` かローカル除外で扱う
+- `.direnv/` は各プロジェクトの `.gitignore` に入れる

@@ -55,4 +55,4 @@ If `firecrawl` is not found after installation:
 
 1. `dr` を実行して Home Manager を再適用
 2. `which firecrawl` で PATH を確認
-3. `nix build ~/dotfiles/nix#firecrawl-cli` で package 単体ビルドを確認
+3. `nix build ~/dotfiles#firecrawl-cli` で package 単体ビルドを確認

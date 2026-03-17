@@ -7,14 +7,13 @@
 ```
 dotfiles/
 ├── CLAUDE.md                 # Claude向け指示（このドキュメントを参照）
+├── flake.nix                 # flake エントリポイント
+├── flake.lock                # flake ロックファイル
 ├── README.md                 # ユーザー向けクイックスタート
 ├── docs/                     # ドキュメント（このファイルを含む）
 │   └── architecture.md       # このファイル
 │
 ├── nix/                      # Nix設定（メイン）
-│   ├── flake.nix             # エントリポイント、依存関係定義
-│   ├── flake.lock            # 依存関係のロックファイル
-│   │
 │   ├── darwin/               # macOS専用 (nix-darwin)
 │   │   └── configuration.nix # システム設定、Homebrew管理
 │   │
@@ -22,16 +21,16 @@ dotfiles/
 │   │   ├── home.nix          # home-managerエントリポイント
 │   │   └── programs/         # 各プログラムの設定
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
-│   │       ├── zsh.nix       # Zsh、エイリアス、oh-my-zsh
+│   │       ├── zsh.nix       # Zsh、abbr、help
+│   │       ├── nh.nix        # nh 設定
 │   │       ├── git.nix       # Git設定
-│   │       ├── neovim.nix    # Neovim（nvim/へのシンボリックリンク）
-│   │       ├── ghostty.nix   # Ghostty（ghostty/へのシンボリックリンク）
+│   │       ├── neovim.nix    # Neovim本体と開発ツール供給
+│   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude Code（claude/へのシンボリックリンク）
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
-│   ├── modules/              # 再利用可能なモジュール（現在未使用）
 │   ├── overlays/             # Nixpkgsオーバーレイ
 │   ├── pkgs/                 # カスタムパッケージ
 │   └── docs/                 # Nix運用ドキュメント
@@ -55,9 +54,6 @@ dotfiles/
 │       │   └── lazy.lua      # プラグインマネージャー設定
 │       └── plugins/          # プラグイン設定
 │
-├── ghostty/                  # Ghostty設定
-│   └── config               # 設定ファイル（macOSの場合 ~/Library/Application Support/...へリンク）
-│
 ├── karabiner/               # Karabiner-Elements設定（macOS専用）
 │   └── karabiner.json       # ~/.config/karabiner/へリンク
 │
@@ -79,7 +75,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 | ソース                          | リンク先                                                     | 管理ファイル                                       |
 | ------------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
 | `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)                      |
-| `ghostty/config`                | `~/Library/Application Support/com.mitchellh.ghostty/config` | `ghostty.nix` (home.file)                          |
+| `programs.ghostty.settings`     | `~/.config/ghostty/config`                                   | `ghostty.nix` (programs.ghostty)                   |
 | `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)              |
 | `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix symlink-tree) |
 | `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
@@ -128,13 +124,13 @@ commonPackages = with pkgs; [
 ];
 ```
 
-macOS専用は `darwinPackages`、Linux専用は `linuxPackages` に追加。
+macOS専用は `darwinPackages` に追加。
 
 ### Node系CLIを追加
 
 **編集:** `nix/home-manager/programs/packages.nix`
 
-`nixpkgs` にある CLI は `commonPackages` / `darwinPackages` / `linuxPackages` に追加。
+`nixpkgs` にある CLI は `commonPackages` / `darwinPackages` に追加。
 `nixpkgs` にない npm CLI は `nix/pkgs/<name>/` に custom package を作ってから `commonPackages` に追加。
 詳細: [docs/guides/nix-npm-packages.md](guides/nix-npm-packages.md)
 
@@ -203,7 +199,7 @@ home.sessionPath = [
 
 ### Ghostty設定を変更
 
-**編集:** `ghostty/config`
+**編集:** `nix/home-manager/programs/ghostty.nix`
 
 ### カスタムスキルを追加
 
@@ -303,10 +299,10 @@ in {
 
 ## ビルドコマンド
 
-| OS    | コマンド                                                  | エイリアス |
-| ----- | --------------------------------------------------------- | ---------- |
-| macOS | `darwin-rebuild switch --flake ~/dotfiles/nix#RMB`        | `dr`       |
-| Linux | `home-manager switch --flake ~/dotfiles/nix#r1ca18@linux` | `dr`       |
+| OS    | コマンド                      | エイリアス |
+| ----- | ----------------------------- | ---------- |
+| macOS | `nh darwin switch`            | `dr`       |
+| Linux | `nh home switch`              | `dr`       |
 
 ## 重要な注意事項
 
@@ -335,7 +331,7 @@ echo "use flake" > .envrc
 direnv allow
 ```
 
-他人のリポジトリでも `flake.nix` と `.envrc` はglobal gitignoreに設定済みなので追跡されない。
+`.envrc` の扱いはプロジェクトごとに決める。必要ならローカル or リポジトリの `.gitignore` で管理する。
 詳細: [docs/guides/project-env.md](guides/project-env.md)
 
 ## 既存ドキュメント
