@@ -1,7 +1,6 @@
 { pkgs, ... }:
 let
   treesitterGrammars = pkgs.vimPlugins.nvim-treesitter.withAllGrammars;
-  telescopeFzfNative = pkgs.vimPlugins.telescope-fzf-native-nvim;
 in
 {
   programs.neovim = {
@@ -11,9 +10,6 @@ in
       "--set"
       "TREESITTER_GRAMMARS"
       "${treesitterGrammars}"
-      "--set"
-      "TELESCOPE_FZF_NATIVE"
-      "${telescopeFzfNative}"
     ];
     extraPackages = with pkgs; [
       bash-language-server

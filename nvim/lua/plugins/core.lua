@@ -13,15 +13,7 @@ return {
     end,
   },
   {
-    "nvim-telescope/telescope-fzf-native.nvim",
-    dir = vim.env.TELESCOPE_FZF_NATIVE,
-    enabled = vim.env.TELESCOPE_FZF_NATIVE ~= nil,
-    config = function()
-      require("telescope").load_extension("fzf")
-    end,
-  },
-  {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = {
       ensure_installed = {},
     },
