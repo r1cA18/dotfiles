@@ -52,11 +52,11 @@ let
 
   nixDarwinAliases = {
     dr = {
-      cmd = "nh darwin switch -H ${hostname}";
+      cmd = "nh darwin switch ~/dotfiles -H ${hostname}";
       desc = "Apply Darwin config";
     };
     db = {
-      cmd = "nh darwin build -H ${hostname}";
+      cmd = "nh darwin build ~/dotfiles -H ${hostname}";
       desc = "Build Darwin config";
     };
     dp = {
@@ -67,11 +67,11 @@ let
 
   nixLinuxAliases = {
     dr = {
-      cmd = "nh home switch -c ${username}@linux";
+      cmd = "nh home switch ~/dotfiles -c ${username}@linux";
       desc = "Apply Home Manager config";
     };
     db = {
-      cmd = "nh home build -c ${username}@linux";
+      cmd = "nh home build ~/dotfiles -c ${username}@linux";
       desc = "Build Home Manager config";
     };
     dp = {

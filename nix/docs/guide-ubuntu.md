@@ -83,8 +83,8 @@ fc-cache -fv
 
 | Alias | 説明 |
 |-------|------|
-| `dr` | `nh home switch -c <user>@linux` - 設定を適用 |
-| `db` | `nh home build -c <user>@linux` - ビルドのみ |
+| `dr` | `nh home switch ~/dotfiles -c <user>@linux` - 設定を適用 |
+| `db` | `nh home build ~/dotfiles -c <user>@linux` - ビルドのみ |
 | `dp` | `home-manager generations` - 世代一覧 |
 | `du` | 依存を更新 (flake.lock) |
 | `ds` | パッケージ検索 |

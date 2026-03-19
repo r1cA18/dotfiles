@@ -70,8 +70,8 @@ fc-cache -fv
 
 | Alias | 説明 |
 |-------|------|
-| `dr` | `nh darwin switch -H <hostname>` - 設定を適用 |
-| `db` | `nh darwin build -H <hostname>` - ビルドのみ |
+| `dr` | `nh darwin switch ~/dotfiles -H <hostname>` - 設定を適用 |
+| `db` | `nh darwin build ~/dotfiles -H <hostname>` - ビルドのみ |
 | `dp` | `darwin-rebuild --rollback` - 戻す |
 | `du` | 依存を更新 (flake.lock) |
 | `ds` | パッケージ検索 |

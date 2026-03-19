@@ -18,16 +18,16 @@
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `dr` | `nh darwin switch -H <hostname>` | 設定を適用 (rebuild) |
-| `db` | `nh darwin build -H <hostname>` | ビルドのみ (適用しない) |
+| `dr` | `nh darwin switch ~/dotfiles -H <hostname>` | 設定を適用 (rebuild) |
+| `db` | `nh darwin build ~/dotfiles -H <hostname>` | ビルドのみ (適用しない) |
 | `dp` | `darwin-rebuild switch --rollback` | 前のバージョンに戻す |
 
 ### Linux 専用 (home-manager)
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `dr` | `nh home switch -c <user>@linux` | 設定を適用 |
-| `db` | `nh home build -c <user>@linux` | ビルドのみ |
+| `dr` | `nh home switch ~/dotfiles -c <user>@linux` | 設定を適用 |
+| `db` | `nh home build ~/dotfiles -c <user>@linux` | ビルドのみ |
 | `dp` | `home-manager generations` | 世代一覧を表示 |
 
 ---

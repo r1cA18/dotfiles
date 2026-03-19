@@ -301,8 +301,8 @@ in {
 
 | OS    | コマンド                      | エイリアス |
 | ----- | ----------------------------- | ---------- |
-| macOS | `nh darwin switch -H <hostname>` | `dr`    |
-| Linux | `nh home switch -c <user>@linux` | `dr`   |
+| macOS | `nh darwin switch ~/dotfiles -H <hostname>` | `dr` |
+| Linux | `nh home switch ~/dotfiles -c <user>@linux` | `dr` |
 
 ## 重要な注意事項
 

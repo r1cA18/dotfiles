@@ -11,7 +11,7 @@
 ```nix
 commonAliases = {
   ll = "eza -la";
-  dr = "nh darwin switch -H RMB";
+  dr = "nh darwin switch ~/dotfiles -H RMB";
 };
 ```
 
@@ -52,11 +52,11 @@ nixCommonAliases = {
 };
 
 nixDarwinAliases = {
-  dr = {cmd = "nh darwin switch -H ${hostname}"; desc = "Apply Darwin config";};
+  dr = {cmd = "nh darwin switch ~/dotfiles -H ${hostname}"; desc = "Apply Darwin config";};
 };
 
 nixLinuxAliases = {
-  dr = {cmd = "nh home switch -c ${username}@linux"; desc = "Apply Home Manager config";};
+  dr = {cmd = "nh home switch ~/dotfiles -c ${username}@linux"; desc = "Apply Home Manager config";};
 };
 
 claudeAliases = {
