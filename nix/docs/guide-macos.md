@@ -195,7 +195,7 @@ mas search "アプリ名"
 
 ```bash
 # 詳細エラーを確認
-sudo darwin-rebuild switch --flake ~/dotfiles --show-trace
+nh darwin switch ~/dotfiles -H RMB --show-trace
 
 # 変更を戻す
 cd ~/dotfiles && git checkout .

@@ -32,7 +32,7 @@ commonAliases = {
 ll = "ls -la";
 
 # After: cmd + desc のセット
-ll = { cmd = "ls -la"; desc = "List all files"; };
+ll = { cmd = "eza -la --group-directories-first --icons=auto"; desc = "List files with eza"; };
 ```
 
 ### 実装

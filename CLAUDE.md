@@ -47,7 +47,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 ## ビルド
 
 ```bash
-dr  # darwin-rebuild switch (macOS) / home-manager switch (Linux)
+dr  # nh darwin switch ~/dotfiles -H <hostname> (macOS) / nh home switch ~/dotfiles -c <user>@linux (Linux)
 ```
 
 ## 詳細ドキュメント

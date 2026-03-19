@@ -100,7 +100,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 ```bash
 # ビルドテスト
-nh darwin build
+nh darwin build ~/dotfiles -H RMB
 
 # 適用
 dr

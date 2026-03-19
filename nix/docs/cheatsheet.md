@@ -89,7 +89,7 @@ dg
 
 | Alias | Path |
 |-------|------|
-| `dev` | `~/develop/` |
+| `dev` | `~/Develop/` |
 | `downloads` | `~/Downloads/` |
 
 ---
@@ -99,7 +99,7 @@ dg
 | Alias | Command |
 |-------|---------|
 | `nv` | `nvim` |
-| `ll` | `ls -la` |
+| `ll` | `eza -la --group-directories-first --icons=auto` |
 | `..` | `cd ..` |
 | `...` | `cd ../..` |
 

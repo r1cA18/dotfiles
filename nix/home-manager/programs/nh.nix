@@ -1,5 +1,4 @@
 {
-  hostname ? null,
   pkgs,
   username,
   ...

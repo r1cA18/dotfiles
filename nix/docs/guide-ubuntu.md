@@ -32,7 +32,7 @@ git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 
 ```bash
 cd ~/dotfiles
-nix run home-manager -- switch --flake .#r1ca18@linux
+nh home switch . -c r1ca18@linux
 ```
 
 これで以下が自動的にセットアップされます：
@@ -151,7 +151,7 @@ flatpak install アプリ名
 
 | 操作 | macOS | Linux |
 |-----|-------|-------|
-| リビルド | `darwin-rebuild switch` | `home-manager switch` |
+| リビルド | `nh darwin switch ~/dotfiles -H <hostname>` | `nh home switch ~/dotfiles -c <user>@linux` |
 | ロールバック | `darwin-rebuild --rollback` | 世代を指定して switch |
 
 ### 共通で動作するもの
@@ -191,15 +191,15 @@ echo $PATH | grep nix
 # パスを通す
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
-# または nix run で実行
-nix run home-manager -- switch --flake ~/dotfiles#r1ca18@linux
+# または nh で実行
+nh home switch ~/dotfiles -c r1ca18@linux
 ```
 
 ### リビルドが失敗する
 
 ```bash
 # 詳細エラーを確認
-home-manager switch --flake ~/dotfiles#r1ca18@linux --show-trace
+nh home switch ~/dotfiles -c r1ca18@linux --show-trace
 
 # 変更を戻す
 cd ~/dotfiles && git checkout .

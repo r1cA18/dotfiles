@@ -100,7 +100,7 @@
       overlays = import ./nix/overlays;
 
       # Darwin configurations (macOS)
-      # Build with: darwin-rebuild switch --flake .#<hostname>
+      # Build with: nh darwin switch . -H <hostname>
       darwinConfigurations = {
         RMB = mkDarwinConfig {
           hostname = "RMB";
@@ -114,7 +114,7 @@
       };
 
       # Standalone home-manager configuration (Linux/Ubuntu)
-      # Build with: home-manager switch --flake .#r1ca18@linux
+      # Build with: nh home switch . -c r1ca18@linux
       homeConfigurations."r1ca18@linux" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           system = "x86_64-linux";
@@ -139,7 +139,7 @@
       };
 
       # OpenClaw VM configuration
-      # Build with: home-manager switch --flake .#openclaw@linux
+      # Build with: nh home switch . -c openclaw@linux
       homeConfigurations."openclaw@linux" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           system = "x86_64-linux";

@@ -109,15 +109,13 @@ programs.git = {
 `home-manager/programs/zsh.nix`:
 
 ```nix
-# commonAliases に追加
-commonAliases = {
-  ll = "ls -la";
-  g = "git";
-  # 新しいエイリアスを追加
+# generalAliases など適切なカテゴリに追加
+generalAliases = {
+  ll = { cmd = "eza -la --group-directories-first --icons=auto"; desc = "List files with eza"; };
 };
 ```
 
-> **Note**: OS固有のエイリアスは `darwinAliases` または `linuxAliases` に追加
+> **Note**: OS固有のエイリアスは `nixDarwinAliases` または `nixLinuxAliases` に追加
 
 ### oh-my-zsh プラグイン
 
