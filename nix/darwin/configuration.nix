@@ -157,7 +157,6 @@ in
       "Goodnotes" = 1444383602;
       "Developer" = 640199958;
       "TestFlight" = 899247664;
-      "Swift Playgrounds" = 1496833156;
       "Compressor" = 6746516157;
       "MainStage" = 6746637089;
       "Motion" = 6746637149;
