@@ -234,6 +234,8 @@ let
     // claudeAliases
     // codexAliases;
 
+  managedShellAliases = aliasOnlyDefs // abbrDefs;
+
   mkAbbrInit =
     defs:
     lib.concatStringsSep "\n" (
@@ -288,7 +290,7 @@ in
       }
     ];
 
-    shellAliases = lib.mapAttrs (_: value: value.cmd) aliasOnlyDefs;
+    shellAliases = lib.mapAttrs (_: value: value.cmd) managedShellAliases;
 
     initContent = ''
             [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
