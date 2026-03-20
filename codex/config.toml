@@ -25,9 +25,14 @@ web_search_request = true
 shell_snapshot = true
 # 柔軟なパッチ適用
 apply_patch_freeform = true
+multi_agent = true
 
 [projects."/Users/r1ca18"]
 trust_level = "trusted"
 
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
+
+[mcp_servers.stitch]
+command = "bunx"
+args = ["--bun", "@_davideast/stitch-mcp", "proxy"]

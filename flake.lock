@@ -123,7 +123,24 @@
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "stitch-skills": "stitch-skills"
+      }
+    },
+    "stitch-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773442818,
+        "narHash": "sha256-a6wIR+y2P1O6PYmloof3/vVakPmxV0oadlcgIox/Mgo=",
+        "owner": "google-labs-code",
+        "repo": "stitch-skills",
+        "rev": "ad0b5cc5d5c3569e12a3105b0dee7409c3227e1b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google-labs-code",
+        "repo": "stitch-skills",
+        "type": "github"
       }
     }
   },

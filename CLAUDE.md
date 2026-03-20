@@ -3,6 +3,7 @@
 ## 最初に読むこと
 
 **このリポジトリを変更する前に、必ず `docs/architecture.md` を読むこと。**
+**agent 関連の運用方針は `docs/agent-platforms.md` も読むこと。**
 
 このファイルには以下が記載されている：
 
@@ -10,6 +11,23 @@
 - 何を追加/変更したい時にどのファイルを編集するか
 - シンボリックリンクの管理方法
 - OS分岐パターン
+
+## このリポジトリでの agent 運用
+
+- 共有 instruction は `shared/GLOBAL_INSTRUCTIONS.md`
+- project-specific な運用はこの `CLAUDE.md` と `docs/agent-platforms.md` に置く
+- `Claude Code` 専用の hooks / plugin / runtime state と、`Codex` 専用の agents / config は分離して管理する
+- 再利用したい workflow は `skills/` に置き、片方の製品専用機能に閉じ込めない
+
+## 実務ルール
+
+- `docs/architecture.md` を読んでから編集する
+- Nix 環境ではグローバルインストール禁止。`comma` か `nix run` / `nix shell` を使う
+- Web 検索とページ取得は Firecrawl 系 skill 優先
+- ブラウザ操作は `agent-browser` 優先
+- テストや build がある変更は、変更前後で検証する
+- `Codex` では `.codex/agents/`、`Claude Code` では `claude/agents/` を使う
+- 共通化したい skill は `skills/` を source of truth にする
 
 ## 概要
 
@@ -53,5 +71,6 @@ dr  # nh darwin switch ~/dotfiles -H <hostname> (macOS) / nh home switch ~/dotfi
 ## 詳細ドキュメント
 
 - `docs/architecture.md` - 構造と開発ガイド（Claude向け）
+- `docs/agent-platforms.md` - Codex / Claude Code の役割分担と移行方針
 - `nix/docs/guide.md` - 共通運用ガイド
 - `nix/docs/cheatsheet.md` - コマンドチートシート

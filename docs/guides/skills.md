@@ -6,8 +6,9 @@
 dotfiles/skills/<name>/SKILL.md
         ↓ dr でリビルド（agent-skills-nix）
 ~/.claude/skills/<name> → dotfiles/skills/<name> (symlink)
+~/.codex/skills/<name>  → dotfiles/skills/<name> (symlink)
         ↓
-Claude Codeが /<name> として呼び出せる
+Claude Code / Codex の両方から利用
 ```
 
 `enableAll = ["custom"]` により `skills/` 以下の全スキルが自動で有効化される。
@@ -16,7 +17,7 @@ Claude Codeが /<name> として呼び出せる
 
 ### グローバルスキル（dotfiles/skills/）
 
-どのプロジェクトでも使う汎用スキル。`dr` でリビルドすると全環境に反映される。
+どのプロジェクトでも使う汎用スキル。`dr` でリビルドすると Claude / Codex の両環境に反映される。
 
 追加方法：
 
@@ -74,12 +75,20 @@ skills.enable = [
 | `skill-builder`     | スキルの作成・改善                           |
 | `skill-auditor`     | スキルの品質監査                             |
 | `tmux-ai-cli`       | Gemini CLI + Codex CLIのオーケストレーション |
+| `post-review`       | 実装後レビューと修正のループ                 |
 
 ### UI / デザイン
 
 | スキル                        | 用途                                                 |
 | ----------------------------- | ---------------------------------------------------- |
 | `baseline-ui`                 | AI生成UIのスラップ防止ベースライン                   |
+| `frontend-design`             | official の frontend-design skill                    |
+| `stitch-design`               | Stitch を使ったデザイン作業の統合 entry point        |
+| `stitch-loop`                 | Stitch で複数ページサイトをまとめて生成              |
+| `design-md`                   | Stitch project から DESIGN.md を生成                 |
+| `enhance-prompt`              | Stitch 向けに UI prompt を強化                       |
+| `react-components`            | Stitch screen を React component system に変換       |
+| `shadcn-ui`                   | shadcn/ui 統合のガイド                               |
 | `ui-skills`                   | UI構築の制約・ベストプラクティス                     |
 | `design-capture`              | WebデザインのスクショとデザイントークンをVaultに保存 |
 | `web-design-guidelines`       | UIコードのアクセシビリティ・設計レビュー             |
@@ -93,6 +102,8 @@ skills.enable = [
 | --------------------- | ------------------------------ |
 | `x-research`          | X(Twitter)検索を使ったリサーチ |
 | `x-article-publisher` | MarkdownをX Articlesに投稿     |
+| `pdf`                 | PDF の読解・変換               |
+| `xlsx`                | Excel ファイルの読解・変換     |
 
 ### 知識管理
 
@@ -101,9 +112,20 @@ skills.enable = [
 | `knowledge-extract`     | セッションの学びをVaultに保存         |
 | `session-documentation` | セッション内容をdocs/にドキュメント化 |
 
+## Plugin skill との関係
+
+Claude plugin が runtime で提供する skill は、そのままでは dotfiles の source of truth にならない。
+Claude / Codex の両方で使いたいものは `skills/` に共有 skill として置く。
+
+- runtime plugin skill の実体: `~/.claude/plugins/...`
+- 共有したい skill の正本: `dotfiles/skills/...`
+- plugin 固有の browser automation や UI 拡張は Claude 専用として扱う
+- 外部 OSS skill repo を使う場合は `flake.nix` + `agent-skills.nix` で source を追加して宣言的に管理する
+
 ## スキルの呼び出し方
 
-Claude Codeで `/スキル名` と入力するか、Claude Codeがタスクに応じて自動で呼び出す。
+Claude Code では `/スキル名` と入力するか、Claude Code がタスクに応じて自動で呼び出す。
+Codex では `~/.codex/skills/` に同期された skill として参照される。
 
 ```
 /firecrawl-search Nixのflake.nix書き方

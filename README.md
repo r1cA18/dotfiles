@@ -72,6 +72,13 @@ clr    # セッション選択して再開
 cld    # 承認スキップモード
 ```
 
+### Codex
+
+```bash
+codex          # Codex 起動
+codex mcp list # Codex 側の MCP 設定確認
+```
+
 ## 構造
 
 ```
@@ -120,6 +127,8 @@ dotfiles/
 | -------------------------------------------- | ------------------ |
 | [docs/README.md](docs/README.md)             | ドキュメント目次   |
 | [docs/architecture.md](docs/architecture.md) | アーキテクチャ詳細 |
+| [docs/agent-platforms.md](docs/agent-platforms.md) | Claude / Codex 運用整理 |
+| [docs/claude-plugin-audit.md](docs/claude-plugin-audit.md) | Claude plugin 棚卸し |
 | [docs/guides/](docs/guides/)                 | 各種ガイド         |
 
 ## 参考

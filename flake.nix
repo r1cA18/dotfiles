@@ -27,6 +27,10 @@
     # Anthropic official skills
     anthropic-skills.url = "github:anthropics/skills";
     anthropic-skills.flake = false;
+
+    # Stitch skills
+    stitch-skills.url = "github:google-labs-code/stitch-skills";
+    stitch-skills.flake = false;
   };
 
   outputs =

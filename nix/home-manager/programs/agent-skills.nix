@@ -14,22 +14,35 @@
         path = inputs.anthropic-skills;
         subdir = "skills";
       };
+
+      # Stitch skills
+      stitch = {
+        path = inputs.stitch-skills;
+        subdir = "skills";
+      };
     };
 
     skills = {
       # 自作スキルは全て有効化
       enableAll = [ "custom" ];
 
-      # 公式スキルは個別に有効化 (必要に応じて追加)
+      # 公式スキルは個別に有効化
       enable = [
-        # "pdf"
-        # "xlsx"
-        # "frontend-design"
+        "pdf"
+        "xlsx"
+        "frontend-design"
+        "design-md"
+        "enhance-prompt"
+        "react-components"
+        "remotion"
+        "shadcn-ui"
+        "stitch-design"
+        "stitch-loop"
         # "skill-creator"
       ];
     };
 
-    # Claude Code のみに同期
+    # Claude / Codex に同期
     targets = {
       claude = {
         dest = "\${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills";

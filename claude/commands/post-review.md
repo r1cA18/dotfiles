@@ -8,6 +8,9 @@ description: Codebase review and refactor loop. Runs review -> refactor -> re-re
 実装後のコードベースレビュー & リファクタループ。
 問題がなくなるまで繰り返す。
 
+shared skill 版は `skills/post-review/` にもある。
+Claude command に閉じず、今後はそちらを source of truth として扱う。
+
 ## Workflow
 
 以下のステップを繰り返し実行する。

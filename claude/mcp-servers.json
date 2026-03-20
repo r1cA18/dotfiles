@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "drawio": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@drawio/mcp"
+      ],
+      "type": "stdio"
+    },
+    "pencil": {
+      "command": "/Users/r1ca18/.cursor/extensions/highagency.pencildev-0.6.30-universal/out/mcp-server-darwin-arm64",
+      "args": [
+        "--app",
+        "cursor"
+      ],
+      "env": {},
+      "type": "stdio"
+    },
+    "stitch": {
+      "command": "bunx",
+      "args": [
+        "--bun",
+        "@_davideast/stitch-mcp",
+        "proxy"
+      ],
+      "type": "stdio"
+    }
+  }
+}

@@ -1,7 +1,12 @@
 # Global Instructions
 
 全プロジェクト・全エージェントに適用されるグローバル指示。
-**セッション開始時に `~/.claude/rules/` の全 `.md` ファイルを読み込み、そこに記載されたルールに従うこと。**
+
+## 最初に確認すること
+
+- 作業対象のリポジトリに `AGENTS.md`、`CLAUDE.md`、`docs/architecture.md`、またはそれに相当する project docs がある場合は最初に読む
+- グローバル指示より project-local instructions を優先して適用する
+- 特定ツール固有の実装詳細に依存する指示は、そのツール専用設定ではなく project docs に寄せる
 
 ## 言語
 
@@ -50,4 +55,4 @@
 開発環境は `~/dotfiles/` で Nix (nix-darwin + home-manager) により宣言的に管理。
 JS/TS は Bun 優先。グローバルインストール（pip, npm -g, brew 等）は禁止。
 一時利用は `, <cmd>`（comma）最優先、パッケージ名指定が必要な場合は `nix run` / `nix shell`。プロジェクト環境は `flake.nix` + `nix develop`。
-詳細は rules/nix-environment.md を参照。
+詳細は project docs を参照。

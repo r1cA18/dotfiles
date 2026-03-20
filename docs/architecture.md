@@ -1,6 +1,6 @@
 # dotfiles アーキテクチャ & 開発ガイド
 
-このドキュメントはClaude (AI) がこのリポジトリを理解し、適切に変更を加えるためのガイド。
+このドキュメントは Claude / Codex などの agent がこのリポジトリを理解し、適切に変更を加えるためのガイド。
 
 ## ディレクトリ構造
 
@@ -59,13 +59,18 @@ dotfiles/
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
 │   ├── settings.json        # 全体設定
+│   ├── mcp-servers.json     # Claude用MCP seed定義
 │   ├── rules/               # ドメイン別ルール（常時ロード）
 │   ├── hooks/               # 自動実行フック
 │   ├── commands/            # スラッシュコマンド
-│   └── agents/              # カスタムエージェント
+│   ├── agents/              # カスタムエージェント
+│   └── scripts/             # Claude補助スクリプト
+│
+├── .codex/                  # リポジトリローカル Codex assets
+│   └── agents/              # Codex custom agents
 │
 └── codex/                   # Codex CLI設定（~/.codex/へリンク）
-    └── config.toml          # 設定ファイル（CLAUDE.md共有設定含む）
+    └── config.toml          # 設定ファイル（AGENTS.md共有設定含む）
 ```
 
 ## シンボリックリンク管理
@@ -86,6 +91,17 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)            |
 | `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)                  |
+
+## Agent 運用の基本方針
+
+- 共有したい知識は `skills/` と project docs に置く
+- Claude 固有の強制は `claude/hooks/`, `claude/rules/`, `claude/commands/`, `claude/agents/` に置く
+- Codex 固有の custom agent は `.codex/agents/` に置く
+- Claude plugin 本体や runtime cache は source of truth にしない
+- Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
+- plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
+
+詳細: [docs/agent-platforms.md](./agent-platforms.md)
 
 ## Claude Code 指示の強度階層
 
@@ -212,6 +228,8 @@ skills/my-new-skill/
 
 自作スキルは `enableAll = ["custom"]` により自動で有効化される。
 
+Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `skills/` を検討する。
+
 ### 公式スキルを有効化
 
 **編集:** `nix/home-manager/programs/agent-skills.nix`
@@ -223,6 +241,13 @@ skills.enable = [
 ];
 ```
 
+### Claude の MCP seed を更新
+
+**編集:** `claude/mcp-servers.json`
+
+Claude の実ランタイム設定は `~/.claude.json` にあり、そのままでは dotfiles 管理されない。
+`claude/mcp-servers.json` を source of truth にして、必要に応じて `claude/scripts/sync-mcp-servers.py` で同期する。
+
 ### Karabiner設定を変更
 
 **編集:** `karabiner/karabiner.json`
@@ -230,6 +255,12 @@ skills.enable = [
 ### Claude Code設定を変更
 
 **編集:** `claude/settings.json`
+
+### Claude の hooks / rules / commands / agents を変更
+
+**編集:** `claude/` 以下の対応ディレクトリ
+
+Claude 固有の強制や UX はここで管理する。共有知識を増やしたいときは `skills/` や project docs を優先。
 
 ### Claude Codeコマンドを追加
 
@@ -276,6 +307,12 @@ project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
 [features]
 skills = true
 ```
+
+### Codex custom agent を追加
+
+**編集:** `.codex/agents/*.toml`
+
+Codex では Claude の Markdown agent 定義はそのまま使えない。role ごとに TOML で定義する。
 
 ### macOSシステム設定を変更
 
@@ -339,6 +376,8 @@ direnv allow
 詳細な運用方法は以下を参照：
 
 - `docs/guides/project-env.md` - プロジェクトごとの開発環境（flake + direnv + agent-skills）
+- `docs/agent-platforms.md` - Claude / Codex / plugin / MCP の責務分離と移行方針
+- `docs/claude-plugin-audit.md` - Claude plugin / runtime skill の棚卸し
 - `docs/guides/skills.md` - Agent Skills運用ガイド（スキル一覧・追加方法）
 - `nix/docs/guide.md` - 共通運用ガイド
 - `nix/docs/cheatsheet.md` - コマンドチートシート
