@@ -74,6 +74,7 @@ let
     ffmpeg
     firecrawl-cli
     agent-browser
+    stitch-mcp
     agentSkillPath
   ];
 

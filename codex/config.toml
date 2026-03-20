@@ -34,5 +34,5 @@ trust_level = "trusted"
 url = "https://mcp.linear.app/mcp"
 
 [mcp_servers.stitch]
-command = "bunx"
-args = ["--bun", "@_davideast/stitch-mcp", "proxy"]
+command = "stitch-mcp"
+args = ["proxy"]

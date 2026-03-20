@@ -113,6 +113,8 @@ dotfiles/
 - `gemini-cli`
 - `codex`
 - `agent-browser`
+- `firecrawl`
+- `stitch-mcp`
 - `ast-grep`
 
 ### Skills
@@ -120,6 +122,10 @@ dotfiles/
 - **ui-skills** - UI/UXレビュー用スキル
 - **vercel-react-best-practices** - React/Next.jsベストプラクティス
 - **web-design-guidelines** - Webデザインガイドライン
+- **stitch-design / stitch-loop** - Stitch ベースのデザイン生成
+- **design-md / enhance-prompt / react-components / shadcn-ui** - Stitch 周辺 workflow
+
+CLI 依存の skill 運用は [docs/guides/skills.md](docs/guides/skills.md) にまとめてある。
 
 ## ドキュメント
 

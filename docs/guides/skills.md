@@ -13,6 +13,29 @@ Claude Code / Codex の両方から利用
 
 `enableAll = ["custom"]` により `skills/` 以下の全スキルが自動で有効化される。
 
+## CLI 依存
+
+skill の中には追加の CLI を前提にするものがある。
+この repo では、それらを `bunx` や手動 install に逃がさず、できるだけ Nix で宣言的に入れる。
+
+現時点で dotfiles 管理している主な runtime CLI:
+
+- `agent-browser`
+- `firecrawl`
+- `stitch-mcp`
+- `codex`
+- `gemini`
+
+確認例:
+
+```bash
+command -v agent-browser
+command -v firecrawl
+command -v stitch-mcp
+```
+
+`skills` CLI は必要なときに `bunx skills` を使う。
+
 ## スキルの種類と置き場所
 
 ### グローバルスキル（dotfiles/skills/）

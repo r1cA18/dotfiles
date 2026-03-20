@@ -18,10 +18,8 @@
       "type": "stdio"
     },
     "stitch": {
-      "command": "bunx",
+      "command": "stitch-mcp",
       "args": [
-        "--bun",
-        "@_davideast/stitch-mcp",
         "proxy"
       ],
       "type": "stdio"

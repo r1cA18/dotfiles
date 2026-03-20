@@ -82,6 +82,25 @@ plugin 本体に入っている useful skill は、継続利用したいなら `
 dotfiles では `claude/mcp-servers.json` を source of truth にして、必要な server 定義だけ merge する。
 この merge は `nix/home-manager/programs/claude-code.nix` の activation で自動実行する。
 
+## CLI 依存 skill の扱い
+
+`agent-browser` や `firecrawl` のように外部 CLI を前提にする skill は、
+dotfiles 側で runtime も含めて宣言的に入れる。
+
+- パッケージ定義: `nix/pkgs/`
+- user environment への追加: `nix/home-manager/programs/packages.nix`
+- skill の有効化: `nix/home-manager/programs/agent-skills.nix`
+
+現時点でこの方針で管理している代表例:
+
+- `agent-browser`
+- `firecrawl`
+- `stitch-mcp`
+- `codex`
+- `gemini`
+
+`skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。
+
 ## 移行 backlog
 
 ### 完了
@@ -89,6 +108,8 @@ dotfiles では `claude/mcp-servers.json` を source of truth にして、必要
 - shared instruction の `~/.claude/rules` 依存を除去
 - project docs に運用方針を移動
 - `frontend-design` を official skill として共有化
+- Stitch skills を declarative に共有化
+- `stitch-mcp` を declarative package として追加
 - Codex custom agents のベース追加
 - Claude MCP seed の自動同期を追加
 - plugin 棚卸しを文書化
