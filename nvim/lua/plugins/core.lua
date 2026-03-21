@@ -28,13 +28,9 @@ return {
     "folke/noice.nvim",
     opts = function(_, opts)
       opts.cmdline = opts.cmdline or {}
-      opts.cmdline.format = opts.cmdline.format or {}
-
-      for _, format in ipairs({ "cmdline", "lua", "calculator", "filter" }) do
-        if opts.cmdline.format[format] then
-          opts.cmdline.format[format].lang = nil
-        end
-      end
+      -- Disable Noice's custom cmdline UI entirely. Its treesitter-based
+      -- highlighting is what keeps blowing up when entering `:`.
+      opts.cmdline.enabled = false
     end,
   },
 }
