@@ -10,9 +10,13 @@ let
 in
 {
   home.file = {
-    ".codex/AGENTS.md".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
-    ".codex/config.toml".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/config.toml";
+    ".codex/AGENTS.md" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
+      force = true;
+    };
+    ".codex/config.toml" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/config.toml";
+      force = true;
+    };
   };
 }

@@ -11,16 +11,34 @@ let
 in
 {
   home.file = {
-    ".claude/settings.json".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/settings.json";
-    ".claude/CLAUDE.md".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
-    ".claude/mcp-servers.json".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/mcp-servers.json";
-    ".claude/commands".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/commands";
-    ".claude/agents".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/agents";
-    ".claude/hooks".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/hooks";
-    ".claude/rules".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/rules";
+    ".claude/settings.json" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/settings.json";
+      force = true;
+    };
+    ".claude/CLAUDE.md" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
+      force = true;
+    };
+    ".claude/mcp-servers.json" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/mcp-servers.json";
+      force = true;
+    };
+    ".claude/commands" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/commands";
+      force = true;
+    };
+    ".claude/agents" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/agents";
+      force = true;
+    };
+    ".claude/hooks" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/hooks";
+      force = true;
+    };
+    ".claude/rules" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/rules";
+      force = true;
+    };
   };
 
   home.activation.syncClaudeMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
