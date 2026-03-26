@@ -90,6 +90,10 @@ let
     fastlane
     mas
     xcodegen
+
+    # CLI alternatives for GUI apps
+    ollama
+    tailscale
   ];
 
 in
