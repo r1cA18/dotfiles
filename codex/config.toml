@@ -5,7 +5,7 @@
 project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
 
 # 推論レベル
-model_reasoning_effort = "medium"
+model_reasoning_effort = "xhigh"
 
 # ツール出力の最大トークン数
 tool_output_token_limit = 25000
