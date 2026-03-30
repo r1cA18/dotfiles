@@ -5,7 +5,7 @@
 project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
 
 # 推論レベル
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "medium"
 
 # ツール出力の最大トークン数
 tool_output_token_limit = 25000
@@ -15,12 +15,11 @@ tool_output_token_limit = 25000
 # = 273000 - (25000 + 15000) = 233000
 model_auto_compact_token_limit = 233000
 model = "gpt-5.4"
+web_search = "live"
 
 [features]
 # スキル機能を有効化
 skills = true
-# Web 検索を有効化
-web_search_request = true
 # シェルスナップショット
 shell_snapshot = true
 # 柔軟なパッチ適用
@@ -30,9 +29,21 @@ multi_agent = true
 [projects."/Users/r1ca18"]
 trust_level = "trusted"
 
+[projects."/Users/r1ca18/Develop/github.com/r1cA18/syoki"]
+trust_level = "trusted"
+
+[projects."/Users/r1ca18/vault"]
+trust_level = "trusted"
+
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
 
 [mcp_servers.stitch]
 command = "stitch-mcp"
 args = ["proxy"]
+
+[plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true
