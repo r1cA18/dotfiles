@@ -4,7 +4,55 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
   },
   "permissions": {
-    "allow": ["mcp__pencil"]
+    "allow": [
+      "Bash(bun *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git commit *)",
+      "Bash(ls *)"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Edit(~/.ssh/**)",
+      "Write(~/.ssh/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.azure/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.npmrc)",
+      "Read(~/.git-credentials)",
+      "Read(~/.config/gh/**)",
+      "Edit(~/.bashrc)",
+      "Edit(~/.zshrc)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(nc *)",
+      "Bash(ssh *)",
+      "Bash(git push *)",
+      "Read(*.env)",
+      "Read(.env.*)",
+      "Edit(*.env)",
+      "Edit(.env.*)",
+      "Write(*.env)",
+      "Write(.env.*)",
+      "Edit(*.key)",
+      "Write(*.key)",
+      "Edit(*.pem)",
+      "Write(*.pem)",
+      "Edit(**/secrets/**)",
+      "Write(**/secrets/**)",
+      "Edit(**/credentials/**)",
+      "Write(**/credentials/**)"
+    ]
+  },
+  "enableAllProjectMcpServers": false,
+  "sandbox": {
+    "filesystem": {
+      "denyRead": ["./.env", "./.env.*"]
+    }
   },
   "hooks": {
     "PreToolUse": [
@@ -14,10 +62,6 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/emoji-guard.sh"
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/secret-guard.sh"
           }
         ]
       },
