@@ -1,6 +1,6 @@
 ---
 name: x-research
-description: X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_search で一次情報・用語・反論・数字を集め、Context Packを生成する。トリガー: "x-research", "Xリサーチ", "X検索リサーチ"
+description: 'X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_search で一次情報・用語・反論・数字を集め、Context Packを生成する。トリガー: "x-research", "Xリサーチ", "X検索リサーチ"'
 ---
 
 # X Research (周辺リサーチ via Grok x_search)
