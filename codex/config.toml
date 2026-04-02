@@ -5,7 +5,7 @@
 project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
 
 # 推論レベル
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 
 # ツール出力の最大トークン数
 tool_output_token_limit = 25000
@@ -33,6 +33,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/r1ca18/vault"]
+trust_level = "trusted"
+
+[projects."/Users/r1ca18/dotfiles"]
 trust_level = "trusted"
 
 [mcp_servers.linear]
