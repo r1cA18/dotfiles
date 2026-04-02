@@ -27,7 +27,7 @@ dotfiles/
 │   │       ├── neovim.nix    # Neovim本体と開発ツール供給
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
-│   │       ├── claude-code.nix # Claude Code（claude/へのシンボリックリンク）
+│   │       ├── claude-code.nix # Claude config symlink + MCP sync
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │

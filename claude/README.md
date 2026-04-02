@@ -2,6 +2,7 @@
 
 `~/.claude/` の設定ファイルを dotfiles で宣言的に管理。
 ただし user-level runtime state の一部は `~/.claude.json` に別保存される。
+`Claude Code` の CLI / app 本体は native install 前提で、dotfiles 側では bootstrap しない。
 
 ## 構造
 

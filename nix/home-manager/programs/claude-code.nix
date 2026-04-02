@@ -6,44 +6,31 @@
   ...
 }:
 let
-  dotfilesDir =
-    if pkgs.stdenv.isDarwin then "/Users/${username}/dotfiles" else "/home/${username}/dotfiles";
+  homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+  dotfilesDir = "${homeDir}/dotfiles";
+  python3 = lib.getExe pkgs.python3;
+
+  mkClaudeSymlink = relativePath: {
+    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${relativePath}";
+    force = true;
+  };
+
+  managedClaudePaths = {
+    ".claude/settings.json" = "claude/settings.json";
+    ".claude/CLAUDE.md" = "shared/GLOBAL_INSTRUCTIONS.md";
+    ".claude/mcp-servers.json" = "claude/mcp-servers.json";
+    ".claude/commands" = "claude/commands";
+    ".claude/agents" = "claude/agents";
+    ".claude/hooks" = "claude/hooks";
+    ".claude/rules" = "claude/rules";
+  };
 in
 {
-  home.file = {
-    ".claude/settings.json" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/settings.json";
-      force = true;
-    };
-    ".claude/CLAUDE.md" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
-      force = true;
-    };
-    ".claude/mcp-servers.json" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/mcp-servers.json";
-      force = true;
-    };
-    ".claude/commands" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/commands";
-      force = true;
-    };
-    ".claude/agents" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/agents";
-      force = true;
-    };
-    ".claude/hooks" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/hooks";
-      force = true;
-    };
-    ".claude/rules" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/claude/rules";
-      force = true;
-    };
-  };
+  home.file = lib.mapAttrs (_: mkClaudeSymlink) managedClaudePaths;
 
   home.activation.syncClaudeMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     echo "Syncing Claude MCP servers..."
-    ${pkgs.python3}/bin/python3 \
+    ${python3} \
       "${dotfilesDir}/claude/scripts/sync-mcp-servers.py" \
       "$HOME/.claude.json" \
       "${dotfilesDir}/claude/mcp-servers.json" || true

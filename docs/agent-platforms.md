@@ -17,6 +17,7 @@
 | Codex user config | `codex/config.toml` | `~/.codex/config.toml` に symlink |
 | Claude settings | `claude/settings.json` | `~/.claude/settings.json` に symlink |
 | Claude user MCP seed | `claude/mcp-servers.json` | `~/.claude.json` へ merge する前提 |
+| Claude Code binary | native install | dotfiles では bootstrap しない |
 
 ## 共有できるもの
 
