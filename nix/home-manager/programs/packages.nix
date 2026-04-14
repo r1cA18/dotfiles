@@ -69,6 +69,7 @@ let
     jq
     ripgrep
     fd
+    mdv
     cloudflared
     tmux
     ffmpeg
