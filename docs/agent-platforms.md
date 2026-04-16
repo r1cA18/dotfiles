@@ -96,7 +96,6 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 
 - `agent-browser`
 - `firecrawl`
-- `stitch-mcp`
 - `codex`
 - `gemini`
 
@@ -109,8 +108,6 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 - shared instruction の `~/.claude/rules` 依存を除去
 - project docs に運用方針を移動
 - `frontend-design` を official skill として共有化
-- Stitch skills を declarative に共有化
-- `stitch-mcp` を declarative package として追加
 - Codex custom agents のベース追加
 - Claude MCP seed の自動同期を追加
 - plugin 棚卸しを文書化

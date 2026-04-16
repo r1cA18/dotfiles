@@ -16,13 +16,6 @@
       ],
       "env": {},
       "type": "stdio"
-    },
-    "stitch": {
-      "command": "stitch-mcp",
-      "args": [
-        "proxy"
-      ],
-      "type": "stdio"
     }
   }
 }

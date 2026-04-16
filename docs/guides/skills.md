@@ -22,7 +22,6 @@ skill の中には追加の CLI を前提にするものがある。
 
 - `agent-browser`
 - `firecrawl`
-- `stitch-mcp`
 - `codex`
 - `gemini`
 
@@ -31,7 +30,6 @@ skill の中には追加の CLI を前提にするものがある。
 ```bash
 command -v agent-browser
 command -v firecrawl
-command -v stitch-mcp
 ```
 
 `skills` CLI は必要なときに `bunx skills` を使う。
@@ -106,8 +104,6 @@ skills.enable = [
 | ----------------------------- | ---------------------------------------------------- |
 | `baseline-ui`                 | AI生成UIのスラップ防止ベースライン                   |
 | `frontend-design`             | official の frontend-design skill                    |
-| `stitch-design`               | Stitch を使ったデザイン作業の統合 entry point        |
-| `stitch-loop`                 | Stitch で複数ページサイトをまとめて生成              |
 | `design-md`                   | Stitch project から DESIGN.md を生成                 |
 | `enhance-prompt`              | Stitch 向けに UI prompt を強化                       |
 | `react-components`            | Stitch screen を React component system に変換       |

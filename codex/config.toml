@@ -41,10 +41,6 @@ trust_level = "trusted"
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
 
-[mcp_servers.stitch]
-command = "stitch-mcp"
-args = ["proxy"]
-
 [plugins."google-calendar@openai-curated"]
 enabled = true
 

@@ -15,11 +15,6 @@
         subdir = "skills";
       };
 
-      # Stitch skills
-      stitch = {
-        path = inputs.stitch-skills;
-        subdir = "skills";
-      };
     };
 
     skills = {
@@ -36,8 +31,6 @@
         "react-components"
         "remotion"
         "shadcn-ui"
-        "stitch-design"
-        "stitch-loop"
         # "skill-creator"
       ];
     };

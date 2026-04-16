@@ -53,5 +53,4 @@ in
   agent-browser = pkgs.callPackage ./agent-browser { };
   firecrawl-cli = pkgs.callPackage ./firecrawl-cli { };
   inherit mdv;
-  stitch-mcp = pkgs.callPackage ./stitch-mcp { };
 }
