@@ -34,11 +34,6 @@
         "pdf"
         "xlsx"
         "frontend-design"
-        "design-md"
-        "enhance-prompt"
-        "react-components"
-        "remotion"
-        "shadcn-ui"
         # "skill-creator"
       ];
     };
