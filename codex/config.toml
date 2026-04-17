@@ -47,6 +47,12 @@ trust_level = "trusted"
 [projects."/Users/r1ca18/Develop/github.com/r1cA18/zmk-config-ZaruBall-r1cA18"]
 trust_level = "trusted"
 
+[projects."/Users/r1ca18/Develop/github.com/r1cA18/RaycastExtensions"]
+trust_level = "trusted"
+
+[projects."/Users/r1ca18/Develop/github.com/C-Style-team/MobileAndon/MobileAndon-Revised"]
+trust_level = "trusted"
+
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
 

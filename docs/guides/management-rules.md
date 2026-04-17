@@ -14,7 +14,7 @@
 | 種類 | 編集ファイル | 例 |
 |------|-------------|-----|
 | CLI（Nix） | `packages.nix` の `commonPackages` | ripgrep, fd |
-| CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix` | firecrawl-cli |
+| CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix` | agent-browser |
 | GUI（macOS） | `darwin/configuration.nix` の `homebrew.casks` | discord |
 | macOS専用 | `packages.nix` の `darwinPackages` | texliveFull |
 

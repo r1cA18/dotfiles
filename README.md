@@ -112,7 +112,6 @@ dotfiles/
 - `gemini-cli`
 - `codex`
 - `agent-browser`
-- `firecrawl`
 - `ast-grep`
 
 `Claude Code` 本体は native install 前提。dotfiles では `~/.claude/` 配下の設定と MCP seed だけを管理する。

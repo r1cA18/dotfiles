@@ -35,7 +35,6 @@ Node系CLIはできるだけ Nix package として管理する。`dr` 時の `bu
 commonPackages = with pkgs; [
   codex
   gemini-cli
-  firecrawl-cli
   agent-browser
 ];
 ```
@@ -44,8 +43,8 @@ custom package は `buildNpmPackage` で npm tarball + `package-lock.json` を�
 
 ```nix
 buildNpmPackage rec {
-  pname = "firecrawl-cli";
-  version = "1.9.8";
+  pname = "agent-browser";
+  version = "0.17.1";
   src = fetchzip { ... };
   npmDepsHash = "sha256-...";
   postPatch = ''

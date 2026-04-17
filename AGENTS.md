@@ -23,7 +23,7 @@
 
 - `docs/architecture.md` を読んでから編集する
 - Nix 環境ではグローバルインストール禁止。`comma` か `nix run` / `nix shell` を使う
-- Web 検索とページ取得は Firecrawl 系 skill 優先
+- Web 検索とページ取得は組み込みの Web ツールを使う
 - ブラウザ操作は `agent-browser` 優先
 - テストや build がある変更は、変更前後で検証する
 - `Codex` では `.codex/agents/`、`Claude Code` では `claude/agents/` を使う

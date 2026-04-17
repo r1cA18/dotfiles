@@ -85,7 +85,7 @@ dotfiles では `claude/mcp-servers.json` を source of truth にして、必要
 
 ## CLI 依存 skill の扱い
 
-`agent-browser` や `firecrawl` のように外部 CLI を前提にする skill は、
+`agent-browser` のように外部 CLI を前提にする skill は、
 dotfiles 側で runtime も含めて宣言的に入れる。
 
 - パッケージ定義: `nix/pkgs/`
@@ -95,7 +95,6 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 現時点でこの方針で管理している代表例:
 
 - `agent-browser`
-- `firecrawl`
 - `codex`
 - `gemini`
 

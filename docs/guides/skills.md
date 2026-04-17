@@ -21,7 +21,6 @@ skill の中には追加の CLI を前提にするものがある。
 現時点で dotfiles 管理している主な runtime CLI:
 
 - `agent-browser`
-- `firecrawl`
 - `codex`
 - `gemini`
 
@@ -29,7 +28,6 @@ skill の中には追加の CLI を前提にするものがある。
 
 ```bash
 command -v agent-browser
-command -v firecrawl
 ```
 
 `skills` CLI は必要なときに `bunx skills` を使う。
@@ -77,14 +75,6 @@ skills.enable = [
 | スキル               | 用途                                                          |
 | -------------------- | ------------------------------------------------------------- |
 | `agent-browser`      | ブラウザ操作全般（URL閲覧・スクリーンショット・フォーム操作） |
-| `firecrawl`          | Firecrawl CLIのルーター（以下の各スキルへの入口）             |
-| `firecrawl-search`   | Web検索 + ページ内容取得                                      |
-| `firecrawl-scrape`   | URLのコンテンツ取得（静的・SPA対応）                          |
-| `firecrawl-crawl`    | サイト全体のバルク取得                                        |
-| `firecrawl-map`      | サイトのURL一覧取得                                           |
-| `firecrawl-agent`    | 構造化データ抽出                                              |
-| `firecrawl-browser`  | インタラクションが必要なページ操作                            |
-| `firecrawl-download` | サイトをローカルにダウンロード                                |
 
 ### 開発
 
@@ -146,8 +136,7 @@ Claude / Codex の両方で使いたいものは `skills/` に共有 skill と�
 Claude Code では `/スキル名` と入力するか、Claude Code がタスクに応じて自動で呼び出す。
 Codex では `~/.codex/skills/` に同期された skill として参照される。
 
-```
-/firecrawl-search Nixのflake.nix書き方
+```bash
 /agent-browser https://example.com
 /video-editing
 ```
