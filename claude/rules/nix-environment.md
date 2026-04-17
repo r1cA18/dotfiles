@@ -14,11 +14,12 @@ JS/TS ランタイムは Bun 優先。環境を汚すグローバルインスト
 
 ## 永続的なツール追加
 
-| 対象                       | 方法                                             |
-| -------------------------- | ------------------------------------------------ |
-| CLI ツール・フォーマッター | `packages.nix` の `commonPackages` に追加 → `dr` |
-| グローバル npm パッケージ  | `packages.nix` の `globalNpmPackages` に追加     |
-| GUI アプリ (macOS)         | `configuration.nix` の `homebrew.casks` に追加   |
+| 対象                       | 方法                                                             |
+| -------------------------- | ---------------------------------------------------------------- |
+| CLI ツール・フォーマッター | `packages.nix` の `commonPackages` に追加 → `dr`                |
+| npm CLI (nixpkgs にある)   | `commonPackages` に追加                                          |
+| npm CLI (nixpkgs にない)   | `nix/pkgs/<name>/` に `buildNpmPackage` で追加 → `default.nix` と `commonPackages` に登録 |
+| GUI アプリ (macOS)         | `configuration.nix` の `homebrew.casks` に追加                  |
 
 ## 一時利用（環境を汚さず試す）
 

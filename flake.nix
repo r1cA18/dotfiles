@@ -28,6 +28,10 @@
     anthropic-skills.url = "github:anthropics/skills";
     anthropic-skills.flake = false;
 
+    # difit skills
+    difit-skills.url = "github:yoshiko-pg/difit";
+    difit-skills.flake = false;
+
   };
 
   outputs =

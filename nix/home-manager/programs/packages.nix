@@ -73,9 +73,9 @@ let
     cloudflared
     tmux
     ffmpeg
-    firecrawl-cli
     agent-browser
     agentSkillPath
+    difit
   ];
 
   # macOS専用パッケージ

@@ -15,6 +15,12 @@
         subdir = "skills";
       };
 
+      # difit スキル
+      difit = {
+        path = inputs.difit-skills;
+        subdir = "skills";
+      };
+
     };
 
     skills = {
@@ -23,6 +29,8 @@
 
       # 公式スキルは個別に有効化
       enable = [
+        "difit"
+        "difit-review"
         "pdf"
         "xlsx"
         "frontend-design"
