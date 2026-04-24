@@ -118,11 +118,11 @@
         };
       };
 
-      # Standalone home-manager configuration (Linux/Ubuntu, aarch64)
+      # Standalone home-manager configuration (Linux/Ubuntu)
       # Build with: nh home switch . -c r1ca18@linux
       homeConfigurations."r1ca18@linux" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
-          system = "aarch64-linux";
+          system = "x86_64-linux";
           config.allowUnfree = true;
         };
         extraSpecialArgs = {
