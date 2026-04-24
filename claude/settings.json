@@ -49,11 +49,6 @@
     ]
   },
   "enableAllProjectMcpServers": false,
-  "sandbox": {
-    "filesystem": {
-      "denyRead": ["./.env", "./.env.*"]
-    }
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -101,6 +96,15 @@
             "command": "~/.claude/hooks/test-reminder.sh"
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
       }
     ],
     "Notification": [
@@ -131,6 +135,14 @@
             "command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -139,6 +151,36 @@
           {
             "type": "command",
             "command": "bun x cc-nametag hook"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -170,7 +212,8 @@
     "skill-creator@claude-plugins-official": true,
     "playground@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
-    "linear@claude-plugins-official": true
+    "linear@claude-plugins-official": true,
+    "codex@openai-codex": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -187,6 +230,14 @@
     }
   },
   "language": "日本語, 敬語非使用",
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "./.env",
+        "./.env.*"
+      ]
+    }
+  },
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }
