@@ -5,7 +5,7 @@
 project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
 
 # 推論レベル
-model_reasoning_effort = "medium"
+model_reasoning_effort = "xhigh"
 
 # ツール出力の最大トークン数
 tool_output_token_limit = 25000
@@ -14,7 +14,7 @@ tool_output_token_limit = 25000
 # 計算式: 273000 - (tool_output_token_limit + 15000)
 # = 273000 - (25000 + 15000) = 233000
 model_auto_compact_token_limit = 233000
-model = "gpt-5.4"
+model = "gpt-5.5"
 web_search = "live"
 
 [features]
@@ -53,6 +53,9 @@ trust_level = "trusted"
 [projects."/Users/r1ca18/Develop/github.com/C-Style-team/MobileAndon/MobileAndon-Revised"]
 trust_level = "trusted"
 
+[projects."/Users/r1ca18/Develop/github.com/C-Style-team/MobileAndon"]
+trust_level = "trusted"
+
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
 
@@ -62,5 +65,27 @@ enabled = true
 [plugins."github@openai-curated"]
 enabled = true
 
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
 [tui]
 status_line = ["model-with-reasoning", "context-remaining", "current-dir", "git-branch", "context-used", "five-hour-limit"]
+
+[marketplaces.openai-bundled]
+last_updated = "2026-04-24T06:18:19Z"
+source_type = "local"
+source = "/Users/r1ca18/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-04-24T06:51:02Z"
+source_type = "local"
+source = "/Users/r1ca18/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
