@@ -13,7 +13,7 @@ buildNpmPackage rec {
   };
   sourceRoot = "package";
 
-  npmDepsHash = lib.fakeHash;
+  npmDepsHash = "sha256-PRs1AP9p4d4DViugoWARnaFqufUDOrWopL5g54Sfm1I=";
 
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
@@ -21,9 +21,14 @@ buildNpmPackage rec {
 
   dontNpmBuild = true;
 
+  npmFlags = [
+    "--legacy-peer-deps"
+  ];
+
   npmInstallFlags = [
     "--omit=dev"
     "--ignore-scripts"
+    "--legacy-peer-deps"
   ];
   npmPackFlags = [
     "--ignore-scripts"

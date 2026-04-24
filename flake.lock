@@ -39,6 +39,22 @@
         "type": "github"
       }
     },
+    "difit-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776247296,
+        "narHash": "sha256-CycsLdgGh4lSIwIjl6DBX6FmMHLWtQmHxrydGxHCe6A=",
+        "owner": "yoshiko-pg",
+        "repo": "difit",
+        "rev": "e77bb2d69d95674a634b133ababb4f04df9d5ba4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yoshiko-pg",
+        "repo": "difit",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -120,6 +136,7 @@
       "inputs": {
         "agent-skills-nix": "agent-skills-nix",
         "anthropic-skills": "anthropic-skills",
+        "difit-skills": "difit-skills",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
