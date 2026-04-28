@@ -85,7 +85,6 @@ skills.enable = [
 | `swift-dev-toolkit` | Swift/iOS/macOS開発ツールキット              |
 | `skill-builder`     | スキルの作成・改善                           |
 | `skill-auditor`     | スキルの品質監査                             |
-| `tmux-ai-cli`       | Gemini CLI + Codex CLIのオーケストレーション |
 | `post-review`       | 実装後レビューと修正のループ                 |
 
 ### UI / デザイン

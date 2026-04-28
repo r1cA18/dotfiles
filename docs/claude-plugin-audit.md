@@ -30,7 +30,7 @@
 | plugin / source | asset | コメント |
 | --- | --- | --- |
 | `pr-review-toolkit@claude-plugins-official` | review workflow | `skills/post-review/` で代替の shared workflow を追加済み |
-| `code-review@claude-code-plugins` | review workflow | `skills/post-review/` と `skills/tmux-ai-cli/skills/codex-review/` で代替可能 |
+| `code-review@claude-code-plugins` | review workflow | `skills/post-review/` で代替可能 |
 | `document-skills@anthropic-agent-skills` | `pdf`, `xlsx` | 公式 skill として `agent-skills.nix` で有効化候補 |
 | `document-skills@anthropic-agent-skills` | `docx`, `pptx` | 必要になったら公式 skill として有効化検討 |
 | `skill-creator@claude-plugins-official` | skill creation guidance | Codex 側の system skill と役割が重複 |
