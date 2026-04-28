@@ -56,6 +56,7 @@ let
   commonPackages = with pkgs; [
     # Development
     bun
+    nodejs_22
     codex
     gemini-cli
 

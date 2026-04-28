@@ -46,8 +46,10 @@
       "Write(**/secrets/**)",
       "Edit(**/credentials/**)",
       "Write(**/credentials/**)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "enableAllProjectMcpServers": false,
   "hooks": {
     "PreToolUse": [
@@ -195,7 +197,6 @@
     "swift-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "mgrep@Mixedbread-Grep": true,
@@ -239,5 +240,9 @@
     }
   },
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
+  "remoteControlAtStartup": false,
+  "theme": "light",
+  "editorMode": "vim"
 }
