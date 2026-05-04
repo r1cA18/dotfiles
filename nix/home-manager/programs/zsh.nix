@@ -371,6 +371,29 @@ in
                 claude "''${args[@]}"
               fi
             }
+
+            # cx wraps codex: -s for sub-account (~/.codex-sub),
+            # -H for the heavy profile (gpt-5.5 high). Default is gpt-5.4 medium.
+            cx() {
+              local args=()
+              local use_sub=0
+              local profile="default"
+
+              for arg in "$@"; do
+                case "$arg" in
+                  -s) use_sub=1 ;;
+                  -H|--heavy) profile="heavy" ;;
+                  --spark) profile="spark" ;;
+                  *) args+=("$arg") ;;
+                esac
+              done
+
+              if (( use_sub )); then
+                CODEX_HOME=~/.codex-sub codex --profile "$profile" "''${args[@]}"
+              else
+                codex --profile "$profile" "''${args[@]}"
+              fi
+            }
     '';
   };
 }
