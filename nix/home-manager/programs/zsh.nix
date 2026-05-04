@@ -122,21 +122,40 @@ let
     };
   };
 
+  # Claude Code abbreviations.
+  # All entries are zsh-abbr expansions: type the alias + space and the full
+  # command appears inline before Enter. No custom functions, no -s/-w flag
+  # interception — each variation gets its own abbr so the resolved command is
+  # always visible.
   claudeAliases = {
+    # base + account variants
+    cl = {
+      cmd = "claude";
+      desc = "Start Claude Code";
+    };
+    clsub = {
+      cmd = "CLAUDE_CONFIG_DIR=$HOME/.claude-sub claude";
+      desc = "Start Claude with sub account";
+    };
+    clw = {
+      cmd = "ANTHROPIC_API_KEY=\${CLAUDE_CSTYLE_API_KEY} claude";
+      desc = "Start Claude with work API key";
+    };
+    # session actions
     clc = {
-      cmd = "cl --continue";
+      cmd = "claude --continue";
       desc = "Continue last Claude session";
     };
     clcd = {
-      cmd = "cl --continue --dangerously-skip-permissions";
+      cmd = "claude --continue --dangerously-skip-permissions";
       desc = "Continue Claude session without prompts";
     };
     clr = {
-      cmd = "cl --resume";
+      cmd = "claude --resume";
       desc = "Resume Claude session from picker";
     };
     cld = {
-      cmd = "cl --dangerously-skip-permissions";
+      cmd = "claude --dangerously-skip-permissions";
       desc = "Start Claude without prompts";
     };
     clu = {
@@ -145,15 +164,38 @@ let
     };
     cls = {
       cmd = "bunx ccusage";
-      desc = "Show Claude usage";
+      desc = "Show Claude usage (ccusage)";
     };
   };
 
+  # Codex abbreviations.
+  # `cx` uses the top-level `model` / `model_reasoning_effort` from
+  # ~/.codex/config.toml (gpt-5.4 medium). `--profile heavy` / `--profile spark`
+  # override per-invocation; `cxs` switches to the sub-account.
   codexAliases = {
+    # base + profile variants
     cx = {
       cmd = "codex";
-      desc = "Start Codex";
+      desc = "Start Codex (default model)";
     };
+    cxh = {
+      cmd = "codex --profile heavy";
+      desc = "Start Codex with heavy profile (gpt-5.5 high)";
+    };
+    cxsp = {
+      cmd = "codex --profile spark";
+      desc = "Start Codex with spark profile";
+    };
+    # account variants
+    cxs = {
+      cmd = "CODEX_HOME=$HOME/.codex-sub codex";
+      desc = "Start Codex with sub account";
+    };
+    cxsh = {
+      cmd = "CODEX_HOME=$HOME/.codex-sub codex --profile heavy";
+      desc = "Start Codex with sub account + heavy profile";
+    };
+    # session actions
     cxc = {
       cmd = "codex resume --last";
       desc = "Continue last Codex session";
@@ -348,52 +390,6 @@ in
               [[ -n "$repo" ]] && cd "$repo"
             }
 
-            cl() {
-              local args=()
-              local use_alt=0
-              local use_sub=0
-
-              for arg in "$@"; do
-                if [[ "$arg" == "-w" ]]; then
-                  use_alt=1
-                elif [[ "$arg" == "-s" ]]; then
-                  use_sub=1
-                else
-                  args+=("$arg")
-                fi
-              done
-
-              if (( use_alt )); then
-                ANTHROPIC_API_KEY="''${CLAUDE_CSTYLE_API_KEY}" claude "''${args[@]}"
-              elif (( use_sub )); then
-                CLAUDE_CONFIG_DIR=~/.claude-sub claude "''${args[@]}"
-              else
-                claude "''${args[@]}"
-              fi
-            }
-
-            # cx wraps codex: -s for sub-account (~/.codex-sub),
-            # -H for the heavy profile (gpt-5.5 high). Default is gpt-5.4 medium.
-            cx() {
-              local args=()
-              local use_sub=0
-              local profile="default"
-
-              for arg in "$@"; do
-                case "$arg" in
-                  -s) use_sub=1 ;;
-                  -H|--heavy) profile="heavy" ;;
-                  --spark) profile="spark" ;;
-                  *) args+=("$arg") ;;
-                esac
-              done
-
-              if (( use_sub )); then
-                CODEX_HOME=~/.codex-sub codex --profile "$profile" "''${args[@]}"
-              else
-                codex --profile "$profile" "''${args[@]}"
-              fi
-            }
     '';
   };
 }

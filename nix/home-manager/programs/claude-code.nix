@@ -262,6 +262,10 @@ in
           source = "git";
           url = "https://github.com/getsentry/sentry-for-ai.git";
         };
+        openai-codex.source = {
+          source = "github";
+          repo = "openai/codex-plugin-cc";
+        };
       };
 
       language = "日本語, 敬語非使用";

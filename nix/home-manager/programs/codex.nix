@@ -9,6 +9,8 @@ let
   homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
 
+  tomlFormat = pkgs.formats.toml { };
+
   trustedProjects = [
     "/Users/r1ca18"
     "/Users/r1ca18/dotfiles"
@@ -31,68 +33,74 @@ let
     "spreadsheets@openai-primary-runtime"
     "presentations@openai-primary-runtime"
   ];
-in
-{
-  programs.codex = {
-    enable = true;
-    package = null; # installed via packages.nix instead, keeps install in one place
 
-    settings = {
-      # No top-level `model` / `model_reasoning_effort`: defaults come from
-      # `profiles.default` and the `cx()` shell function always passes
-      # `--profile default` (or --heavy / --spark). This avoids two-place
-      # maintenance when changing the default model.
+  codexSettings = {
+    # Top-level model is the default for `codex` with no --profile (= the cx abbr).
+    # Profiles below override per-invocation: cxh = heavy, cxsp = spark.
+    model = "gpt-5.4";
+    model_reasoning_effort = "medium";
 
-      project_doc_fallback_filenames = [
-        "CODEX.md"
-        "AGENTS.md"
-        "CLAUDE.md"
-      ];
+    project_doc_fallback_filenames = [
+      "CODEX.md"
+      "AGENTS.md"
+      "CLAUDE.md"
+    ];
 
-      tool_output_token_limit = 25000;
-      model_auto_compact_token_limit = 233000;
-      web_search = "live";
+    tool_output_token_limit = 25000;
+    model_auto_compact_token_limit = 233000;
+    web_search = "live";
 
-      features = {
-        skills = true;
-        shell_snapshot = true;
-        apply_patch_freeform = true;
-        multi_agent = true;
+    suppress_unstable_features_warning = true;
+
+    features = {
+      skills = true;
+      shell_snapshot = true;
+      apply_patch_freeform = true;
+      multi_agent = true;
+    };
+
+    tui.status_line = [
+      "model-with-reasoning"
+      "context-remaining"
+      "current-dir"
+      "git-branch"
+      "context-used"
+      "five-hour-limit"
+    ];
+
+    mcp_servers.linear.url = "https://mcp.linear.app/mcp";
+
+    projects = lib.listToAttrs (
+      map (p: lib.nameValuePair p { trust_level = "trusted"; }) trustedProjects
+    );
+
+    plugins = lib.listToAttrs (map (p: lib.nameValuePair p { enabled = true; }) enabledPlugins);
+
+    # No profiles.default: top-level fields above are the default.
+    # `codex --profile heavy` → gpt-5.5 high, `codex --profile spark` → spark.
+    profiles = {
+      heavy = {
+        model = "gpt-5.5";
+        model_reasoning_effort = "high";
       };
-
-      tui.status_line = [
-        "model-with-reasoning"
-        "context-remaining"
-        "current-dir"
-        "git-branch"
-        "context-used"
-        "five-hour-limit"
-      ];
-
-      mcp_servers.linear.url = "https://mcp.linear.app/mcp";
-
-      projects = lib.listToAttrs (
-        map (p: lib.nameValuePair p { trust_level = "trusted"; }) trustedProjects
-      );
-
-      plugins = lib.listToAttrs (map (p: lib.nameValuePair p { enabled = true; }) enabledPlugins);
-
-      profiles = {
-        default = {
-          model = "gpt-5.4";
-          model_reasoning_effort = "medium";
-        };
-        heavy = {
-          model = "gpt-5.5";
-          model_reasoning_effort = "high";
-        };
-        spark = {
-          model = "gpt-5.3-codex-spark";
-          model_reasoning_effort = "medium";
-        };
+      spark = {
+        model = "gpt-5.3-codex-spark";
+        model_reasoning_effort = "medium";
       };
     };
   };
+
+  codexConfigFile = tomlFormat.generate "codex-config.toml" codexSettings;
+in
+{
+  # NOTE: we deliberately do NOT use programs.codex.settings.
+  # That option creates a symlink to /nix/store/... which is read-only.
+  # Codex tries to persist runtime state (model migration prompts, /model
+  # selection, default model preference) and fails with errors like:
+  #   "Failed to save default model: failed to persist config.toml at /nix/store/..."
+  #
+  # Instead we copy the generated toml as a real writable file each dr.
+  # Codex can write at runtime; next dr resets dotfiles defaults.
 
   home.file = {
     # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
@@ -106,4 +114,12 @@ in
     ".codex-sub/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/AGENTS.md";
     ".codex-sub/skills".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
   };
+
+  home.activation.codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    install -d "$HOME/.codex"
+    # Remove possible old symlink-to-store (from previous programs.codex.settings setup),
+    # then install fresh writable copy of the Nix-generated toml.
+    rm -f "$HOME/.codex/config.toml"
+    install -m 644 "${codexConfigFile}" "$HOME/.codex/config.toml"
+  '';
 }
