@@ -13,9 +13,14 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # agent-skills-nix (declarative Agent Skills management)
+    # agent-skills-nix (declarative Agent Skills management).
+    # Pinned to bb2fc09 because newer revisions break nested skill directories:
+    # symptom is `ln: failed to create symbolic link .../agent-skills-bundle/<skill>/skills/<sub>/...: Permission denied`
+    # whenever a skill (e.g. swift-dev-toolkit) contains its own skills/<sub>/
+    # subdirectories. Re-evaluate periodically and drop the rev once upstream
+    # handles nested skill dirs again.
     agent-skills-nix = {
-      url = "github:Kyure-A/agent-skills-nix";
+      url = "github:Kyure-A/agent-skills-nix/bb2fc09cd0152867bd548422e66f4738b081d719";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
