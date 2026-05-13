@@ -60,12 +60,30 @@ chsh -s "$HOME/.nix-profile/bin/zsh"
 
 ### 5. フォント設定
 
+`nerd-fonts.jetbrains-mono` は `linuxPackages` 経由で `dr` 時に入る。フォントキャッシュだけ更新する。
+
 ```bash
-# フォントキャッシュを更新
 fc-cache -fv
 ```
 
 ターミナルアプリのフォント設定で `JetBrainsMono Nerd Font` を選択。
+
+### 6. Claude Code セットアップ
+
+`programs.claude-code` は `package = null` で settings.json と plugins だけを管理し、バイナリ自体は公式インストーラ (auto-update) に任せている。Linux でも公式手順で `~/.local/bin/claude` に入れる。
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+which claude    # ~/.local/bin/claude を指していることを確認
+claude --version
+```
+
+> **Warning**: 過去に `bun install -g @anthropic-ai/claude-code` を走らせていたマシンでは `~/.bun/bin/claude` の残骸が PATH 優先で拾われ、`claude native binary not installed` で起動失敗する。残骸を消してから公式インストーラを走らせる:
+>
+> ```bash
+> bun remove -g @anthropic-ai/claude-code 2>/dev/null || rm -f ~/.bun/bin/claude
+> rm -rf ~/.bun/install/global/node_modules/@anthropic-ai/claude-code
+> ```
 
 ---
 
@@ -243,6 +261,9 @@ nix run home-manager -- switch --flake .#r1ca18@linux
 # 4. デフォルトシェル変更
 echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
 chsh -s "$HOME/.nix-profile/bin/zsh"
+
+# 5. Claude Code 公式インストーラ (auto-update に任せる方針)
+curl -fsSL https://claude.ai/install.sh | bash
 ```
 
 ---

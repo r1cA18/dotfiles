@@ -93,14 +93,22 @@ let
     xcodegen
 
     # CLI alternatives for GUI apps
+    # Linux 側は apt + systemd で入れるため Nix 管理しない (CLI/daemon
+    # 二重インストールによるバージョン skew を避ける)
     ollama
     tailscale
+  ];
+
+  # Linux 専用パッケージ
+  linuxPackages = with pkgs; [
+    # ターミナル (Ghostty 等) で Nerd Font グリフを使うため
+    nerd-fonts.jetbrains-mono
   ];
 
 in
 {
   home = {
-    packages = commonPackages ++ (if isDarwin then darwinPackages else [ ]);
+    packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
     sessionPath = [
       "$HOME/.antigravity/antigravity/bin"
       "$HOME/.local/bin"
