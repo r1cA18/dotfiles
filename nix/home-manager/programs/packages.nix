@@ -77,6 +77,7 @@ let
     agent-browser
     agentSkillPath
     difit
+    _1password-cli
   ];
 
   # macOS専用パッケージ

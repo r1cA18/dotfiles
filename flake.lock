@@ -43,11 +43,11 @@
     "difit-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1778491160,
-        "narHash": "sha256-chmlNmUaxOjlQbjd/60fFc3lE2jwpp8Cnftl+O+6g4E=",
+        "lastModified": 1778692537,
+        "narHash": "sha256-8xDzDEshyB8Mz01JBoB1YBIInUFYlSz2ys4ozPLhZ9Q=",
         "owner": "yoshiko-pg",
         "repo": "difit",
-        "rev": "6dd8e2f937a4854f1c2e5ce61cf62bbd9fc35519",
+        "rev": "7a41c9089c4122671f87375bd28b10fd26a63b18",
         "type": "github"
       },
       "original": {
@@ -63,11 +63,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1778628724,
-        "narHash": "sha256-VNG6hJ146VEenXcDrB3t6MVnrMx+gtyCWTCDkzOp9Qs=",
+        "lastModified": 1778728372,
+        "narHash": "sha256-8pArLaovyMHR9VHa6eVk4e5vgvDS+Dg9J8pxPBjAE18=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "6a0bbd6b4720da1c9ce7ebf35ff5c41a82db367a",
+        "rev": "f04b141d1a0d6d7d62aa9678aef602dfb61e8bb1",
         "type": "github"
       },
       "original": {
@@ -119,11 +119,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1778580735,
-        "narHash": "sha256-t+8AVV8ExvOmslz2sLIgw/hJBKlyl65rJvxjvvjHgpE=",
+        "lastModified": 1778672786,
+        "narHash": "sha256-Blg88K1jwG+P0Mr27+rKMFCufdrWkV3wWh9AdYtz0FQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "48d91f2c0ce7b9e589f967d4f685153dd765dcdd",
+        "rev": "eef00dfd8a712b34af845f9350bac681b1228bd1",
         "type": "github"
       },
       "original": {
