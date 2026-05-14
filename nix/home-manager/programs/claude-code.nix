@@ -296,6 +296,15 @@ in
     ".claude/agents" = mkClaudeSymlink "claude/agents";
   };
 
+  # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
+  # it as a regular file (plugin installs, in-app /config edits). The next `dr`
+  # then tries to back it up to settings.json.hm-backup and fails if a previous
+  # backup already exists. Since Nix is the source of truth here, the backup has
+  # no value — drop it before checkLinkTargets runs.
+  home.activation.cleanClaudeSettingsBackup = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    rm -f "$HOME/.claude/settings.json.hm-backup"
+  '';
+
   # MCP servers cannot use programs.claude-code.mcpServers (requires package!=null
   # and our claude is self-installed). Keep the python merge script that syncs
   # claude/mcp-servers.json into ~/.claude.json on every dr.
