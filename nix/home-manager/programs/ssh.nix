@@ -3,6 +3,7 @@ lib.mkIf pkgs.stdenv.isDarwin {
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
+    includes = [ "~/.orbstack/ssh/config" ];
     matchBlocks = {
       "*" = {
         extraOptions = {
@@ -11,6 +12,11 @@ lib.mkIf pkgs.stdenv.isDarwin {
       };
       "homelab" = {
         user = "r1ca18";
+      };
+      "rlc" = {
+        extraOptions = {
+          SetEnv = "TERM=xterm-256color";
+        };
       };
     };
   };
