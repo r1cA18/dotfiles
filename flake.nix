@@ -32,6 +32,14 @@
     difit-skills.url = "github:yoshiko-pg/difit";
     difit-skills.flake = false;
 
+    # treefmt-nix (unified formatter)
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # git-hooks.nix (pre-commit hooks)
+    git-hooks-nix.url = "github:cachix/git-hooks.nix";
+    git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
+
   };
 
   outputs =
@@ -42,6 +50,8 @@
       home-manager,
       agent-skills-nix,
       nix-index-database,
+      treefmt-nix,
+      git-hooks-nix,
       ...
     }@inputs:
     let
@@ -122,8 +132,75 @@
       # Custom packages
       packages = forAllSystems (system: import ./nix/pkgs nixpkgs.legacyPackages.${system});
 
-      # Formatter for nix files
-      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
+      # treefmt (unified formatting)
+      formatter = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
+        in
+        treefmtEval.config.build.wrapper
+      );
+
+      # Flake checks (treefmt + git-hooks)
+      checks = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
+          hooks = git-hooks-nix.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              treefmt = {
+                enable = true;
+                package = treefmtEval.config.build.wrapper;
+              };
+              deadnix.enable = true;
+              statix.enable = true;
+            };
+          };
+        in
+        {
+          formatting = treefmtEval.config.build.check self;
+          pre-commit = hooks;
+        }
+      );
+
+      # Dev shell with pre-commit hooks
+      devShells = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
+          hooks = git-hooks-nix.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              treefmt = {
+                enable = true;
+                package = treefmtEval.config.build.wrapper;
+              };
+              deadnix.enable = true;
+              statix.enable = true;
+            };
+          };
+        in
+        {
+          default = pkgs.mkShell {
+            inherit (hooks) shellHook;
+            buildInputs = hooks.enabledPackages ++ [
+              treefmtEval.config.build.wrapper
+            ];
+          };
+        }
+      );
+
+      # Flake apps
+      apps = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          fmt = {
+            type = "app";
+            program = "${(treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix).config.build.wrapper}/bin/treefmt";
+          };
+        }
+      );
 
       # Custom overlays
       overlays = import ./nix/overlays;

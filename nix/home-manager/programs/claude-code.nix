@@ -31,6 +31,7 @@ in
     # intended workflow: keep dotfiles diff clean, accept that runtime
     # changes are session-scoped unless promoted to this file.
     settings = {
+      "$schema" = "https://json.schemastore.org/claude-code-settings.json";
       env = {
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";

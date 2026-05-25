@@ -9,7 +9,19 @@ let
     user.email = userEmail;
     init.defaultBranch = "main";
     push.autoSetupRemote = true;
+    push.useForceIfIncludes = true;
     pull.rebase = true;
+    fetch.prune = true;
+    fetch.pruneTags = true;
+    rebase.autoSquash = true;
+    rebase.updateRefs = true;
+    rerere.enabled = true;
+    diff.algorithm = "histogram";
+    merge.conflictstyle = "zdiff3";
+    commit.verbose = true;
+    branch.sort = "-committerdate";
+    column.ui = "auto";
+    help.autocorrect = "prompt";
     ghq.root = "~/Develop";
   };
 
@@ -26,6 +38,16 @@ in
 {
   programs.gh.enable = true;
 
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      navigate = true;
+      side-by-side = true;
+      line-numbers = true;
+    };
+  };
+
   programs.git = {
     enable = true;
     ignores = [
@@ -33,6 +55,13 @@ in
       "*.swp"
       ".direnv"
       ".envrc"
+      ".claude/skills"
+      ".claude/settings.local.json"
+      "__pycache__"
+      "*.pyc"
+      "node_modules"
+      ".venv"
+      "result"
     ];
     settings = lib.recursiveUpdate baseSettings (
       lib.optionalAttrs pkgs.stdenv.isDarwin signingSettings
