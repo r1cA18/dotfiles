@@ -153,6 +153,12 @@ let
             enable = true;
             systems = [ ];
           };
+          codex = {
+            dest = ".codex/skills";
+            structure = "copy-tree";
+            enable = true;
+            systems = [ ];
+          };
         };
       };
 
