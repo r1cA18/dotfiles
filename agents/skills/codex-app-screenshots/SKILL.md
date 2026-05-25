@@ -5,18 +5,21 @@ description: >
   Opens ChatGPT in Chrome, uploads reference images + app screenshots,
   sends a prompt, waits for image generation, and downloads the results.
   Reads the project context to generate appropriate app descriptions and
-  screen headlines for each mockup.
+  screen headlines for each mockup. Supports iPhone and iPad screenshots
+  in portrait or landscape orientation.
   Triggers on: app store screenshots, store screenshots, marketing screenshots,
-  generate app screenshots, app store mockup, mockup generation.
+  generate app screenshots, app store mockup, mockup generation,
+  iPad screenshots, iPhone screenshots.
   JA: アプリストアスクリーンショット生成, ストア画像生成, モックアップ生成,
-  App Storeスクリーンショット, ストアスクショ
+  App Storeスクリーンショット, ストアスクショ, iPadスクショ
 ---
 
 # App Store Screenshots Generator (ChatGPT Web UI)
 
 ChatGPT 4o のネイティブ画像生成を使って App Store スクリーンショットモックアップを作る。
+iPhone / iPad の両デバイスに対応し、縦向き・横向きを選択可能。
 
-**フロー**: プロジェクト理解 → プロンプト構築 → Chrome で ChatGPT 操作 → 生成 → ダウンロード
+**フロー**: デバイス選択 → プロジェクト理解 → プロンプト構築 → Chrome で ChatGPT 操作 → 生成 → ダウンロード
 
 ## Why ChatGPT Web UI
 
@@ -36,6 +39,54 @@ API 経由の画像生成では iPhone モックアップ内に実際のアプ�
 | `references/IMG_3836.jpg` | 参考画像 4 (診断画面モックアップ例) |
 | `prompt-template.md` | プロンプトテンプレート (固定制約 + 動的パート) |
 | `scripts/resize-screenshots.sh` | 生成画像を各デバイスサイズにリサイズ |
+
+## Step 0: デバイス選択 (AskUserQuestion) & 向き自動判定
+
+### 0a. デバイスを聞く
+
+プロンプト構築の前に、AskUserQuestion ツールを使ってユーザーに対象デバイスを確認する。
+
+**質問: 対象デバイス**
+- iPhone
+- iPad
+- 両方
+
+### 0b. 向きを自動判定
+
+ユーザーから受け取ったアプリ画面スクショの画像サイズから縦横を自動判定する。
+
+```bash
+# 画像の幅と高さを取得
+magick identify -format "%w %h" "$IMAGE_PATH"
+```
+
+- 幅 < 高さ → 縦向き (Portrait)
+- 幅 > 高さ → 横向き (Landscape)
+- 幅 = 高さ → 縦向き (Portrait) をデフォルトとする
+
+### デバイスサイズ早見表
+
+| デバイス | 縦向き (Portrait) | 横向き (Landscape) |
+|----------|-------------------|--------------------|
+| iPhone | 1284 x 2778 | 2778 x 1284 |
+| iPad | 2048 x 2732 | 2732 x 2048 |
+
+判定結果を以降のステップで使う:
+- `{{DEVICE_TYPE}}`: iphone / ipad
+- `{{OUTPUT_SIZE}}`: デバイス + 向きに応じたサイズ (例: `1284 x 2778`)
+- `{{DEVICE_LABEL}}`: iPhone / iPad
+- `{{ORIENTATION}}`: portrait / landscape
+
+「両方」が選択された場合、Step 2 以降をデバイスごとに繰り返す。
+向きは両デバイスとも同じスクショから判定するため共通。
+
+### 配色とスタイル
+
+プロンプトの `{{STYLE_DIRECTION}}` には、アプリの実際のデザイン（配色、フォント、
+雰囲気）を反映させる。アプリの UI スクショやプロジェクトのアセットから
+メインカラーやアクセントカラーを読み取り、プロンプトに含める。
+
+例: 「アプリのメインカラー #007AFF を基調にしたクリーンなスタイル」
 
 ## Step 1: プロジェクト理解 & プロンプト構築
 
@@ -153,8 +204,13 @@ ls -1 ChatGPT*.png | sort | awk '{printf "mv \"%s\" \"slide-%02d.png\"\n", $0, N
 ## Step 3: リサイズ (任意)
 
 ```bash
+# iPhone の場合
 ~/dotfiles/agents/skills/codex-app-screenshots/scripts/resize-screenshots.sh \
   "$OUTPUT_DIR" "$OUTPUT_DIR/export" iphone
+
+# iPad の場合
+~/dotfiles/agents/skills/codex-app-screenshots/scripts/resize-screenshots.sh \
+  "$OUTPUT_DIR" "$OUTPUT_DIR/export" ipad
 ```
 
 | デバイス | サイズ |
@@ -163,6 +219,8 @@ ls -1 ChatGPT*.png | sort | awk '{printf "mv \"%s\" \"slide-%02d.png\"\n", $0, N
 | iPhone 6.5" | 1284 x 2778 |
 | iPhone 6.3" | 1206 x 2622 |
 | iPhone 6.1" | 1125 x 2436 |
+| iPad 13" | 2064 x 2752 |
+| iPad 12.9" Pro | 2048 x 2732 |
 
 ## Output
 
