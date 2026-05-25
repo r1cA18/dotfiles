@@ -110,17 +110,18 @@ $ hv
 
 ## カテゴリ構成
 
-| カテゴリ | 内容 |
-|---------|------|
-| General | 汎用（ll, nv, dot, ..） |
-| Nix | Nix関連（dr, du, ds, dg, nd, db, dp） |
-| Directory | ディレクトリ移動（dev, drive, downloads） |
-| Claude Code | Claude Code関連（clc, clr, cld, cls） |
-| Codex | Codex関連（cx, cxc, cxr, cxrev） |
+| カテゴリ    | 内容                                      |
+| ----------- | ----------------------------------------- |
+| General     | 汎用（ll, nv, dot, ..）                   |
+| Nix         | Nix関連（dr, du, ds, dg, nd, db, dp）     |
+| Directory   | ディレクトリ移動（dev, drive, downloads） |
+| Claude Code | Claude Code関連（clc, clr, cld, cls）     |
+| Codex       | Codex関連（cx, cxc, cxr, cxrev）          |
 
 ## エイリアス追加方法
 
 1. 適切なカテゴリの定義に追加：
+
    ```nix
    generalAliases = {
      # 既存のもの...
@@ -134,9 +135,9 @@ $ hv
 
 ## まとめ
 
-| 項目 | 内容 |
-|------|------|
-| 管理ファイル | `nix/home-manager/programs/zsh.nix` |
-| ヘルプコマンド | `h`（説明）, `hv`（コマンド）, `h <query>`（絞り込み） |
-| 追加方法 | `{cmd, desc}`形式で定義に追加 |
-| 自動生成 | Nix関数で静的テキストを組み立て、shell functionから表示 |
+| 項目           | 内容                                                    |
+| -------------- | ------------------------------------------------------- |
+| 管理ファイル   | `nix/home-manager/programs/zsh.nix`                     |
+| ヘルプコマンド | `h`（説明）, `hv`（コマンド）, `h <query>`（絞り込み）  |
+| 追加方法       | `{cmd, desc}`形式で定義に追加                           |
+| 自動生成       | Nix関数で静的テキストを組み立て、shell functionから表示 |

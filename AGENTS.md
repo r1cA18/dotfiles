@@ -47,8 +47,8 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Karabiner設定         | `karabiner/karabiner.json`                         |
 | Agent Skills管理      | `nix/home-manager/programs/agent-skills.nix`       |
 | スキル追加/編集       | `skills/` ディレクトリ                             |
-| Claude ルール         | `claude/rules/` ディレクトリ                      |
-| Claude フック         | `claude/hooks/` ディレクトリ                      |
+| Claude ルール         | `claude/rules/` ディレクトリ                       |
+| Claude フック         | `claude/hooks/` ディレクトリ                       |
 | Codex設定             | `codex/config.toml`                                |
 | グローバル指示        | `shared/GLOBAL_INSTRUCTIONS.md`                    |
 

@@ -68,14 +68,14 @@ fc-cache -fv
 
 ### よく使うエイリアス
 
-| Alias | 説明 |
-|-------|------|
-| `dr` | `nh darwin switch ~/dotfiles -H <hostname>` - 設定を適用 |
-| `db` | `nh darwin build ~/dotfiles -H <hostname>` - ビルドのみ |
-| `dp` | `darwin-rebuild --rollback` - 戻す |
-| `du` | 依存を更新 (flake.lock) |
-| `ds` | パッケージ検索 |
-| `dg` | 古い世代と store path を削除 |
+| Alias | 説明                                                     |
+| ----- | -------------------------------------------------------- |
+| `dr`  | `nh darwin switch ~/dotfiles -H <hostname>` - 設定を適用 |
+| `db`  | `nh darwin build ~/dotfiles -H <hostname>` - ビルドのみ  |
+| `dp`  | `darwin-rebuild --rollback` - 戻す                       |
+| `du`  | 依存を更新 (flake.lock)                                  |
+| `ds`  | パッケージ検索                                           |
+| `dg`  | 古い世代と store path を削除                             |
 
 ### 定期メンテナンス
 
@@ -177,11 +177,11 @@ mas search "アプリ名"
 
 ### 管理の使い分け
 
-| 種類 | 管理場所 |
-|-----|---------|
+| 種類       | 管理場所                                   |
+| ---------- | ------------------------------------------ |
 | CLI ツール | `home-manager/programs/packages.nix` (Nix) |
-| GUI アプリ | `darwin/configuration.nix` (Homebrew) |
-| App Store | `darwin/configuration.nix` (masApps) |
+| GUI アプリ | `darwin/configuration.nix` (Homebrew)      |
+| App Store  | `darwin/configuration.nix` (masApps)       |
 
 ---
 

@@ -114,7 +114,8 @@
       #   devShells.default = dotfiles.lib.${system}.mkShellWithSkills {
       #     selectedPacks = [ "ios" ];
       #   };
-      mkSkillPacksLib = system:
+      mkSkillPacksLib =
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           asLib = import "${agent-skills-nix}/lib" {
@@ -122,12 +123,24 @@
             inherit inputs;
           };
           sources = {
-            custom = { path = ./skills; filter.maxDepth = 1; };
-            anthropic = { path = inputs.anthropic-skills; subdir = "skills"; };
-            difit = { path = inputs.difit-skills; subdir = "skills"; };
+            custom = {
+              path = ./skills;
+              filter.maxDepth = 1;
+            };
+            anthropic = {
+              path = inputs.anthropic-skills;
+              subdir = "skills";
+            };
+            difit = {
+              path = inputs.difit-skills;
+              subdir = "skills";
+            };
           };
         in
-        import ./nix/lib/skill-packs.nix { inherit (nixpkgs) lib; inherit pkgs asLib sources; };
+        import ./nix/lib/skill-packs.nix {
+          inherit (nixpkgs) lib;
+          inherit pkgs asLib sources;
+        };
 
     in
     {
@@ -138,7 +151,8 @@
       packages = forAllSystems (system: import ./nix/pkgs nixpkgs.legacyPackages.${system});
 
       # treefmt (unified formatting)
-      formatter = forAllSystems (system:
+      formatter = forAllSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
@@ -147,7 +161,8 @@
       );
 
       # Flake checks (treefmt + git-hooks)
-      checks = forAllSystems (system:
+      checks = forAllSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
@@ -170,7 +185,8 @@
       );
 
       # Dev shell with pre-commit hooks
-      devShells = forAllSystems (system:
+      devShells = forAllSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
@@ -197,9 +213,12 @@
       );
 
       # Flake apps
-      apps = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in {
+      apps = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
           fmt = {
             type = "app";
             program = "${(treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix).config.build.wrapper}/bin/treefmt";

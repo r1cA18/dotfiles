@@ -10,30 +10,30 @@
 
 ## 共有済み
 
-| plugin / source | asset | 対応 |
-| --- | --- | --- |
+| plugin / source                           | asset                   | 対応                                          |
+| ----------------------------------------- | ----------------------- | --------------------------------------------- |
 | `frontend-design@claude-plugins-official` | `frontend-design` skill | `agent-skills.nix` で official skill を有効化 |
-| `frontend-design@claude-code-plugins` | `frontend-design` skill | official skill に寄せて一本化 |
+| `frontend-design@claude-code-plugins`     | `frontend-design` skill | official skill に寄せて一本化                 |
 
 ## 継続して Claude 専用に残すもの
 
-| plugin | 理由 |
-| --- | --- |
-| `hookify@claude-plugins-official` | hooks / rules 作成支援で Claude 固有 |
-| `figma@claude-plugins-official` | plugin / MCP 依存が強い |
-| `linear@claude-plugins-official` | Codex では MCP で別管理 |
-| `aurochs-office@aurochs-claude-plugin` | Claude plugin 前提 |
-| `sharp-aircon@sharp-aircon-plugins` | 個別ドメインで Codex 共通化の価値が低い |
+| plugin                                 | 理由                                    |
+| -------------------------------------- | --------------------------------------- |
+| `hookify@claude-plugins-official`      | hooks / rules 作成支援で Claude 固有    |
+| `figma@claude-plugins-official`        | plugin / MCP 依存が強い                 |
+| `linear@claude-plugins-official`       | Codex では MCP で別管理                 |
+| `aurochs-office@aurochs-claude-plugin` | Claude plugin 前提                      |
+| `sharp-aircon@sharp-aircon-plugins`    | 個別ドメインで Codex 共通化の価値が低い |
 
 ## 共有化候補
 
-| plugin / source | asset | コメント |
-| --- | --- | --- |
-| `pr-review-toolkit@claude-plugins-official` | review workflow | `skills/post-review/` で代替の shared workflow を追加済み |
-| `code-review@claude-code-plugins` | review workflow | `skills/post-review/` で代替可能 |
-| `document-skills@anthropic-agent-skills` | `pdf`, `xlsx` | 公式 skill として `agent-skills.nix` で有効化候補 |
-| `document-skills@anthropic-agent-skills` | `docx`, `pptx` | 必要になったら公式 skill として有効化検討 |
-| `skill-creator@claude-plugins-official` | skill creation guidance | Codex 側の system skill と役割が重複 |
+| plugin / source                             | asset                   | コメント                                                  |
+| ------------------------------------------- | ----------------------- | --------------------------------------------------------- |
+| `pr-review-toolkit@claude-plugins-official` | review workflow         | `skills/post-review/` で代替の shared workflow を追加済み |
+| `code-review@claude-code-plugins`           | review workflow         | `skills/post-review/` で代替可能                          |
+| `document-skills@anthropic-agent-skills`    | `pdf`, `xlsx`           | 公式 skill として `agent-skills.nix` で有効化候補         |
+| `document-skills@anthropic-agent-skills`    | `docx`, `pptx`          | 必要になったら公式 skill として有効化検討                 |
+| `skill-creator@claude-plugins-official`     | skill creation guidance | Codex 側の system skill と役割が重複                      |
 
 ## 実態メモ
 

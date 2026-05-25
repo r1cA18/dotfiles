@@ -77,20 +77,20 @@ dotfiles/
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース                          | リンク先                                                     | 管理ファイル                                       |
-| ------------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
-| `nvim/`                         | `~/.config/nvim`                                             | `neovim.nix` (xdg.configFile)                      |
-| `programs.ghostty.settings`     | `~/.config/ghostty/config`                                   | `ghostty.nix` (programs.ghostty)                   |
-| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`                         | `karabiner.nix` (mkOutOfStoreSymlink)              |
-| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/`                     | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `claude/settings.json`          | `~/.claude/settings.json`                                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                                        | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/rules/`                 | `~/.claude/rules/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/hooks/`                 | `~/.claude/hooks/`                                           | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/commands/`              | `~/.claude/commands/`                                        | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/agents/`                | `~/.claude/agents/`                                          | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `codex/config.toml`             | `~/.codex/config.toml`                                       | `codex.nix` (mkOutOfStoreSymlink)                  |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                                         | `codex.nix` (mkOutOfStoreSymlink)                  |
+| ソース                          | リンク先                                 | 管理ファイル                                       |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `nvim/`                         | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
+| `programs.ghostty.settings`     | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
+| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
+| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
+| `claude/settings.json`          | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/rules/`                 | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/hooks/`                 | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/commands/`              | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/agents/`                | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `codex/config.toml`             | `~/.codex/config.toml`                   | `codex.nix` (mkOutOfStoreSymlink)                  |
+| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                     | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Agent 運用の基本方針
 
@@ -336,10 +336,10 @@ in {
 
 ## ビルドコマンド
 
-| OS    | コマンド                      | エイリアス |
-| ----- | ----------------------------- | ---------- |
-| macOS | `nh darwin switch ~/dotfiles -H <hostname>` | `dr` |
-| Linux | `nh home switch ~/dotfiles -c <user>@linux` | `dr` |
+| OS    | コマンド                                    | エイリアス |
+| ----- | ------------------------------------------- | ---------- |
+| macOS | `nh darwin switch ~/dotfiles -H <hostname>` | `dr`       |
+| Linux | `nh home switch ~/dotfiles -c <user>@linux` | `dr`       |
 
 ## 重要な注意事項
 

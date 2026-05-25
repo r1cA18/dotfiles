@@ -1,7 +1,19 @@
-{ lib, pkgs, asLib, sources }:
+{
+  lib,
+  pkgs,
+  asLib,
+  sources,
+}:
 
 let
-  inherit (builtins) attrNames concatMap elem filter removeAttrs toJSON;
+  inherit (builtins)
+    attrNames
+    concatMap
+    elem
+    filter
+    removeAttrs
+    toJSON
+    ;
   inherit (lib) unique;
 
   # ── Pack definitions ──────────────────────────────────────────────
@@ -11,18 +23,31 @@ let
 
   packs = {
     ios = {
-      skills = [ "swift-dev-toolkit" "ios-device-build" ];
+      skills = [
+        "swift-dev-toolkit"
+        "ios-device-build"
+      ];
       plugins = [ "swift-lsp@claude-plugins-official" ];
     };
     web = {
-      skills = [ "frontend-design" "baseline-ui" "ui-skills"
-                 "vercel-react-best-practices" "web-design-guidelines" ];
-      plugins = [ "typescript-lsp@claude-plugins-official"
-                  "frontend-design@claude-plugins-official"
-                  "playground@claude-plugins-official" ];
+      skills = [
+        "frontend-design"
+        "baseline-ui"
+        "ui-skills"
+        "vercel-react-best-practices"
+        "web-design-guidelines"
+      ];
+      plugins = [
+        "typescript-lsp@claude-plugins-official"
+        "frontend-design@claude-plugins-official"
+        "playground@claude-plugins-official"
+      ];
     };
     media = {
-      skills = [ "video-editing" "remotion-best-practices" ];
+      skills = [
+        "video-editing"
+        "remotion-best-practices"
+      ];
       plugins = [ ];
     };
     research = {
@@ -30,12 +55,19 @@ let
       plugins = [ "academic-research-skills@academic-research-skills" ];
     };
     publishing = {
-      skills = [ "x-article-publisher" "x-research" ];
+      skills = [
+        "x-article-publisher"
+        "x-research"
+      ];
       plugins = [ ];
     };
     vault = {
-      skills = [ "knowledge-extract" "session-documentation"
-                 "design-capture" "forms-archive" ];
+      skills = [
+        "knowledge-extract"
+        "session-documentation"
+        "design-capture"
+        "forms-archive"
+      ];
       plugins = [ ];
     };
   };
@@ -63,19 +95,33 @@ let
 
   # ── Helper functions ──────────────────────────────────────────────
 
-  resolveSkills = { selectedPacks ? [], extraSkills ? [] }:
+  resolveSkills =
+    {
+      selectedPacks ? [ ],
+      extraSkills ? [ ],
+    }:
     unique (concatMap (p: packs.${p}.skills) selectedPacks ++ extraSkills);
 
   # Resolve selected packs into plugin enable/disable map.
   # globalPlugins are excluded from the disable list.
-  resolvePlugins = { selectedPacks ? [], extraPlugins ? [] }:
+  resolvePlugins =
+    {
+      selectedPacks ? [ ],
+      extraPlugins ? [ ],
+    }:
     let
       enabled = unique (concatMap (p: packs.${p}.plugins) selectedPacks ++ extraPlugins);
       disabled = filter (p: !(elem p enabled) && !(elem p globalPlugins)) allPackPlugins;
     in
-    { inherit enabled disabled; };
+    {
+      inherit enabled disabled;
+    };
 
-  mkPackBundle = { selectedPacks ? [], extraSkills ? [] }:
+  mkPackBundle =
+    {
+      selectedPacks ? [ ],
+      extraSkills ? [ ],
+    }:
     let
       skillNames = resolveSkills { inherit selectedPacks extraSkills; };
       catalog = asLib.discoverCatalog sources;
@@ -84,25 +130,48 @@ let
         allowlist = skillNames;
       };
     in
-    asLib.mkBundle { inherit pkgs selection; name = "project-skills-bundle"; };
+    asLib.mkBundle {
+      inherit pkgs selection;
+      name = "project-skills-bundle";
+    };
 
-  mkProjectShellHook = { selectedPacks ? [], extraSkills ? [], extraPlugins ? [] }:
+  mkProjectShellHook =
+    {
+      selectedPacks ? [ ],
+      extraSkills ? [ ],
+      extraPlugins ? [ ],
+    }:
     let
       bundle = mkPackBundle { inherit selectedPacks extraSkills; };
 
       skillsHook = asLib.mkShellHook {
         inherit pkgs bundle;
         targets = {
-          claude = { dest = ".claude/skills"; structure = "copy-tree"; enable = true; systems = []; };
+          claude = {
+            dest = ".claude/skills";
+            structure = "copy-tree";
+            enable = true;
+            systems = [ ];
+          };
         };
       };
 
       pluginsCfg = resolvePlugins { inherit selectedPacks extraPlugins; };
-      enableMap = builtins.listToAttrs (map (p: { name = p; value = true; }) pluginsCfg.enabled);
-      disableMap = builtins.listToAttrs (map (p: { name = p; value = false; }) pluginsCfg.disabled);
+      enableMap = builtins.listToAttrs (
+        map (p: {
+          name = p;
+          value = true;
+        }) pluginsCfg.enabled
+      );
+      disableMap = builtins.listToAttrs (
+        map (p: {
+          name = p;
+          value = false;
+        }) pluginsCfg.disabled
+      );
       pluginsJson = toJSON (enableMap // disableMap);
 
-      pluginsHook = lib.optionalString (pluginsCfg.enabled != [] || pluginsCfg.disabled != []) ''
+      pluginsHook = lib.optionalString (pluginsCfg.enabled != [ ] || pluginsCfg.disabled != [ ]) ''
         mkdir -p .claude
         _sp_local=".claude/settings.local.json"
         _sp_plugins='${pluginsJson}'
@@ -129,18 +198,26 @@ let
     skillsHook + pluginsHook;
 
   mkShellWithSkills =
-    { selectedPacks ? []
-    , extraSkills ? []
-    , extraPlugins ? []
-    , ...
+    {
+      selectedPacks ? [ ],
+      extraSkills ? [ ],
+      extraPlugins ? [ ],
+      ...
     }@args:
     let
       packHook = mkProjectShellHook { inherit selectedPacks extraSkills extraPlugins; };
-      cleanArgs = removeAttrs args [ "selectedPacks" "extraSkills" "extraPlugins" ];
+      cleanArgs = removeAttrs args [
+        "selectedPacks"
+        "extraSkills"
+        "extraPlugins"
+      ];
     in
-    pkgs.mkShell (cleanArgs // {
-      shellHook = packHook + (args.shellHook or "");
-    });
+    pkgs.mkShell (
+      cleanArgs
+      // {
+        shellHook = packHook + (args.shellHook or "");
+      }
+    );
 
 in
 {

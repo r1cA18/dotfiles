@@ -7,7 +7,12 @@
     shfmt.enable = true;
     prettier = {
       enable = true;
-      includes = [ "*.md" "*.json" "*.yaml" "*.yml" ];
+      includes = [
+        "*.md"
+        "*.json"
+        "*.yaml"
+        "*.yml"
+      ];
     };
   };
 
@@ -19,5 +24,6 @@
     "skills/**"
     "claude/**"
     "shared/**"
+    "karabiner/**"
   ];
 }

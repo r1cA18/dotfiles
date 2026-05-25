@@ -57,13 +57,13 @@ buildNpmPackage rec {
 
 ## まとめ
 
-| 項目 | 内容 |
-|------|------|
-| 管理ファイル | `nix/home-manager/programs/packages.nix` |
-| custom package 定義 | `nix/pkgs/<name>/default.nix` |
-| lockfile | `nix/pkgs/<name>/package-lock.json` |
-| 実行タイミング | Nix build 時 |
-| パッケージ追加方法 | nixpkgs か `nix/pkgs/` に追加 |
+| 項目                | 内容                                     |
+| ------------------- | ---------------------------------------- |
+| 管理ファイル        | `nix/home-manager/programs/packages.nix` |
+| custom package 定義 | `nix/pkgs/<name>/default.nix`            |
+| lockfile            | `nix/pkgs/<name>/package-lock.json`      |
+| 実行タイミング      | Nix build 時                             |
+| パッケージ追加方法  | nixpkgs か `nix/pkgs/` に追加            |
 
 ## 注意点
 

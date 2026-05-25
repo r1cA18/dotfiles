@@ -49,16 +49,22 @@
         video-editing = {
           from = "custom";
           packages = [ pkgs.ffmpeg ];
-          transform = { original, dependencies }: builtins.replaceStrings
-            [ "- **FFmpeg** - `brew install ffmpeg`"
-              "- **Bun** - `curl -fsSL https://bun.sh/install | bash`"
-              "- **Whisper**（オプション）- `pip install whisper-timestamped`"
-            ]
-            [ "- **FFmpeg** - available via Nix"
-              "- **Bun** - available via Nix"
-              "- **Whisper**（オプション）- `nix run nixpkgs#whisper-ctranslate2`"
-            ]
-            original + "\n" + dependencies;
+          transform =
+            { original, dependencies }:
+            builtins.replaceStrings
+              [
+                "- **FFmpeg** - `brew install ffmpeg`"
+                "- **Bun** - `curl -fsSL https://bun.sh/install | bash`"
+                "- **Whisper**（オプション）- `pip install whisper-timestamped`"
+              ]
+              [
+                "- **FFmpeg** - available via Nix"
+                "- **Bun** - available via Nix"
+                "- **Whisper**（オプション）- `nix run nixpkgs#whisper-ctranslate2`"
+              ]
+              original
+            + "\n"
+            + dependencies;
         };
       };
     };

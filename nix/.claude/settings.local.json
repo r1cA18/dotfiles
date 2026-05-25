@@ -1,9 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(tree:*)",
-      "Bash(nix search:*)",
-      "Bash(cat:*)"
-    ]
+    "allow": ["Bash(tree:*)", "Bash(nix search:*)", "Bash(cat:*)"]
   }
 }

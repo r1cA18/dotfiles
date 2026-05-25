@@ -3,6 +3,7 @@
 このガイドでは、macOS と Linux で共通の運用方法を説明します。
 
 **OS別の詳細ガイド:**
+
 - [macOS ガイド](./guide-macos.md)
 - [Ubuntu/Linux ガイド](./guide-ubuntu.md)
 
@@ -75,15 +76,15 @@ Web: [search.nixos.org](https://search.nixos.org/packages)
 
 ### よく使うパッケージ例
 
-| パッケージ | 説明 |
-|-----------|------|
-| `ripgrep` | 高速 grep |
-| `fd` | 高速 find |
-| `fzf` | ファジーファインダー |
-| `bat` | cat の代替 |
-| `eza` | ls の代替 |
-| `jq` | JSON 処理 |
-| `gh` | GitHub CLI |
+| パッケージ | 説明                 |
+| ---------- | -------------------- |
+| `ripgrep`  | 高速 grep            |
+| `fd`       | 高速 find            |
+| `fzf`      | ファジーファインダー |
+| `bat`      | cat の代替           |
+| `eza`      | ls の代替            |
+| `jq`       | JSON 処理            |
+| `gh`       | GitHub CLI           |
 
 ---
 
@@ -177,12 +178,12 @@ home.sessionPath = [
 
 ### 編集頻度
 
-| ファイル | 頻度 | 内容 |
-|---------|------|------|
-| `packages.nix` | 高 | パッケージ、環境変数 |
-| `programs/*.nix` | 中 | Git, Zsh 設定 |
-| `configuration.nix` | 低 | macOS 設定、GUI アプリ |
-| `flake.nix` | 低 | 依存関係 |
+| ファイル            | 頻度 | 内容                   |
+| ------------------- | ---- | ---------------------- |
+| `packages.nix`      | 高   | パッケージ、環境変数   |
+| `programs/*.nix`    | 中   | Git, Zsh 設定          |
+| `configuration.nix` | 低   | macOS 設定、GUI アプリ |
+| `flake.nix`         | 低   | 依存関係               |
 
 ### OS による条件分岐
 
@@ -204,14 +205,14 @@ home.sessionPath = [
 
 > 詳細は [cheatsheet.md](./cheatsheet.md) を参照
 
-| Alias | macOS | Linux | 説明 |
-|-------|:-----:|:-----:|------|
-| `dr` | ✅ | ✅ | 設定を適用 (rebuild) |
-| `db` | ✅ | - | ビルドのみ |
-| `dp` | ✅ | ✅ | ロールバック / 履歴 |
-| `du` | ✅ | ✅ | 依存を更新 |
-| `ds` | ✅ | ✅ | パッケージを検索 |
-| `dg` | ✅ | ✅ | 古い世代を削除 |
+| Alias | macOS | Linux | 説明                 |
+| ----- | :---: | :---: | -------------------- |
+| `dr`  |  ✅   |  ✅   | 設定を適用 (rebuild) |
+| `db`  |  ✅   |   -   | ビルドのみ           |
+| `dp`  |  ✅   |  ✅   | ロールバック / 履歴  |
+| `du`  |  ✅   |  ✅   | 依存を更新           |
+| `ds`  |  ✅   |  ✅   | パッケージを検索     |
+| `dg`  |  ✅   |  ✅   | 古い世代を削除       |
 
 ### 定期的な更新
 

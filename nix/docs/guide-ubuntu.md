@@ -99,14 +99,14 @@ claude --version
 
 ### よく使うエイリアス
 
-| Alias | 説明 |
-|-------|------|
-| `dr` | `nh home switch ~/dotfiles -c <user>@linux` - 設定を適用 |
-| `db` | `nh home build ~/dotfiles -c <user>@linux` - ビルドのみ |
-| `dp` | `home-manager generations` - 世代一覧 |
-| `du` | 依存を更新 (flake.lock) |
-| `ds` | パッケージ検索 |
-| `dg` | 古い世代と store path を削除 |
+| Alias | 説明                                                     |
+| ----- | -------------------------------------------------------- |
+| `dr`  | `nh home switch ~/dotfiles -c <user>@linux` - 設定を適用 |
+| `db`  | `nh home build ~/dotfiles -c <user>@linux` - ビルドのみ  |
+| `dp`  | `home-manager generations` - 世代一覧                    |
+| `du`  | 依存を更新 (flake.lock)                                  |
+| `ds`  | パッケージ検索                                           |
+| `dg`  | 古い世代と store path を削除                             |
 
 ### 定期メンテナンス
 
@@ -147,11 +147,11 @@ flatpak install アプリ名
 
 ### 設定ファイルのパス
 
-| 設定 | パス |
-|-----|-----|
-| Neovim | `~/.config/nvim/` |
-| Ghostty | `~/.config/ghostty/config` |
-| Zsh | `~/.zshrc` (home-manager 管理) |
+| 設定    | パス                           |
+| ------- | ------------------------------ |
+| Neovim  | `~/.config/nvim/`              |
+| Ghostty | `~/.config/ghostty/config`     |
+| Zsh     | `~/.zshrc` (home-manager 管理) |
 
 ---
 
@@ -159,18 +159,18 @@ flatpak install アプリ名
 
 ### 管理構造
 
-| 項目 | macOS | Linux |
-|-----|-------|-------|
-| システム設定 | nix-darwin | 対象外 |
-| ユーザー設定 | home-manager | home-manager |
-| GUI アプリ | Homebrew | システムのpkg manager |
+| 項目         | macOS        | Linux                 |
+| ------------ | ------------ | --------------------- |
+| システム設定 | nix-darwin   | 対象外                |
+| ユーザー設定 | home-manager | home-manager          |
+| GUI アプリ   | Homebrew     | システムのpkg manager |
 
 ### コマンドの違い
 
-| 操作 | macOS | Linux |
-|-----|-------|-------|
-| リビルド | `nh darwin switch ~/dotfiles -H <hostname>` | `nh home switch ~/dotfiles -c <user>@linux` |
-| ロールバック | `darwin-rebuild --rollback` | 世代を指定して switch |
+| 操作         | macOS                                       | Linux                                       |
+| ------------ | ------------------------------------------- | ------------------------------------------- |
+| リビルド     | `nh darwin switch ~/dotfiles -H <hostname>` | `nh home switch ~/dotfiles -c <user>@linux` |
+| ロールバック | `darwin-rebuild --rollback`                 | 世代を指定して switch                       |
 
 ### 共通で動作するもの
 

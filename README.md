@@ -127,13 +127,13 @@ CLI 依存の skill 運用は [docs/guides/skills.md](docs/guides/skills.md) に
 
 ## ドキュメント
 
-| ドキュメント                                 | 説明               |
-| -------------------------------------------- | ------------------ |
-| [docs/README.md](docs/README.md)             | ドキュメント目次   |
-| [docs/architecture.md](docs/architecture.md) | アーキテクチャ詳細 |
-| [docs/agent-platforms.md](docs/agent-platforms.md) | Claude / Codex 運用整理 |
-| [docs/claude-plugin-audit.md](docs/claude-plugin-audit.md) | Claude plugin 棚卸し |
-| [docs/guides/](docs/guides/)                 | 各種ガイド         |
+| ドキュメント                                               | 説明                    |
+| ---------------------------------------------------------- | ----------------------- |
+| [docs/README.md](docs/README.md)                           | ドキュメント目次        |
+| [docs/architecture.md](docs/architecture.md)               | アーキテクチャ詳細      |
+| [docs/agent-platforms.md](docs/agent-platforms.md)         | Claude / Codex 運用整理 |
+| [docs/claude-plugin-audit.md](docs/claude-plugin-audit.md) | Claude plugin 棚卸し    |
+| [docs/guides/](docs/guides/)                               | 各種ガイド              |
 
 ## 参考
 
