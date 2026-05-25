@@ -200,14 +200,6 @@ in
             hooks = [
               {
                 type = "command";
-                command = "bun x cc-nametag hook";
-              }
-            ];
-          }
-          {
-            hooks = [
-              {
-                type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
               }
             ];
@@ -237,11 +229,6 @@ in
         ];
       };
 
-      statusLine = {
-        type = "command";
-        command = "bun x cc-nametag --prepend 'bun x ccusage statusline'";
-      };
-
       enabledPlugins = {
         "document-skills@anthropic-agent-skills" = true;
         "swift-lsp@claude-plugins-official" = true;
@@ -251,7 +238,7 @@ in
         "pyright-lsp@claude-plugins-official" = true;
         "mgrep@Mixedbread-Grep" = true;
         "sharp-aircon@sharp-aircon-plugins" = true;
-        "aurochs-office@aurochs-claude-plugin" = true;
+        "academic-research-skills@academic-research-skills" = true;
         "ralph-loop@claude-plugins-official" = true;
         "plugin-dev@claude-plugins-official" = true;
         "claude-md-management@claude-plugins-official" = true;
@@ -279,6 +266,10 @@ in
         openai-codex.source = {
           source = "github";
           repo = "openai/codex-plugin-cc";
+        };
+        academic-research-skills.source = {
+          source = "github";
+          repo = "Imbad0202/academic-research-skills";
         };
       };
 

@@ -54,6 +54,7 @@ comma (`,`) を最優先で使う。パッケージ名不要でコマンド名�
 | エージェント          | `~/dotfiles/claude/agents/`                         |
 | グローバルルール      | `~/dotfiles/claude/rules/`                          |
 | グローバルスキル      | `~/dotfiles/skills/<name>/SKILL.md`                 |
+| スキルパック定義      | `~/dotfiles/nix/lib/skill-packs.nix`                |
 
 ## symlink 構造
 

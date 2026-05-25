@@ -5,8 +5,12 @@
 
     sources = {
       # 自作スキル (dotfiles/skills/)
+      # maxDepth = 1: recursive discovery (default since PR #20) + symlink-tree
+      # causes Permission denied when parent is symlinked and children try to
+      # create inside it (e.g. swift-dev-toolkit/skills/build/).
       custom = {
         path = ../../../skills;
+        filter.maxDepth = 1;
       };
 
       # Anthropic 公式スキル
@@ -24,17 +28,20 @@
     };
 
     skills = {
-      # 自作スキルは全て有効化
-      enableAll = [ "custom" ];
-
-      # 公式スキルは個別に有効化
+      # Global skills only. Domain-specific skills are in packs
+      # (nix/lib/skill-packs.nix) and loaded per-project via devShell.
       enable = [
-        "difit"
-        "difit-review"
+        # custom (global)
+        "agent-browser"
         "pdf"
         "xlsx"
-        "frontend-design"
-        # "skill-creator"
+        "post-review"
+        "skill-builder"
+        "skill-auditor"
+        "autonomous-dev"
+        # difit
+        "difit"
+        "difit-review"
       ];
     };
 

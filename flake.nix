@@ -13,14 +13,9 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # agent-skills-nix (declarative Agent Skills management).
-    # Pinned to bb2fc09 because newer revisions break nested skill directories:
-    # symptom is `ln: failed to create symbolic link .../agent-skills-bundle/<skill>/skills/<sub>/...: Permission denied`
-    # whenever a skill (e.g. swift-dev-toolkit) contains its own skills/<sub>/
-    # subdirectories. Re-evaluate periodically and drop the rev once upstream
-    # handles nested skill dirs again.
+    # agent-skills-nix (declarative Agent Skills management)
     agent-skills-nix = {
-      url = "github:Kyure-A/agent-skills-nix/bb2fc09cd0152867bd548422e66f4738b081d719";
+      url = "github:Kyure-A/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
@@ -98,8 +93,32 @@
             }
           ];
         };
+      # Skill pack library for per-project skill/plugin management.
+      # Usage in project flake.nix:
+      #   inputs.dotfiles.url = "git+file:///Users/r1ca18/dotfiles";
+      #   devShells.default = dotfiles.lib.${system}.mkShellWithSkills {
+      #     selectedPacks = [ "ios" ];
+      #   };
+      mkSkillPacksLib = system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          asLib = import "${agent-skills-nix}/lib" {
+            inherit (nixpkgs) lib;
+            inherit inputs;
+          };
+          sources = {
+            custom = { path = ./skills; filter.maxDepth = 1; };
+            anthropic = { path = inputs.anthropic-skills; subdir = "skills"; };
+            difit = { path = inputs.difit-skills; subdir = "skills"; };
+          };
+        in
+        import ./nix/lib/skill-packs.nix { inherit (nixpkgs) lib; inherit pkgs asLib sources; };
+
     in
     {
+      # Skill packs library (per-project skill/plugin management)
+      lib = forAllSystems (system: mkSkillPacksLib system);
+
       # Custom packages
       packages = forAllSystems (system: import ./nix/pkgs nixpkgs.legacyPackages.${system});
 
