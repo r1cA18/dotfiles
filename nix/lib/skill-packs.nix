@@ -27,6 +27,7 @@ let
         "swift-dev-toolkit"
         "ios-device-build"
         "app-store-screenshots"
+        "codex-app-screenshots"
       ];
       plugins = [ "swift-lsp@claude-plugins-official" ];
     };
