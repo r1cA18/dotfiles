@@ -37,6 +37,10 @@
     difit-skills.url = "github:yoshiko-pg/difit";
     difit-skills.flake = false;
 
+    # App Store screenshot generation skill
+    app-store-screenshots.url = "github:ParthJadhav/app-store-screenshots";
+    app-store-screenshots.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -133,6 +137,10 @@
             };
             difit = {
               path = inputs.difit-skills;
+              subdir = "skills";
+            };
+            app-store-screenshots = {
+              path = inputs.app-store-screenshots;
               subdir = "skills";
             };
           };

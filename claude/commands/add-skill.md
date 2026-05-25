@@ -106,10 +106,19 @@ cd ~/dotfiles && nix flake update <repo-name> && nix build .#darwinConfiguration
 
 If evaluation succeeds, report success.
 
-## Step 7: Summary
+## Step 7: Commit
+
+Stage and commit all changed files:
+```bash
+cd ~/dotfiles && git add flake.nix flake.lock nix/home-manager/programs/agent-skills.nix nix/lib/skill-packs.nix
+git commit -m "feat(skills): add <skill-name> to <pack> pack"
+```
+
+The auto-rebuild hook will run `dr` automatically after commit if .nix files changed.
+
+## Step 8: Summary
 
 Print:
 - Skill name and description
 - Pack assignment
-- Files modified
-- "Run `dr` to apply, or commit first with `git add flake.nix flake.lock nix/home-manager/programs/agent-skills.nix nix/lib/skill-packs.nix`"
+- Committed (hash)

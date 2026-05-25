@@ -39,6 +39,22 @@
         "type": "github"
       }
     },
+    "app-store-screenshots": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779039075,
+        "narHash": "sha256-1hDIHdcR3EoS6x1jxyUrtRkImDHYU5PP6FuwiwK+t2k=",
+        "owner": "ParthJadhav",
+        "repo": "app-store-screenshots",
+        "rev": "27ff89800ae8efecea1e54a30581e11393fa8046",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ParthJadhav",
+        "repo": "app-store-screenshots",
+        "type": "github"
+      }
+    },
     "difit-skills": {
       "flake": false,
       "locked": {
@@ -195,6 +211,7 @@
       "inputs": {
         "agent-skills-nix": "agent-skills-nix",
         "anthropic-skills": "anthropic-skills",
+        "app-store-screenshots": "app-store-screenshots",
         "difit-skills": "difit-skills",
         "git-hooks-nix": "git-hooks-nix",
         "home-manager": "home-manager",

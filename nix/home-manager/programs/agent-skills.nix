@@ -25,6 +25,12 @@
         subdir = "skills";
       };
 
+      # App Store screenshot generation
+      app-store-screenshots = {
+        path = inputs.app-store-screenshots;
+        subdir = "skills";
+      };
+
     };
 
     skills = {

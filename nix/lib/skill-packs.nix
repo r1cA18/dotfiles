@@ -26,6 +26,7 @@ let
       skills = [
         "swift-dev-toolkit"
         "ios-device-build"
+        "app-store-screenshots"
       ];
       plugins = [ "swift-lsp@claude-plugins-official" ];
     };
