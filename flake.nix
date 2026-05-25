@@ -124,7 +124,7 @@
           };
           sources = {
             custom = {
-              path = ./skills;
+              path = ./agents/skills;
               filter.maxDepth = 1;
             };
             anthropic = {

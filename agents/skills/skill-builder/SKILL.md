@@ -1,7 +1,7 @@
 ---
 name: skill-builder
 description: |
-  Create new skills, improve existing skills, and validate skill quality for ~/dotfiles/skills/.
+  Create new skills, improve existing skills, and validate skill quality for ~/dotfiles/agents/skills/.
   Interactive workflow: use-case discovery, architecture selection, SKILL.md generation, self-review, iteration.
   Generates dotfiles-native skills with Nix-aware paths, JA/EN triggers, progressive disclosure, and rubric-based self-scoring.
   Triggers: "create a skill", "new skill", "build a skill", "make a skill", "skill for X", "improve skill", "rewrite skill"
@@ -10,7 +10,7 @@ description: |
 
 # Skill Creator
 
-~/dotfiles/skills/ 配下に高品質なスキルを作成する対話的ワークフロー。
+~/dotfiles/agents/skills/ 配下に高品質なスキルを作成する対話的ワークフロー。
 
 **監査は skill-auditor を使う。** このスキルは **作成と改善** に特化している。
 
@@ -73,7 +73,7 @@ Phase 1 完了条件: ユースケースが2つ以上明確になった。
 
 以下の順序でファイルを生成する:
 
-1. **ディレクトリ作成**: `~/dotfiles/skills/{name}/`
+1. **ディレクトリ作成**: `~/dotfiles/agents/skills/{name}/`
 2. **references/ と scripts/** を先に作成（これらを SKILL.md から参照するため）
 3. **SKILL.md** を生成
 
@@ -146,7 +146,7 @@ NG がある場合は自動修正してから提示する。
 
 ### Phase 5: Nix Integration
 
-スキルが `~/dotfiles/skills/` に作成されたことを確認。
+スキルが `~/dotfiles/agents/skills/` に作成されたことを確認。
 Nix (agent-skills-nix) 経由で Claude / Codex の両方に同期されるため、
 `dr` の実行を促す。
 
@@ -170,9 +170,9 @@ Nix (agent-skills-nix) 経由で Claude / Codex の両方に同期されるた�
 
 ## 環境固有の注意事項
 
-- スキルパス: `~/dotfiles/skills/{name}/SKILL.md`
+- スキルパス: `~/dotfiles/agents/skills/{name}/SKILL.md`
 - 言語: 日本語で記述（技術用語は英語）
 - body の指示は命令形
 - frontmatter の description は JA/EN 両方のトリガーを含む
 - `allowed-tools` は最小権限で指定（不要なら省略可、ただしリスクを認識）
-- 既存スキルとの重複を ~/dotfiles/skills/ 内で確認してから作成
+- 既存スキルとの重複を ~/dotfiles/agents/skills/ 内で確認してから作成

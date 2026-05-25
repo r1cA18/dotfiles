@@ -294,7 +294,7 @@ in
   # edits to ~/dotfiles/{shared,claude}/* take effect immediately without
   # requiring a `dr` (programs.claude-code.context would copy to nix store).
   home.file = {
-    ".claude/CLAUDE.md" = mkClaudeSymlink "shared/GLOBAL_INSTRUCTIONS.md";
+    ".claude/CLAUDE.md" = mkClaudeSymlink "agents/INSTRUCTIONS.md";
     ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";
     ".claude/rules" = mkClaudeSymlink "claude/rules";
     ".claude/hooks" = mkClaudeSymlink "claude/hooks";

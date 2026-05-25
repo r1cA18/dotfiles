@@ -4,12 +4,12 @@
     enable = true;
 
     sources = {
-      # 自作スキル (dotfiles/skills/)
+      # 自作スキル (dotfiles/agents/skills/)
       # maxDepth = 1: recursive discovery (default since PR #20) + symlink-tree
       # causes Permission denied when parent is symlinked and children try to
       # create inside it (e.g. swift-dev-toolkit/skills/build/).
       custom = {
-        path = ../../../skills;
+        path = ../../../agents/skills;
         filter.maxDepth = 1;
       };
 

@@ -1,7 +1,7 @@
 ---
 name: skill-auditor
 description: |
-  Audit and evaluate skill quality in ~/dotfiles/skills/.
+  Audit and evaluate skill quality in ~/dotfiles/agents/skills/.
   Scores skills on a 7-dimension rubric (structure, frontmatter, instructions, references, actionability, deduplication, SDK readiness).
   Detects anti-patterns: duplicates, inline bloat, missing JA triggers, vague descriptions.
   Two modes: portfolio audit (all skills) and single skill audit.
@@ -11,7 +11,7 @@ description: |
 
 # Skill Auditor
 
-~/dotfiles/skills/ 配下のスキル品質を定量評価し、改善提案を出す。
+~/dotfiles/agents/skills/ 配下のスキル品質を定量評価し、改善提案を出す。
 
 **作成は公式プラグイン** (`skill-creator@claude-plugins-official`, `document-skills@anthropic-agent-skills`) を使う。
 このスキルは **監査に特化** している。
@@ -32,7 +32,7 @@ description: |
 
 ### 手順
 
-1. **発見**: `~/dotfiles/skills/*/SKILL.md` を Glob で全て列挙
+1. **発見**: `~/dotfiles/agents/skills/*/SKILL.md` を Glob で全て列挙
 2. **構造確認**: 各スキルディレクトリの内容を ls で確認（references/, scripts/, templates/, skills/ の有無）
 3. **読み込み**: 各 SKILL.md の frontmatter + body を Read で読む
 4. **ルーブリック参照**: [references/rubric.md](references/rubric.md) を読み、7次元で各スキルを採点
@@ -97,7 +97,7 @@ rubric.md の「Single Skill Audit 出力フォーマット」に従う。
 Single Audit 時、ユーザーが希望すれば trigger 検証を実行。
 
 ```bash
-bash ~/dotfiles/skills/skill-auditor/scripts/trigger_smoke_test.sh \
+bash ~/dotfiles/agents/skills/skill-auditor/scripts/trigger_smoke_test.sh \
   "<test-prompt>" "<skill-name>"
 ```
 

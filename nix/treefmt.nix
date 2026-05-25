@@ -21,9 +21,8 @@
     "*.patch"
     "result"
     "nvim/**"
-    "skills/**"
+    "agents/**"
     "claude/**"
-    "shared/**"
     "karabiner/**"
   ];
 }

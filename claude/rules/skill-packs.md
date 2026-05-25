@@ -46,7 +46,7 @@ and writes plugin overrides to `.claude/settings.local.json`.
 
 ### Skill (SKILL.md only)
 
-1. Create `~/dotfiles/skills/<name>/SKILL.md`
+1. Create `~/dotfiles/agents/skills/<name>/SKILL.md`
 2. Global: add to `agent-skills.nix` enable list
 3. Pack: add to `nix/lib/skill-packs.nix` pack definition
 4. Run `dr`

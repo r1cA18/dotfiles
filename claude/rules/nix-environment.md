@@ -53,14 +53,14 @@ comma (`,`) を最優先で使う。パッケージ名不要でコマンド名�
 | Claude Code 設定      | `~/dotfiles/claude/settings.json`                   |
 | エージェント          | `~/dotfiles/claude/agents/`                         |
 | グローバルルール      | `~/dotfiles/claude/rules/`                          |
-| グローバルスキル      | `~/dotfiles/skills/<name>/SKILL.md`                 |
+| グローバルスキル      | `~/dotfiles/agents/skills/<name>/SKILL.md`          |
 | スキルパック定義      | `~/dotfiles/nix/lib/skill-packs.nix`                |
 
 ## symlink 構造
 
 - `~/dotfiles/claude/settings.json` -> `~/.claude/settings.json`
-- `~/dotfiles/shared/GLOBAL_INSTRUCTIONS.md` -> `~/.claude/CLAUDE.md`
+- `~/dotfiles/agents/INSTRUCTIONS.md` -> `~/.claude/CLAUDE.md` & `~/.codex/AGENTS.md`
 - `~/dotfiles/claude/agents/` -> `~/.claude/agents/`
 - `~/dotfiles/claude/rules/` -> `~/.claude/rules/`
-- `~/dotfiles/skills/` -> `~/.claude/skills/` (agent-skills-nix 経由)
+- `~/dotfiles/agents/skills/` -> `~/.claude/skills/` (agent-skills-nix 経由)
 - 変更後は `dr` でリビルド（rules/agents/hooks は symlink なので即反映）

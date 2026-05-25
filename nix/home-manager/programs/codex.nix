@@ -105,7 +105,7 @@ in
   home.file = {
     # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
     ".codex/AGENTS.md".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/GLOBAL_INSTRUCTIONS.md";
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
 
     # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
     # auth.json (OAuth tokens) stays separate; everything else is shared.

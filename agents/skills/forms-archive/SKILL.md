@@ -23,7 +23,7 @@ Microsoft Forms (forms.office.com) の複数ページフォームを **全ペー
 ## 初回セットアップ（一度だけ）
 
 ```bash
-cd ~/dotfiles/skills/forms-archive
+cd ~/dotfiles/agents/skills/forms-archive
 bun install
 bunx playwright install chromium
 ```
@@ -37,7 +37,7 @@ bunx playwright install chromium
 （stdin は使わない。Enter キー操作不要）
 
 ```bash
-bun ~/dotfiles/skills/forms-archive/archive.ts --login "<forms-url>"
+bun ~/dotfiles/agents/skills/forms-archive/archive.ts --login "<forms-url>"
 # ブラウザで Microsoft ログイン + MFA → 1ページ目表示 → 自動で保存・終了
 # → ~/.agent-browser/forms-state.json (0o600)
 ```
@@ -48,16 +48,16 @@ bun ~/dotfiles/skills/forms-archive/archive.ts --login "<forms-url>"
 
 ```bash
 # 基本: ./docs/ 配下に PDF/ と MHTML/ を作って全ページ保存
-bun ~/dotfiles/skills/forms-archive/archive.ts "<forms-url>"
+bun ~/dotfiles/agents/skills/forms-archive/archive.ts "<forms-url>"
 
 # 出力先指定
-bun ~/dotfiles/skills/forms-archive/archive.ts "<forms-url>" ./03/docs
+bun ~/dotfiles/agents/skills/forms-archive/archive.ts "<forms-url>" ./03/docs
 
 # MHTML だけ欲しい
-FORMAT=mhtml bun ~/dotfiles/skills/forms-archive/archive.ts "<forms-url>"
+FORMAT=mhtml bun ~/dotfiles/agents/skills/forms-archive/archive.ts "<forms-url>"
 
 # デバッグ（ブラウザを表示）
-HEADED=1 bun ~/dotfiles/skills/forms-archive/archive.ts "<forms-url>"
+HEADED=1 bun ~/dotfiles/agents/skills/forms-archive/archive.ts "<forms-url>"
 ```
 
 実行はどのディレクトリからでも OK。出力先は引数（カレント基準）。
