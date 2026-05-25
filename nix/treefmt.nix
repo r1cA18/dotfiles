@@ -16,5 +16,8 @@
     "*.patch"
     "result"
     "nvim/**"
+    "skills/**"
+    "claude/**"
+    "shared/**"
   ];
 }

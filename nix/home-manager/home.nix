@@ -7,6 +7,7 @@
   imports = [
     ./programs/nh.nix
     ./programs/git.nix
+    ./programs/git-hooks.nix
     ./programs/ssh.nix
     ./programs/zsh.nix
     ./programs/atuin.nix

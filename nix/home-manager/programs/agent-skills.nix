@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, pkgs, ... }:
 {
   programs.agent-skills = {
     enable = true;
@@ -43,6 +43,24 @@
         "difit"
         "difit-review"
       ];
+
+      # Transform API: rewrite SKILL.md at build time to inject Nix store paths.
+      explicit = {
+        video-editing = {
+          from = "custom";
+          packages = [ pkgs.ffmpeg ];
+          transform = { original, dependencies }: builtins.replaceStrings
+            [ "- **FFmpeg** - `brew install ffmpeg`"
+              "- **Bun** - `curl -fsSL https://bun.sh/install | bash`"
+              "- **Whisper**（オプション）- `pip install whisper-timestamped`"
+            ]
+            [ "- **FFmpeg** - available via Nix"
+              "- **Bun** - available via Nix"
+              "- **Whisper**（オプション）- `nix run nixpkgs#whisper-ctranslate2`"
+            ]
+            original + "\n" + dependencies;
+        };
+      };
     };
 
     # Claude / Codex に同期
