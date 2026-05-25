@@ -5,14 +5,14 @@ Global skills are always loaded. Pack skills are opt-in per project.
 
 ## Global Skills (always loaded)
 
-agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-dev, difit, difit-review
+agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-dev, frontend-design, baseline-ui, ui-skills, web-design-guidelines, difit, difit-review
 
 ## Packs
 
 | Pack | Skills | Plugins |
 |------|--------|---------|
 | ios | swift-dev-toolkit, ios-device-build | swift-lsp |
-| web | frontend-design, baseline-ui, ui-skills, vercel-react-best-practices, web-design-guidelines | typescript-lsp, frontend-design, playground |
+| web | vercel-react-best-practices | typescript-lsp, frontend-design, playground |
 | media | video-editing, remotion-best-practices | - |
 | research | - | academic-research-skills |
 | publishing | x-article-publisher, x-research | - |

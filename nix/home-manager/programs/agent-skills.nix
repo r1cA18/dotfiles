@@ -45,6 +45,11 @@
         "skill-builder"
         "skill-auditor"
         "autonomous-dev"
+        # design (global)
+        "frontend-design"
+        "baseline-ui"
+        "ui-skills"
+        "web-design-guidelines"
         # difit
         "difit"
         "difit-review"

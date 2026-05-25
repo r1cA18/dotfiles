@@ -33,11 +33,7 @@ let
     };
     web = {
       skills = [
-        "frontend-design"
-        "baseline-ui"
-        "ui-skills"
         "vercel-react-best-practices"
-        "web-design-guidelines"
       ];
       plugins = [
         "typescript-lsp@claude-plugins-official"
