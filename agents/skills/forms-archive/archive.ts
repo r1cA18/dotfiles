@@ -46,7 +46,7 @@ if (!url) {
 }
 
 if (!isAllowedFormsUrl(url)) {
-  console.error(`URL must be on forms.office.com: ${url}`);
+  console.error(`URL must be on forms.office.com or forms.cloud.microsoft: ${url}`);
   process.exit(1);
 }
 
@@ -185,7 +185,8 @@ function parseFormats(raw: string): Set<string> {
 function isAllowedFormsUrl(u: string): boolean {
   try {
     const host = new URL(u).host.toLowerCase();
-    return host === "forms.office.com" || host.endsWith(".forms.office.com");
+    return host === "forms.office.com" || host.endsWith(".forms.office.com")
+      || host === "forms.cloud.microsoft" || host.endsWith(".forms.cloud.microsoft");
   } catch {
     return false;
   }
@@ -216,7 +217,7 @@ async function waitForLoggedInForm(page: Page): Promise<void> {
   let detectedOnce = false;
   while (Date.now() - start <= LOGIN_TIMEOUT_MS) {
     const host = safeHost(page.url());
-    const onForms = host.endsWith("forms.office.com");
+    const onForms = host.endsWith("forms.office.com") || host.endsWith("forms.cloud.microsoft");
     if (onForms) {
       const ready = await page
         .locator('[data-automation-id="nextButton"], [data-automation-id="submitButton"]')
