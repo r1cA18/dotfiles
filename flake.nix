@@ -41,6 +41,10 @@
     app-store-screenshots.url = "github:ParthJadhav/app-store-screenshots";
     app-store-screenshots.flake = false;
 
+    # NotebookLM integration skill (query notebooks from Claude Code)
+    notebooklm-skill.url = "github:PleasePrompto/notebooklm-skill";
+    notebooklm-skill.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -142,6 +146,9 @@
             app-store-screenshots = {
               path = inputs.app-store-screenshots;
               subdir = "skills";
+            };
+            notebooklm-skill = {
+              path = inputs.notebooklm-skill;
             };
           };
         in

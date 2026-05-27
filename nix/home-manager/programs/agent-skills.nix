@@ -31,6 +31,11 @@
         subdir = "skills";
       };
 
+      # NotebookLM integration
+      notebooklm-skill = {
+        path = inputs.notebooklm-skill;
+      };
+
     };
 
     skills = {
@@ -53,6 +58,8 @@
         # difit
         "difit"
         "difit-review"
+        # notebooklm
+        "notebooklm-skill"
       ];
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.
