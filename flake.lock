@@ -235,7 +235,8 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "notebooklm-skill": "notebooklm-skill",
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": "treefmt-nix",
+        "typst-skills": "typst-skills"
       }
     },
     "treefmt-nix": {
@@ -255,6 +256,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "typst-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776275427,
+        "narHash": "sha256-jsjUapSd3DsccodAKTffzYjbmj4a2p+4sAA1GoVfd8Y=",
+        "owner": "apcamargo",
+        "repo": "typst-skills",
+        "rev": "2855d089f420ee7677ef2f504f4277e00535b9a3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "apcamargo",
+        "repo": "typst-skills",
         "type": "github"
       }
     }

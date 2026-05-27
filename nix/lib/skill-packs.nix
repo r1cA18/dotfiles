@@ -49,7 +49,10 @@ let
       plugins = [ ];
     };
     research = {
-      skills = [ ];
+      skills = [
+        "typst-author"
+        "touying-author"
+      ];
       plugins = [ "academic-research-skills@academic-research-skills" ];
     };
     publishing = {

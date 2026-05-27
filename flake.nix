@@ -45,6 +45,10 @@
     notebooklm-skill.url = "github:PleasePrompto/notebooklm-skill";
     notebooklm-skill.flake = false;
 
+    # Typst document authoring skills
+    typst-skills.url = "github:apcamargo/typst-skills";
+    typst-skills.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -149,6 +153,9 @@
             };
             notebooklm-skill = {
               path = inputs.notebooklm-skill;
+            };
+            typst-skills = {
+              path = inputs.typst-skills;
             };
           };
         in

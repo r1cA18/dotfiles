@@ -60,6 +60,9 @@ let
     codex
     gemini-cli
 
+    # Typesetting
+    typst
+
     # CLI tools
     ast-grep
     bat

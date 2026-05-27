@@ -36,6 +36,11 @@
         path = inputs.notebooklm-skill;
       };
 
+      # Typst document authoring
+      typst-skills = {
+        path = inputs.typst-skills;
+      };
+
     };
 
     skills = {
