@@ -6,6 +6,8 @@ in
   programs.neovim = {
     enable = true;
     defaultEditor = true;
+    withRuby = true;
+    withPython3 = true;
     extraWrapperArgs = [
       "--set"
       "TREESITTER_GRAMMARS"

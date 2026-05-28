@@ -27,6 +27,7 @@
     inherit username;
     homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
     stateVersion = "25.05";
+    enableNixpkgsReleaseCheck = false;
   };
 
   programs.home-manager.enable = true;
