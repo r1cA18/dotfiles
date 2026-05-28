@@ -25,6 +25,10 @@ let
       cmd = "git add -A && git commit -m";
       desc = "Add all + commit";
     };
+    homelab-win = {
+      cmd = "ssh -t homelab 'sudo efibootmgr -n 0000 && sudo reboot'";
+      desc = "Reboot homelab into Windows via UEFI BootNext (Boot0000)";
+    };
   };
 
   nixCommonAliases = {
@@ -281,7 +285,7 @@ let
   mkAbbrInit =
     defs:
     lib.concatStringsSep "\n" (
-      lib.mapAttrsToList (name: value: "abbr -S -qq ${name}='${value.cmd}'") defs
+      lib.mapAttrsToList (name: value: "abbr -S -qq ${name}=${lib.escapeShellArg value.cmd}") defs
     );
 
   mkHelpLine =
