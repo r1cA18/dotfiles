@@ -8,19 +8,15 @@ lib.mkIf pkgs.stdenv.isDarwin {
     enable = true;
     enableDefaultConfig = false;
     includes = [ "~/.orbstack/ssh/config" ];
-    matchBlocks = {
+    settings = {
       "*" = {
-        extraOptions = {
-          IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
-        };
+        IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
       };
-      "homelab" = {
-        user = "r1ca18";
+      homelab = {
+        User = "r1ca18";
       };
-      "rlc" = {
-        extraOptions = {
-          SetEnv = "TERM=xterm-256color";
-        };
+      rlc = {
+        SetEnv.TERM = "xterm-256color";
       };
     };
   };
