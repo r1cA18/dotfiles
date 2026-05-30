@@ -37,8 +37,8 @@ let
   codexSettings = {
     # Top-level model is the default for `codex` with no --profile (= the cx abbr).
     # Profiles below override per-invocation: cxh = heavy, cxsp = spark.
-    model = "gpt-5.4";
-    model_reasoning_effort = "medium";
+    model = "gpt-5.5";
+    model_reasoning_effort = "high";
 
     project_doc_fallback_filenames = [
       "CODEX.md"
