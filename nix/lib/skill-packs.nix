@@ -39,6 +39,7 @@ let
         "typescript-lsp@claude-plugins-official"
         "frontend-design@claude-plugins-official"
         "playground@claude-plugins-official"
+        "gsap-skills@gsap-skills"
       ];
     };
     media = {

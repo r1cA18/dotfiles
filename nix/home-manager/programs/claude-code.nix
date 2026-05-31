@@ -253,6 +253,7 @@ in
         "frontend-design@claude-plugins-official" = true;
         "linear@claude-plugins-official" = true;
         "codex@openai-codex" = true;
+        "gsap-skills@gsap-skills" = true;
       };
 
       extraKnownMarketplaces = {
@@ -271,6 +272,10 @@ in
         academic-research-skills.source = {
           source = "github";
           repo = "Imbad0202/academic-research-skills";
+        };
+        gsap-skills.source = {
+          source = "github";
+          repo = "greensock/gsap-skills";
         };
       };
 
