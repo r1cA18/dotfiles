@@ -28,8 +28,17 @@ let
         "ios-device-build"
         "app-store-screenshots"
         "codex-app-screenshots"
+        "shipswift-add-component"
+        "shipswift-build-feature"
+        "shipswift-explore-recipes"
       ];
       plugins = [ "swift-lsp@claude-plugins-official" ];
+      mcpServers = {
+        shipswift = {
+          type = "http";
+          url = "https://api.shipswift.app/mcp";
+        };
+      };
     };
     web = {
       skills = [
@@ -119,6 +128,14 @@ let
       inherit enabled disabled;
     };
 
+  # Merge mcpServers of all selected packs (plus extraMcpServers).
+  resolveMcp =
+    {
+      selectedPacks ? [ ],
+      extraMcpServers ? { },
+    }:
+    lib.foldl' (acc: p: acc // (packs.${p}.mcpServers or { })) extraMcpServers selectedPacks;
+
   mkPackBundle =
     {
       selectedPacks ? [ ],
@@ -142,6 +159,7 @@ let
       selectedPacks ? [ ],
       extraSkills ? [ ],
       extraPlugins ? [ ],
+      extraMcpServers ? { },
     }:
     let
       bundle = mkPackBundle { inherit selectedPacks extraSkills; };
@@ -202,22 +220,48 @@ let
           fi
         fi
       '';
+
+      # MCP servers: write selected packs' mcpServers into repo-root .mcp.json
+      # (Claude Code project-scope standard file). Same jq recursive-merge as
+      # pluginsHook so user-added servers survive.
+      mcpServersResolved = resolveMcp { inherit selectedPacks extraMcpServers; };
+      mcpJson = toJSON mcpServersResolved;
+      mcpHook = lib.optionalString (mcpServersResolved != { }) ''
+        _mcp=".mcp.json"
+        _mcp_servers='${mcpJson}'
+        _mcp_tmp="$_mcp.$$.tmp"
+        if [ -f "$_mcp" ]; then
+          ${pkgs.jq}/bin/jq --argjson m "$_mcp_servers" '.mcpServers = (.mcpServers // {}) * $m' \
+            "$_mcp" > "$_mcp_tmp" && mv "$_mcp_tmp" "$_mcp"
+        else
+          echo "{\"mcpServers\": $_mcp_servers}" | ${pkgs.jq}/bin/jq . > "$_mcp"
+        fi
+      '';
     in
-    skillsHook + pluginsHook;
+    skillsHook + pluginsHook + mcpHook;
 
   mkShellWithSkills =
     {
       selectedPacks ? [ ],
       extraSkills ? [ ],
       extraPlugins ? [ ],
+      extraMcpServers ? { },
       ...
     }@args:
     let
-      packHook = mkProjectShellHook { inherit selectedPacks extraSkills extraPlugins; };
+      packHook = mkProjectShellHook {
+        inherit
+          selectedPacks
+          extraSkills
+          extraPlugins
+          extraMcpServers
+          ;
+      };
       cleanArgs = removeAttrs args [
         "selectedPacks"
         "extraSkills"
         "extraPlugins"
+        "extraMcpServers"
       ];
     in
     pkgs.mkShell (
