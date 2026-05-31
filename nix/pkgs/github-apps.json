@@ -1,0 +1,9 @@
+{
+  "recordly": {
+    "owner": "webadderallorg",
+    "repo": "Recordly",
+    "assetTemplate": "Recordly-arm64.dmg",
+    "stripVPrefix": true,
+    "nixFile": "nix/pkgs/recordly/default.nix"
+  }
+}

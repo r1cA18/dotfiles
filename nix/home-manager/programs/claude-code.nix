@@ -10,6 +10,10 @@ let
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
 
+  # Claude Code (native installer) の追従チャネル。"latest" で du のたびに
+  # 最新へ追従、版番号 (例 "2.1.150") でその版に固定/ロールバック。
+  claudeChannel = "latest";
+
   mkClaudeSymlink = relativePath: {
     source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${relativePath}";
     force = true;
@@ -35,6 +39,8 @@ in
       env = {
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
+        # bg 自動更新を切り、更新経路を du (update-claude-code) に一元化する。
+        DISABLE_AUTOUPDATER = "1";
       };
 
       permissions = {
@@ -325,5 +331,29 @@ in
       "${dotfilesDir}/claude/scripts/sync-mcp-servers.py" \
       "$HOME/.claude.json" \
       "${dotfilesDir}/claude/mcp-servers.json" || true
+  '';
+
+  # Claude Code native 版の導入/固定。更新 (latest 追従) は du の
+  # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
+  # claudeChannel を managed-channel に書き出し、du スクリプトへ状態を渡す。
+  home.activation.setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    channel="${claudeChannel}"
+    bin="$HOME/.local/bin/claude"
+    mkdir -p "$HOME/.claude"
+    printf '%s\n' "$channel" > "$HOME/.claude/managed-channel"
+
+    if [ ! -x "$bin" ]; then
+      if [ "$channel" = "latest" ]; then
+        ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash || true
+      else
+        ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+      fi
+    elif [ "$channel" != "latest" ] && ! "$bin" --version 2>/dev/null | grep -q "$channel"; then
+      ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+    fi
+
+    if command -v npm >/dev/null 2>&1; then
+      ${pkgs.nodejs}/bin/npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true
+    fi
   '';
 }
