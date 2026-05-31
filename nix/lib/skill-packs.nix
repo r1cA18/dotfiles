@@ -73,8 +73,8 @@ let
       plugins = [ ];
     };
     vault = {
+      # knowledge-extract is global (agent-skills.nix enable list).
       skills = [
-        "knowledge-extract"
         "session-documentation"
         "design-capture"
         "forms-archive"

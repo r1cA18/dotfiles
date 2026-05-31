@@ -65,6 +65,8 @@
         "difit-review"
         # notebooklm
         "notebooklm-skill"
+        # vault (global)
+        "knowledge-extract"
       ];
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.

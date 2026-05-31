@@ -5,7 +5,7 @@ Global skills are always loaded. Pack skills are opt-in per project.
 
 ## Global Skills (always loaded)
 
-agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-dev, frontend-design, baseline-ui, ui-skills, web-design-guidelines, difit, difit-review
+agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-dev, frontend-design, baseline-ui, ui-skills, web-design-guidelines, difit, difit-review, knowledge-extract
 
 ## Packs
 
@@ -16,7 +16,7 @@ agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-
 | media | video-editing, remotion-best-practices | - |
 | research | - | academic-research-skills |
 | publishing | x-article-publisher, x-research | - |
-| vault | knowledge-extract, session-documentation, design-capture, forms-archive | - |
+| vault | session-documentation, design-capture, forms-archive | - |
 
 ## Usage in Project flake.nix
 
