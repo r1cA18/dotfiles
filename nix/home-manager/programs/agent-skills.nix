@@ -41,6 +41,14 @@
         path = inputs.typst-skills;
       };
 
+      # taste-skill: anti-slop frontend skill collection
+      # subdir = "skills": recursive discovery finds skills/<variant>/SKILL.md
+      # (same one-level nesting as anthropic source; no maxDepth needed).
+      taste-skill = {
+        path = inputs.taste-skill;
+        subdir = "skills";
+      };
+
     };
 
     skills = {
@@ -67,6 +75,22 @@
         "notebooklm-skill"
         # vault (global)
         "knowledge-extract"
+        # taste-skill collection (anti-slop frontend). Managed as one unit:
+        # comment out this block to disable all 13 at once.
+        # IDs are directory names; the frontmatter `name` (what triggers) differs.
+        "taste-skill" # name: design-taste-frontend (flagship, contextual anti-slop)
+        "taste-skill-v1" # name: design-taste-frontend-v1 (backward-compat)
+        "soft-skill" # name: high-end-visual-design (high-end agency aesthetic)
+        "minimalist-skill" # name: minimalist-ui (editorial minimalism)
+        "brutalist-skill" # name: industrial-brutalist-ui (tactical terminal)
+        "gpt-tasteskill" # name: gpt-taste (GSAP motion-heavy frontend)
+        "redesign-skill" # name: redesign-existing-projects (audit + upgrade)
+        "output-skill" # name: full-output-enforcement (anti-truncation)
+        "stitch-skill" # name: stitch-design-taste (Google Stitch DESIGN.md)
+        "image-to-code-skill" # name: image-to-code (image-first then implement)
+        "brandkit" # name: brandkit (brand identity image generation)
+        "imagegen-frontend-web" # name: imagegen-frontend-web (web reference images)
+        "imagegen-frontend-mobile" # name: imagegen-frontend-mobile (mobile images)
       ];
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.

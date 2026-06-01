@@ -235,8 +235,25 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "notebooklm-skill": "notebooklm-skill",
+        "taste-skill": "taste-skill",
         "treefmt-nix": "treefmt-nix",
         "typst-skills": "typst-skills"
+      }
+    },
+    "taste-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779823896,
+        "narHash": "sha256-VuyItCHSXwyfaRg29fnv2vNx1wUnfP2In4FGCj5Eu4k=",
+        "owner": "Leonxlnx",
+        "repo": "taste-skill",
+        "rev": "3c7017d636c3a4aad378433ea6d0cfa6c921da4a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Leonxlnx",
+        "repo": "taste-skill",
+        "type": "github"
       }
     },
     "treefmt-nix": {

@@ -49,6 +49,10 @@
     typst-skills.url = "github:apcamargo/typst-skills";
     typst-skills.flake = false;
 
+    # taste-skill: anti-slop frontend skill collection (13 variants)
+    taste-skill.url = "github:Leonxlnx/taste-skill";
+    taste-skill.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
