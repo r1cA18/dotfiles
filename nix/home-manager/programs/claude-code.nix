@@ -295,7 +295,7 @@ in
       effortLevel = "high";
       skipDangerousModePermissionPrompt = true;
       skipAutoPermissionPrompt = true;
-      remoteControlAtStartup = false;
+      remoteControlAtStartup = true;
       theme = "light";
       editorMode = "vim";
     };
