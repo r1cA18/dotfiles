@@ -244,9 +244,6 @@ in
         "context7@claude-plugins-official" = true;
         "pyright-lsp@claude-plugins-official" = true;
         "mgrep@Mixedbread-Grep" = true;
-        "sharp-aircon@sharp-aircon-plugins" = true;
-        "academic-research-skills@academic-research-skills" = true;
-        "ralph-loop@claude-plugins-official" = true;
         "plugin-dev@claude-plugins-official" = true;
         "claude-md-management@claude-plugins-official" = true;
         "claude-code-setup@claude-plugins-official" = true;
@@ -259,7 +256,6 @@ in
         "frontend-design@claude-plugins-official" = true;
         "linear@claude-plugins-official" = true;
         "codex@openai-codex" = true;
-        "gsap-skills@gsap-skills" = true;
       };
 
       extraKnownMarketplaces = {

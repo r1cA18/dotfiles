@@ -22,6 +22,31 @@ let
   # plugins = managed via .claude/settings.local.json (enabledPlugins)
 
   packs = {
+    # Design tooling. MCP servers are heavy (many tool defs) and only needed
+    # during visual/diagram work, so they live here instead of global seed.
+    design = {
+      skills = [ ];
+      plugins = [ ];
+      mcpServers = {
+        drawio = {
+          command = "npx";
+          args = [
+            "-y"
+            "@drawio/mcp"
+          ];
+          type = "stdio";
+        };
+        pencil = {
+          command = "/Users/r1ca18/.cursor/extensions/highagency.pencildev-0.6.30-universal/out/mcp-server-darwin-arm64";
+          args = [
+            "--app"
+            "cursor"
+          ];
+          env = { };
+          type = "stdio";
+        };
+      };
+    };
     ios = {
       skills = [
         "swift-dev-toolkit"
@@ -79,7 +104,7 @@ let
         "design-capture"
         "forms-archive"
       ];
-      plugins = [ ];
+      plugins = [ "sharp-aircon@sharp-aircon-plugins" ];
     };
   };
 
@@ -95,7 +120,6 @@ let
     "context7@claude-plugins-official"
     "linear@claude-plugins-official"
     "codex@openai-codex"
-    "ralph-loop@claude-plugins-official"
     "skill-creator@claude-plugins-official"
     "explanatory-output-style@claude-plugins-official"
     "document-skills@anthropic-agent-skills"
