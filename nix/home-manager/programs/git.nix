@@ -30,13 +30,22 @@ let
     ghq.root = "~/Develop";
   };
 
-  # 1Password SSH agent による commit/tag 署名 (macOS のみ)
+  # 1Password SSH agent による commit/tag 署名 (両OS)。
+  # op-ssh-sign のパスのみ OS 別。Linux は 1Password desktop 導入が前提
+  # (未導入だと commit.gpgsign により全 commit が署名失敗するため、
+  #  1Password を入れてから dr すること)。
+  opSshSign =
+    if pkgs.stdenv.isDarwin then
+      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else
+      "/opt/1Password/op-ssh-sign";
+
   signingSettings = {
     user.signingkey = signingKey;
     commit.gpgsign = true;
     tag.gpgsign = true;
     gpg.format = "ssh";
-    gpg.ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+    gpg.ssh.program = opSshSign;
     gpg.ssh.allowedSignersFile = allowedSignersPath;
   };
 in
@@ -68,13 +77,9 @@ in
       ".venv"
       "result"
     ];
-    settings = lib.recursiveUpdate baseSettings (
-      lib.optionalAttrs pkgs.stdenv.isDarwin signingSettings
-    );
+    settings = lib.recursiveUpdate baseSettings signingSettings;
   };
 
-  # ローカル検証用の信頼鍵リスト (macOS のみ)
-  xdg.configFile."git/allowed_signers" = lib.mkIf pkgs.stdenv.isDarwin {
-    text = "${userEmail} ${signingKey}\n";
-  };
+  # ローカル検証用の信頼鍵リスト (両OS)
+  xdg.configFile."git/allowed_signers".text = "${userEmail} ${signingKey}\n";
 }
