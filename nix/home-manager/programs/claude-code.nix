@@ -243,7 +243,6 @@ in
         "hookify@claude-plugins-official" = true;
         "context7@claude-plugins-official" = true;
         "pyright-lsp@claude-plugins-official" = true;
-        "mgrep@Mixedbread-Grep" = true;
         "plugin-dev@claude-plugins-official" = true;
         "claude-md-management@claude-plugins-official" = true;
         "claude-code-setup@claude-plugins-official" = true;
@@ -255,7 +254,6 @@ in
         "playground@claude-plugins-official" = true;
         "frontend-design@claude-plugins-official" = true;
         "linear@claude-plugins-official" = true;
-        "codex@openai-codex" = true;
       };
 
       extraKnownMarketplaces = {
@@ -266,10 +264,6 @@ in
         sentry-plugin-marketplace.source = {
           source = "git";
           url = "https://github.com/getsentry/sentry-for-ai.git";
-        };
-        openai-codex.source = {
-          source = "github";
-          repo = "openai/codex-plugin-cc";
         };
         academic-research-skills.source = {
           source = "github";
