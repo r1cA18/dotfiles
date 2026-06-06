@@ -118,6 +118,7 @@ let
     "plugin-dev@claude-plugins-official"
     "context7@claude-plugins-official"
     "linear@claude-plugins-official"
+    "codex@openai-codex"
     "skill-creator@claude-plugins-official"
     "explanatory-output-style@claude-plugins-official"
     "document-skills@anthropic-agent-skills"

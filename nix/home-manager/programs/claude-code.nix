@@ -254,6 +254,7 @@ in
         "playground@claude-plugins-official" = true;
         "frontend-design@claude-plugins-official" = true;
         "linear@claude-plugins-official" = true;
+        "codex@openai-codex" = true;
       };
 
       extraKnownMarketplaces = {
@@ -264,6 +265,10 @@ in
         sentry-plugin-marketplace.source = {
           source = "git";
           url = "https://github.com/getsentry/sentry-for-ai.git";
+        };
+        openai-codex.source = {
+          source = "github";
+          repo = "openai/codex-plugin-cc";
         };
         academic-research-skills.source = {
           source = "github";
