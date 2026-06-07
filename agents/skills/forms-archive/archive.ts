@@ -117,6 +117,7 @@ async function runArchive(formsUrl: string): Promise<void> {
 
     for (let n = 1; n <= MAX_PAGES; n++) {
       await settle(page);
+      await loadAllLazyContent(page);
 
       if (SAVE_PDF) await savePDF(page, join(pdfDir, `${n}.pdf`));
       if (SAVE_MHTML) await saveMHTML(page, join(mhtmlDir, `${n}.mhtml`));
@@ -194,6 +195,55 @@ function isAllowedFormsUrl(u: string): boolean {
 
 async function settle(page: Page): Promise<void> {
   await page.waitForTimeout(800);
+}
+
+/**
+ * MS Forms lazy-loads images below the fold. Without this, a long form's
+ * lower images (matrices, diagrams) are blank in the PDF. Scroll the whole
+ * page to trigger loading, then wait until every <img> has decoded.
+ */
+async function loadAllLazyContent(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const step = 600;
+    let y = 0;
+    let stable = 0;
+    let lastHeight = 0;
+    // Scroll in steps; stop once height stops growing for a few iterations.
+    for (let i = 0; i < 200; i++) {
+      const sh = document.documentElement.scrollHeight;
+      window.scrollTo(0, y);
+      await sleep(120);
+      y += step;
+      if (sh === lastHeight) {
+        if (++stable >= 3 && y >= sh) break;
+      } else {
+        stable = 0;
+        lastHeight = sh;
+      }
+    }
+    window.scrollTo(0, 0);
+  });
+
+  // Wait for all images to finish decoding (or error out).
+  await page
+    .evaluate(async () => {
+      const imgs = Array.from(document.images);
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>((res) => {
+                img.addEventListener("load", () => res(), { once: true });
+                img.addEventListener("error", () => res(), { once: true });
+                setTimeout(() => res(), 5000);
+              })
+        )
+      );
+    })
+    .catch(() => {});
+
+  await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
 }
 
 async function existsAndVisible(locator: Locator): Promise<boolean> {
