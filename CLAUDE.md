@@ -29,6 +29,15 @@
 - `Codex` では `.codex/agents/`、`Claude Code` では `claude/agents/` を使う
 - 共通化したい skill は `skills/` を source of truth にする
 
+## 進行中の作業
+
+- **Nix Modernization**（ブランチ `codex/nix-modernize`）: ryoppippi の dotfiles を参考に
+  Nix 構成を近代化する。調査は完了・実装は未着手。
+  着手前に必ず `docs/nix-modernization.md` を読む。
+  - このブランチの本丸: flake-parts 化 + `nix/modules` 構造再編 + treefmt/git-hooks（密結合のため一括）
+  - claude 運用系（commit / codex-review skill 等）は別ブランチで扱う
+  - 大規模リファクタなので Plan mode で承認を取ってから段階コミットで進める
+
 ## 概要
 
 macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
