@@ -167,6 +167,8 @@ nix search nixpkgs <name>
 `extraCodexPlugins` を使う場合は、`codex` CLI があれば marketplace 追加と plugin install を実行する。
 現行の Codex CLI は project-local plugin config を読まないため、結果は `~/.codex/config.toml` と plugin cache に入る。
 このため、Codex plugin は project ごとの enable/disable ではなく「必要な plugin を global に入れておく」運用になる。
+`product-design@openai-curated-remote` のような Codex app の curated remote plugin は、
+公開 Git marketplace ではなく app 側が提供する selector として pack に宣言する。
 
 ```nix
 {

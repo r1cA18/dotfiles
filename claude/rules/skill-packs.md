@@ -11,6 +11,7 @@ agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-
 
 | Pack | Skills | Claude plugins | Codex plugins |
 |------|--------|----------------|---------------|
+| design | - | - | product-design |
 | ios | swift-dev-toolkit, ios-device-build | swift-lsp | - |
 | web | vercel-react-best-practices | typescript-lsp | - |
 | media | video-editing, remotion-best-practices | - | - |
@@ -44,7 +45,10 @@ agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-
 and `.codex/skills/`. Claude plugin overrides go to `.claude/settings.local.json`.
 Codex plugin declarations are install requests: when `codex` is available, the
 project shellHook adds declared marketplaces and runs `codex plugin add`, which
-updates the Codex user config/cache.
+updates the Codex user config/cache. Some official remote plugins, such as
+`product-design@openai-curated-remote`, are provided by the Codex app curated
+remote marketplace rather than a public Git source; keep those as plugin
+selectors in the appropriate pack instead of vendoring runtime cache.
 
 ## Adding New Skills/Plugins
 

@@ -29,6 +29,7 @@ let
     design = {
       skills = [ ];
       plugins = [ ];
+      codexPlugins = [ "product-design@openai-curated-remote" ];
       mcpServers = {
         drawio = {
           command = "npx";
