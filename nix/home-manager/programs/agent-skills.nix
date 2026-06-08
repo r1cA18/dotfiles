@@ -49,6 +49,13 @@
         subdir = "skills";
       };
 
+      # text-to-lottie: Lottie (Bodymovin) animation authoring in a skia player
+      # subdir = "skills": discovery finds skills/text-to-lottie/SKILL.md.
+      lottie = {
+        path = inputs.lottie;
+        subdir = "skills";
+      };
+
     };
 
     skills = {

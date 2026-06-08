@@ -150,6 +150,22 @@
         "type": "github"
       }
     },
+    "lottie": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780930104,
+        "narHash": "sha256-mwaUNmsjqeH4shckS6oN0MUIYwzFQMA/NlQvO81dsbs=",
+        "owner": "diffusionstudio",
+        "repo": "lottie",
+        "rev": "ce3d2a0d180b6ad4d8fa40f53c7a3e103ee72790",
+        "type": "github"
+      },
+      "original": {
+        "owner": "diffusionstudio",
+        "repo": "lottie",
+        "type": "github"
+      }
+    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
@@ -231,6 +247,7 @@
         "difit-skills": "difit-skills",
         "git-hooks-nix": "git-hooks-nix",
         "home-manager": "home-manager",
+        "lottie": "lottie",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",

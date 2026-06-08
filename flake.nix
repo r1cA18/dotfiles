@@ -53,6 +53,10 @@
     taste-skill.url = "github:Leonxlnx/taste-skill";
     taste-skill.flake = false;
 
+    # text-to-lottie: author Lottie (Bodymovin) animations in a local skia player
+    lottie.url = "github:diffusionstudio/lottie";
+    lottie.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -160,6 +164,10 @@
             };
             typst-skills = {
               path = inputs.typst-skills;
+            };
+            lottie = {
+              path = inputs.lottie;
+              subdir = "skills";
             };
           };
         in

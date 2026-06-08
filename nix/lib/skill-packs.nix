@@ -80,6 +80,7 @@ let
       skills = [
         "video-editing"
         "remotion-best-practices"
+        "text-to-lottie"
       ];
       plugins = [ ];
     };
