@@ -69,7 +69,8 @@ dotfiles/
 ├── .codex/                  # リポジトリローカル Codex assets
 │   └── agents/              # Codex custom agents
 │
-└── codex/                   # 旧Codex CLI設定置き場（現在はNix生成へ移行）
+└── codex/                   # Codex prompt wrappers 等
+    └── prompts/             # ~/.codex/prompts へリンク（skill呼び出し用）
 ```
 
 ## シンボリックリンク管理
@@ -90,12 +91,14 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `claude/agents/`                      | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
 | `nix/home-manager/programs/codex.nix` | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
 | `shared/GLOBAL_INSTRUCTIONS.md`       | `~/.codex/AGENTS.md`                     | `codex.nix` (mkOutOfStoreSymlink)                  |
+| `codex/prompts/`                      | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Agent 運用の基本方針
 
 - 共有したい知識は `skills/` と project docs に置く
 - Claude 固有の強制は `claude/hooks/`, `claude/rules/`, `claude/commands/`, `claude/agents/` に置く
 - Codex 固有の custom agent は `.codex/agents/` に置く
+- Codex custom prompt は deprecated なので、`codex/prompts/` には skill wrapper だけを置く
 - Claude / Codex plugin 本体や runtime cache は source of truth にしない
 - Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す

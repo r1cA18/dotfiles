@@ -146,6 +146,11 @@ global plugin は home-manager activation、project plugin は `mkShellWithSkill
 
 Claude Code では `/スキル名` と入力するか、Claude Code がタスクに応じて自動で呼び出す。
 Codex では `~/.codex/skills/` に同期された skill として参照される。
+CLI/IDE では `/skills` や `$skill-name` で明示呼び出しできる。
+
+Codex custom prompt は deprecated なので、再利用 workflow の正本にはしない。
+slash-command 風に呼びたい場合だけ `codex/prompts/*.md` に薄い wrapper を置く。
+例: `/prompts:init` は `$project-init` skill を呼び出す。
 
 ```bash
 /agent-browser https://example.com

@@ -7,6 +7,7 @@ allowed-tools: "Bash,Read,Write,Edit,AskUserQuestion,Agent,Glob,Grep"
 
 Initialize this project for Claude Code with skill packs.
 If $ARGUMENTS is provided, use it as context for pack selection and project understanding.
+Shared workflow equivalent: `project-init` skill for Codex / cross-agent use.
 
 ## Step 1: Understand the project
 

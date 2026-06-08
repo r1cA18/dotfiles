@@ -70,6 +70,7 @@
         "skill-builder"
         "skill-auditor"
         "autonomous-dev"
+        "project-init"
         # design (global)
         "frontend-design"
         "baseline-ui"
