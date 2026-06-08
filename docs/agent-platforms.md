@@ -14,7 +14,7 @@
 | Claude commands              | `claude/commands/`                         | 可能なら `skills/` へ昇格                      |
 | Claude agents                | `claude/agents/`                           | Markdown frontmatter 形式                      |
 | Codex agents                 | `.codex/agents/`                           | TOML 形式                                      |
-| Codex user config            | `codex/config.toml`                        | `~/.codex/config.toml` に symlink              |
+| Codex user config            | `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml` を writable copy 生成   |
 | Claude settings              | `claude/settings.json`                     | `~/.claude/settings.json` に symlink           |
 | Claude user MCP seed         | `claude/mcp-servers.json`                  | `~/.claude.json` へ merge する前提             |
 | Claude Code binary           | native install                             | dotfiles では bootstrap しない                 |
@@ -71,17 +71,32 @@ dotfiles では以下だけを管理する。
 
 plugin 本体に入っている useful skill は、継続利用したいなら `skills/` に移植して共通資産化する。
 
+Codex plugin も runtime cache は `~/.codex/plugins/cache/` に置かれる。
+dotfiles では `nix/home-manager/programs/codex.nix` と `nix/lib/skill-packs.nix` で以下を管理する。
+
+- `marketplaces`
+- `[plugins."<name>@<marketplace>"].enabled`
+
+GitHub 等から入れる個人用 Codex plugin は、できるだけ flake input と local marketplace として固定する。
+`claude-code-advisor@claude-plugin-codex` は Codex から local Claude Code を呼ぶ global bridge として管理する。
+global plugin は home-manager activation、project pack plugin は `mkShellWithSkills` の shellHook で `codex plugin marketplace add` / `codex plugin add` まで実行する。
+現行の `codex plugin` は project-local `.codex/config.toml` ではなく `~/.codex/config.toml` を更新する。
+そのため、project pack は Codex plugin の install request だけを行い、未選択 plugin の disable はしない。
+runtime cache 自体は生成物なので dotfiles には入れない。
+
 ## MCP の扱い
 
 ### Codex
 
-`Codex` の MCP は `codex/config.toml` で declarative に管理する。
+`Codex` の MCP は `nix/home-manager/programs/codex.nix` で declarative に管理する。
+project pack では Codex MCP を扱わない。必要になったら user config 側へ明示的に追加する。
 
 ### Claude Code
 
 `Claude Code` の user-level MCP は runtime file の `~/.claude.json` に入るため、
 dotfiles では `claude/mcp-servers.json` を source of truth にして、必要な server 定義だけ merge する。
 この merge は `nix/home-manager/programs/claude-code.nix` の activation で自動実行する。
+project pack で必要な Claude 用 MCP は `.mcp.json` に出す。
 
 ## CLI 依存 skill の扱い
 
@@ -110,9 +125,10 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 - Codex custom agents のベース追加
 - Claude MCP seed の自動同期を追加
 - plugin 棚卸しを文書化
+- project skill packs で Claude / Codex plugin を別々に宣言できるようにした
+- `claude-plugin-codex` を Codex 側の global bridge として宣言管理する
 
 ### 次にやること
 
 - `Claude` command のうち残っている UI 専用 command を整理
-- `pdf` / `xlsx` など公式 skill の有効化要否を判断
 - `claude/rules/` のうち共有すべき内容を project docs にさらに寄せる

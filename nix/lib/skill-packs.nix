@@ -17,9 +17,11 @@ let
   inherit (lib) unique;
 
   # ── Pack definitions ──────────────────────────────────────────────
-  # Each pack groups related skills and plugins.
+  # Each pack groups related skills, MCP servers, and tool-specific plugins.
   # skills  = managed by agent-skills-nix (SKILL.md)
-  # plugins = managed via .claude/settings.local.json (enabledPlugins)
+  # plugins = backwards-compatible alias for claudePlugins
+  # claudePlugins = managed via .claude/settings.local.json (enabledPlugins)
+  # codexPlugins = installed into the Codex user plugin cache/config by shellHook
 
   packs = {
     # Design tooling. MCP servers are heavy (many tool defs) and only needed
@@ -57,7 +59,7 @@ let
         "shipswift-build-feature"
         "shipswift-explore-recipes"
       ];
-      plugins = [ "swift-lsp@claude-plugins-official" ];
+      claudePlugins = [ "swift-lsp@claude-plugins-official" ];
       mcpServers = {
         shipswift = {
           type = "http";
@@ -69,11 +71,8 @@ let
       skills = [
         "vercel-react-best-practices"
       ];
-      plugins = [
+      claudePlugins = [
         "typescript-lsp@claude-plugins-official"
-        "frontend-design@claude-plugins-official"
-        "playground@claude-plugins-official"
-        "gsap-skills@gsap-skills"
       ];
     };
     media = {
@@ -89,7 +88,7 @@ let
         "typst-author"
         "touying-author"
       ];
-      plugins = [ "academic-research-skills@academic-research-skills" ];
+      claudePlugins = [ "academic-research-skills@academic-research-skills" ];
     };
     publishing = {
       skills = [
@@ -105,28 +104,25 @@ let
         "design-capture"
         "forms-archive"
       ];
-      plugins = [ "sharp-aircon@sharp-aircon-plugins" ];
+      claudePlugins = [ ];
     };
   };
 
-  # Plugins that are ALWAYS enabled regardless of pack selection.
+  # Claude plugins that are ALWAYS enabled regardless of pack selection.
   # These are never disabled by the shellHook.
-  globalPlugins = [
-    "commit-commands@claude-plugins-official"
-    "hookify@claude-plugins-official"
-    "claude-md-management@claude-plugins-official"
-    "claude-code-setup@claude-plugins-official"
-    "plugin-dev@claude-plugins-official"
-    "context7@claude-plugins-official"
-    "linear@claude-plugins-official"
+  globalClaudePlugins = [
     "codex@openai-codex"
-    "skill-creator@claude-plugins-official"
-    "explanatory-output-style@claude-plugins-official"
-    "document-skills@anthropic-agent-skills"
   ];
 
+  globalCodexPlugins = [ ];
+
+  packClaudePlugins = p: unique ((packs.${p}.plugins or [ ]) ++ (packs.${p}.claudePlugins or [ ]));
+  packCodexPlugins = p: packs.${p}.codexPlugins or [ ];
+  packCodexMarketplaces = p: packs.${p}.codexMarketplaces or { };
+
   # All plugins that belong to some pack (candidates for per-project disable).
-  allPackPlugins = unique (concatMap (p: packs.${p}.plugins) (attrNames packs));
+  allPackClaudePlugins = unique (concatMap packClaudePlugins (attrNames packs));
+  allPackCodexPlugins = unique (concatMap packCodexPlugins (attrNames packs));
 
   # ── Helper functions ──────────────────────────────────────────────
 
@@ -137,20 +133,44 @@ let
     }:
     unique (concatMap (p: packs.${p}.skills) selectedPacks ++ extraSkills);
 
-  # Resolve selected packs into plugin enable/disable map.
-  # globalPlugins are excluded from the disable list.
-  resolvePlugins =
+  # Resolve selected packs into Claude plugin enable/disable map.
+  # globalClaudePlugins are excluded from the disable list.
+  resolveClaudePlugins =
     {
       selectedPacks ? [ ],
       extraPlugins ? [ ],
     }:
     let
-      enabled = unique (concatMap (p: packs.${p}.plugins) selectedPacks ++ extraPlugins);
-      disabled = filter (p: !(elem p enabled) && !(elem p globalPlugins)) allPackPlugins;
+      enabled = unique (concatMap packClaudePlugins selectedPacks ++ extraPlugins);
+      disabled = filter (p: !(elem p enabled) && !(elem p globalClaudePlugins)) allPackClaudePlugins;
     in
     {
       inherit enabled disabled;
     };
+
+  resolvePlugins = resolveClaudePlugins;
+
+  resolveCodexPlugins =
+    {
+      selectedPacks ? [ ],
+      extraCodexPlugins ? [ ],
+    }:
+    let
+      enabled = unique (concatMap packCodexPlugins selectedPacks ++ extraCodexPlugins);
+      # Codex plugin state is global user config/cache, so project packs should
+      # request installs but must not disable plugins selected elsewhere.
+      disabled = [ ];
+    in
+    {
+      inherit enabled disabled;
+    };
+
+  resolveCodexMarketplaces =
+    {
+      selectedPacks ? [ ],
+      extraCodexMarketplaces ? { },
+    }:
+    lib.foldl' (acc: p: acc // packCodexMarketplaces p) extraCodexMarketplaces selectedPacks;
 
   # Merge mcpServers of all selected packs (plus extraMcpServers).
   resolveMcp =
@@ -183,6 +203,9 @@ let
       selectedPacks ? [ ],
       extraSkills ? [ ],
       extraPlugins ? [ ],
+      extraClaudePlugins ? [ ],
+      extraCodexPlugins ? [ ],
+      extraCodexMarketplaces ? { },
       extraMcpServers ? { },
     }:
     let
@@ -206,48 +229,80 @@ let
         };
       };
 
-      pluginsCfg = resolvePlugins { inherit selectedPacks extraPlugins; };
-      enableMap = builtins.listToAttrs (
+      claudePluginsCfg = resolveClaudePlugins {
+        inherit selectedPacks;
+        extraPlugins = extraPlugins ++ extraClaudePlugins;
+      };
+      claudeEnableMap = builtins.listToAttrs (
         map (p: {
           name = p;
           value = true;
-        }) pluginsCfg.enabled
+        }) claudePluginsCfg.enabled
       );
-      disableMap = builtins.listToAttrs (
+      claudeDisableMap = builtins.listToAttrs (
         map (p: {
           name = p;
           value = false;
-        }) pluginsCfg.disabled
+        }) claudePluginsCfg.disabled
       );
-      pluginsJson = toJSON (enableMap // disableMap);
+      claudePluginsJson = toJSON (claudeEnableMap // claudeDisableMap);
 
-      pluginsHook = lib.optionalString (pluginsCfg.enabled != [ ] || pluginsCfg.disabled != [ ]) ''
-        mkdir -p .claude
-        _sp_local=".claude/settings.local.json"
-        _sp_plugins='${pluginsJson}'
-        _sp_tmp="$_sp_local.$$.tmp"
-        if [ -f "$_sp_local" ]; then
-          ${pkgs.jq}/bin/jq --argjson p "$_sp_plugins" '.enabledPlugins = (.enabledPlugins // {}) * $p' \
-            "$_sp_local" > "$_sp_tmp" && mv "$_sp_tmp" "$_sp_local"
-        else
-          echo "{\"enabledPlugins\": $_sp_plugins}" | ${pkgs.jq}/bin/jq . > "$_sp_local"
-        fi
+      claudePluginsHook =
+        lib.optionalString (claudePluginsCfg.enabled != [ ] || claudePluginsCfg.disabled != [ ])
+          ''
+            mkdir -p .claude
+            _sp_local=".claude/settings.local.json"
+            _sp_plugins='${claudePluginsJson}'
+            _sp_tmp="$_sp_local.$$.tmp"
+            if [ -f "$_sp_local" ]; then
+              ${pkgs.jq}/bin/jq --argjson p "$_sp_plugins" '.enabledPlugins = (.enabledPlugins // {}) * $p' \
+                "$_sp_local" > "$_sp_tmp" && mv "$_sp_tmp" "$_sp_local"
+            else
+              echo "{\"enabledPlugins\": $_sp_plugins}" | ${pkgs.jq}/bin/jq . > "$_sp_local"
+            fi
 
-        # Workaround: ensure settings.json has enabledPlugins key
-        # (settings.local.json overrides are ignored without it, bug #27247)
-        _sp_settings=".claude/settings.json"
-        if [ -f "$_sp_settings" ]; then
-          if ! ${pkgs.jq}/bin/jq -e '.enabledPlugins' "$_sp_settings" > /dev/null 2>&1; then
-            _sp_stmp="$_sp_settings.$$.tmp"
-            ${pkgs.jq}/bin/jq '. + {"enabledPlugins": {}}' "$_sp_settings" > "$_sp_stmp" \
-              && mv "$_sp_stmp" "$_sp_settings"
-          fi
-        fi
-      '';
+            # Workaround: ensure settings.json has enabledPlugins key
+            # (settings.local.json overrides are ignored without it, bug #27247)
+            _sp_settings=".claude/settings.json"
+            if [ -f "$_sp_settings" ]; then
+              if ! ${pkgs.jq}/bin/jq -e '.enabledPlugins' "$_sp_settings" > /dev/null 2>&1; then
+                _sp_stmp="$_sp_settings.$$.tmp"
+                ${pkgs.jq}/bin/jq '. + {"enabledPlugins": {}}' "$_sp_settings" > "$_sp_stmp" \
+                  && mv "$_sp_stmp" "$_sp_settings"
+              fi
+            fi
+          '';
+
+      codexPluginsCfg = resolveCodexPlugins { inherit selectedPacks extraCodexPlugins; };
+      codexMarketplacesResolved = resolveCodexMarketplaces {
+        inherit selectedPacks extraCodexMarketplaces;
+      };
+      codexMarketplacesJson = toJSON codexMarketplacesResolved;
+      codexPluginsInstallJson = toJSON codexPluginsCfg.enabled;
+
+      codexHook =
+        lib.optionalString (codexPluginsCfg.enabled != [ ] || codexMarketplacesResolved != { })
+          ''
+            if command -v codex >/dev/null 2>&1; then
+              _codex_marketplaces='${codexMarketplacesJson}'
+              printf '%s\n' "$_codex_marketplaces" \
+                | ${pkgs.jq}/bin/jq -r 'to_entries[] | .value.source // empty' \
+                | while IFS= read -r _codex_marketplace_source; do
+                  [ -n "$_codex_marketplace_source" ] || continue
+                  codex plugin marketplace add "$_codex_marketplace_source" >/dev/null 2>&1 || true
+                done
+
+              _codex_plugins_to_install='${codexPluginsInstallJson}'
+              printf '%s\n' "$_codex_plugins_to_install" | ${pkgs.jq}/bin/jq -r '.[]' | while IFS= read -r _codex_plugin; do
+                [ -n "$_codex_plugin" ] || continue
+                codex plugin add "$_codex_plugin" >/dev/null 2>&1 || true
+              done
+            fi
+          '';
 
       # MCP servers: write selected packs' mcpServers into repo-root .mcp.json
       # (Claude Code project-scope standard file). Same jq recursive-merge as
-      # pluginsHook so user-added servers survive.
+      # claudePluginsHook so user-added servers survive.
       mcpServersResolved = resolveMcp { inherit selectedPacks extraMcpServers; };
       mcpJson = toJSON mcpServersResolved;
       mcpHook = lib.optionalString (mcpServersResolved != { }) ''
@@ -262,13 +317,16 @@ let
         fi
       '';
     in
-    skillsHook + pluginsHook + mcpHook;
+    skillsHook + claudePluginsHook + codexHook + mcpHook;
 
   mkShellWithSkills =
     {
       selectedPacks ? [ ],
       extraSkills ? [ ],
       extraPlugins ? [ ],
+      extraClaudePlugins ? [ ],
+      extraCodexPlugins ? [ ],
+      extraCodexMarketplaces ? { },
       extraMcpServers ? { },
       ...
     }@args:
@@ -278,6 +336,9 @@ let
           selectedPacks
           extraSkills
           extraPlugins
+          extraClaudePlugins
+          extraCodexPlugins
+          extraCodexMarketplaces
           extraMcpServers
           ;
       };
@@ -285,6 +346,9 @@ let
         "selectedPacks"
         "extraSkills"
         "extraPlugins"
+        "extraClaudePlugins"
+        "extraCodexPlugins"
+        "extraCodexMarketplaces"
         "extraMcpServers"
       ];
     in
@@ -299,10 +363,15 @@ in
 {
   inherit
     packs
-    globalPlugins
-    allPackPlugins
+    globalClaudePlugins
+    globalCodexPlugins
+    allPackClaudePlugins
+    allPackCodexPlugins
     resolveSkills
+    resolveClaudePlugins
     resolvePlugins
+    resolveCodexPlugins
+    resolveCodexMarketplaces
     mkPackBundle
     mkProjectShellHook
     mkShellWithSkills

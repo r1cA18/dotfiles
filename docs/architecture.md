@@ -69,35 +69,34 @@ dotfiles/
 ├── .codex/                  # リポジトリローカル Codex assets
 │   └── agents/              # Codex custom agents
 │
-└── codex/                   # Codex CLI設定（~/.codex/へリンク）
-    └── config.toml          # 設定ファイル（AGENTS.md共有設定含む）
+└── codex/                   # 旧Codex CLI設定置き場（現在はNix生成へ移行）
 ```
 
 ## シンボリックリンク管理
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース                          | リンク先                                 | 管理ファイル                                       |
-| ------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| `nvim/`                         | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
-| `programs.ghostty.settings`     | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
-| `karabiner/karabiner.json`      | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
-| `skills/`                       | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `claude/settings.json`          | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.claude/CLAUDE.md`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/rules/`                 | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/hooks/`                 | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/commands/`              | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/agents/`                | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `codex/config.toml`             | `~/.codex/config.toml`                   | `codex.nix` (mkOutOfStoreSymlink)                  |
-| `shared/GLOBAL_INSTRUCTIONS.md` | `~/.codex/AGENTS.md`                     | `codex.nix` (mkOutOfStoreSymlink)                  |
+| ソース                                | リンク先                                 | 管理ファイル                                       |
+| ------------------------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `nvim/`                               | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
+| `programs.ghostty.settings`           | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
+| `karabiner/karabiner.json`            | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
+| `skills/`                             | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
+| `claude/settings.json`                | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `shared/GLOBAL_INSTRUCTIONS.md`       | `~/.claude/CLAUDE.md`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/rules/`                       | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/hooks/`                       | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/commands/`                    | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/agents/`                      | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `nix/home-manager/programs/codex.nix` | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
+| `shared/GLOBAL_INSTRUCTIONS.md`       | `~/.codex/AGENTS.md`                     | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Agent 運用の基本方針
 
 - 共有したい知識は `skills/` と project docs に置く
 - Claude 固有の強制は `claude/hooks/`, `claude/rules/`, `claude/commands/`, `claude/agents/` に置く
 - Codex 固有の custom agent は `.codex/agents/` に置く
-- Claude plugin 本体や runtime cache は source of truth にしない
+- Claude / Codex plugin 本体や runtime cache は source of truth にしない
 - Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
 
@@ -298,15 +297,14 @@ tools:
 
 ### Codex設定を変更
 
-**編集:** `codex/config.toml`
+**編集:** `nix/home-manager/programs/codex.nix`
 
-```toml
-# CLAUDE.md を共有で読み込む
-project_doc_fallback_filenames = ["CODEX.md", "AGENTS.md", "CLAUDE.md"]
+`~/.codex/config.toml` は Nix から writable copy として生成される。
+global な model / plugin / marketplace / MCP 設定は `codex.nix` に追加する。
 
-[features]
-skills = true
-```
+project pack 由来の Codex plugin / marketplace は `nix/lib/skill-packs.nix` に宣言できる。
+`mkShellWithSkills` はそれを `~/.codex/config.toml` と plugin cache へ同期する。
+Codex MCP は現行では user config 側で管理する。
 
 ### Codex custom agent を追加
 

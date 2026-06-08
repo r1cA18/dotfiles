@@ -55,6 +55,22 @@
         "type": "github"
       }
     },
+    "claude-plugin-codex": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779994779,
+        "narHash": "sha256-Je5GhE/DljM3412KRSZuZN1M/2fCk6lQAge+ZGkY2j0=",
+        "owner": "yanchuk",
+        "repo": "claude-plugin-codex",
+        "rev": "4edc5cd1231d2e1a415a9e2ed103ed61305c08dd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yanchuk",
+        "repo": "claude-plugin-codex",
+        "type": "github"
+      }
+    },
     "difit-skills": {
       "flake": false,
       "locked": {
@@ -244,6 +260,7 @@
         "agent-skills-nix": "agent-skills-nix",
         "anthropic-skills": "anthropic-skills",
         "app-store-screenshots": "app-store-screenshots",
+        "claude-plugin-codex": "claude-plugin-codex",
         "difit-skills": "difit-skills",
         "git-hooks-nix": "git-hooks-nix",
         "home-manager": "home-manager",
