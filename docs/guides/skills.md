@@ -130,10 +130,27 @@ Claude / Codex の両方で使いたいものは `skills/` に共有 skill と�
 - plugin 固有の browser automation や UI 拡張は Claude 専用として扱う
 - 外部 OSS skill repo を使う場合は `flake.nix` + `agent-skills.nix` で source を追加して宣言的に管理する
 
+Codex plugin も同じく runtime cache は source of truth にしない。
+Codex 側で継続利用する plugin は、`nix/home-manager/programs/codex.nix` か
+project pack の `codexPlugins` / `codexMarketplaces` に宣言する。
+
+- runtime Codex plugin cache: `~/.codex/plugins/cache/...`
+- global Codex plugin: `nix/home-manager/programs/codex.nix`
+- project Codex plugin: `nix/lib/skill-packs.nix` の `codexPlugins`
+- Codex から Claude Code を呼ぶ bridge: `claude-code-advisor@claude-plugin-codex`
+
+global plugin は home-manager activation、project plugin は `mkShellWithSkills` の shellHook が
+`codex plugin marketplace add` / `codex plugin add` を実行して `~/.codex/config.toml` と runtime cache に同期する。
+
 ## スキルの呼び出し方
 
 Claude Code では `/スキル名` と入力するか、Claude Code がタスクに応じて自動で呼び出す。
 Codex では `~/.codex/skills/` に同期された skill として参照される。
+CLI/IDE では `/skills` や `$skill-name` で明示呼び出しできる。
+
+Codex custom prompt は deprecated なので、再利用 workflow の正本にはしない。
+slash-command 風に呼びたい場合だけ `codex/prompts/*.md` に薄い wrapper を置く。
+例: `/prompts:init` は `$project-init` skill を呼び出す。
 
 ```bash
 /agent-browser https://example.com

@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   username,
   pkgs,
@@ -26,6 +27,7 @@ let
   ];
 
   enabledPlugins = [
+    "claude-code-advisor@claude-plugin-codex"
     "google-calendar@openai-curated"
     "github@openai-curated"
     "browser-use@openai-bundled"
@@ -68,13 +70,16 @@ let
       "five-hour-limit"
     ];
 
-    mcp_servers.linear.url = "https://mcp.linear.app/mcp";
-
     projects = lib.listToAttrs (
       map (p: lib.nameValuePair p { trust_level = "trusted"; }) trustedProjects
     );
 
     plugins = lib.listToAttrs (map (p: lib.nameValuePair p { enabled = true; }) enabledPlugins);
+
+    marketplaces.claude-plugin-codex = {
+      source_type = "local";
+      source = "${inputs.claude-plugin-codex}";
+    };
 
     # No profiles.default: top-level fields above are the default.
     # `codex --profile heavy` → gpt-5.5 high, `codex --profile spark` → spark.
@@ -102,24 +107,36 @@ in
   # Instead we copy the generated toml as a real writable file each dr.
   # Codex can write at runtime; next dr resets dotfiles defaults.
 
-  home.file = {
-    # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
-    ".codex/AGENTS.md".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
+  home = {
+    file = {
+      # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
+      ".codex/AGENTS.md".source =
+        config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
+      ".codex/prompts".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts";
 
-    # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
-    # auth.json (OAuth tokens) stays separate; everything else is shared.
-    ".codex-sub/config.toml".source =
-      config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/config.toml";
-    ".codex-sub/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/AGENTS.md";
-    ".codex-sub/skills".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
+      # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
+      # auth.json (OAuth tokens) stays separate; everything else is shared.
+      ".codex-sub/config.toml".source =
+        config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/config.toml";
+      ".codex-sub/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/AGENTS.md";
+      ".codex-sub/skills".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
+      ".codex-sub/prompts".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/prompts";
+    };
+
+    activation = {
+      codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        install -d "$HOME/.codex"
+        # Remove possible old symlink-to-store (from previous programs.codex.settings setup),
+        # then install fresh writable copy of the Nix-generated toml.
+        rm -f "$HOME/.codex/config.toml"
+        install -m 644 "${codexConfigFile}" "$HOME/.codex/config.toml"
+      '';
+
+      codexPlugins = lib.hm.dag.entryAfter [ "codexConfig" ] ''
+        if command -v codex >/dev/null 2>&1; then
+          CODEX_HOME="$HOME/.codex" codex plugin add claude-code-advisor@claude-plugin-codex >/dev/null 2>&1 || true
+        fi
+      '';
+    };
   };
-
-  home.activation.codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    install -d "$HOME/.codex"
-    # Remove possible old symlink-to-store (from previous programs.codex.settings setup),
-    # then install fresh writable copy of the Nix-generated toml.
-    rm -f "$HOME/.codex/config.toml"
-    install -m 644 "${codexConfigFile}" "$HOME/.codex/config.toml"
-  '';
 }

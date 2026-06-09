@@ -7,6 +7,7 @@ allowed-tools: "Bash,Read,Write,Edit,AskUserQuestion,Agent,Glob,Grep"
 
 Initialize this project for Claude Code with skill packs.
 If $ARGUMENTS is provided, use it as context for pack selection and project understanding.
+Shared workflow equivalent: `project-init` skill for Codex / cross-agent use.
 
 ## Step 1: Understand the project
 
@@ -50,7 +51,8 @@ Present the selection with AskUserQuestion (multiSelect):
 
 Then ask about extras (only if relevant):
 - extraSkills: individual skills not in any pack
-- extraPlugins: pr-review-toolkit, feature-dev, pyright-lsp, sharp-aircon, etc.
+- extraClaudePlugins: Claude Code plugins not covered by packs
+- extraCodexPlugins: Codex plugins not covered by packs
 
 ## Step 3: Generate files
 
@@ -74,7 +76,8 @@ If flake.nix doesn't exist, create:
       devShells.${system}.default = dotfiles.lib.${system}.mkShellWithSkills {
         selectedPacks = [ SELECTED_PACKS ];
         # extraSkills = [ ];
-        # extraPlugins = [ ];
+        # extraClaudePlugins = [ ];
+        # extraCodexPlugins = [ ];
         # buildInputs = with pkgs; [ ];
       };
     };

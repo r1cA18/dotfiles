@@ -237,23 +237,6 @@ in
       };
 
       enabledPlugins = {
-        "document-skills@anthropic-agent-skills" = true;
-        "swift-lsp@claude-plugins-official" = true;
-        "typescript-lsp@claude-plugins-official" = true;
-        "hookify@claude-plugins-official" = true;
-        "context7@claude-plugins-official" = true;
-        "pyright-lsp@claude-plugins-official" = true;
-        "plugin-dev@claude-plugins-official" = true;
-        "claude-md-management@claude-plugins-official" = true;
-        "claude-code-setup@claude-plugins-official" = true;
-        "commit-commands@claude-plugins-official" = true;
-        "pr-review-toolkit@claude-plugins-official" = true;
-        "feature-dev@claude-plugins-official" = true;
-        "explanatory-output-style@claude-plugins-official" = true;
-        "skill-creator@claude-plugins-official" = true;
-        "playground@claude-plugins-official" = true;
-        "frontend-design@claude-plugins-official" = true;
-        "linear@claude-plugins-official" = true;
         "codex@openai-codex" = true;
       };
 

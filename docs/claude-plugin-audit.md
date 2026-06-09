@@ -1,6 +1,6 @@
 # Claude Plugin / Skill 棚卸し
 
-2026-03-19 時点の `~/.claude/plugins/installed_plugins.json` と runtime cache をもとに整理。
+2026-06-09 時点の `~/.claude/plugins/installed_plugins.json` と runtime cache をもとに整理。
 
 ## 方針
 
@@ -17,23 +17,35 @@
 
 ## 継続して Claude 専用に残すもの
 
-| plugin                                 | 理由                                    |
-| -------------------------------------- | --------------------------------------- |
-| `hookify@claude-plugins-official`      | hooks / rules 作成支援で Claude 固有    |
-| `figma@claude-plugins-official`        | plugin / MCP 依存が強い                 |
-| `linear@claude-plugins-official`       | Codex では MCP で別管理                 |
-| `aurochs-office@aurochs-claude-plugin` | Claude plugin 前提                      |
-| `sharp-aircon@sharp-aircon-plugins`    | 個別ドメインで Codex 共通化の価値が低い |
+| plugin                                   | 理由                                 |
+| ---------------------------------------- | ------------------------------------ |
+| `codex@openai-codex`                     | Claude Code から Codex を呼ぶ bridge |
+| `swift-lsp@claude-plugins-official`      | iOS pack の Claude 専用補助          |
+| `typescript-lsp@claude-plugins-official` | web pack の Claude 専用補助          |
 
 ## 共有化候補
 
-| plugin / source                             | asset                   | コメント                                                  |
-| ------------------------------------------- | ----------------------- | --------------------------------------------------------- |
-| `pr-review-toolkit@claude-plugins-official` | review workflow         | `skills/post-review/` で代替の shared workflow を追加済み |
-| `code-review@claude-code-plugins`           | review workflow         | `skills/post-review/` で代替可能                          |
-| `document-skills@anthropic-agent-skills`    | `pdf`, `xlsx`           | 公式 skill として `agent-skills.nix` で有効化候補         |
-| `document-skills@anthropic-agent-skills`    | `docx`, `pptx`          | 必要になったら公式 skill として有効化検討                 |
-| `skill-creator@claude-plugins-official`     | skill creation guidance | Codex 側の system skill と役割が重複                      |
+| plugin / source                             | asset                   | コメント                                            |
+| ------------------------------------------- | ----------------------- | --------------------------------------------------- |
+| `pr-review-toolkit@claude-plugins-official` | review workflow         | `skills/post-review/` で代替                        |
+| `code-review@claude-code-plugins`           | review workflow         | `skills/post-review/` で代替                        |
+| `document-skills@anthropic-agent-skills`    | `pdf`, `xlsx`           | `agent-skills.nix` で shared skill として有効化済み |
+| `skill-creator@claude-plugins-official`     | skill creation guidance | Codex 側の system skill と役割が重複                |
+
+## 削除・無効化方針
+
+| plugin                                         | 判断                                                     |
+| ---------------------------------------------- | -------------------------------------------------------- |
+| `ralph-loop` / `ralph-wiggum`                  | Codex subagents / goal workflow で代替。不要             |
+| `figma@claude-plugins-official`                | 現運用では不要                                           |
+| `linear@claude-plugins-official`               | 現運用では不要。必要なら Codex MCP / plugin で再検討     |
+| `context7@claude-plugins-official`             | 現運用では不要。必要時はWeb/公式docs/個別MCPで対応       |
+| `commit-commands@claude-plugins-official`      | git workflow は通常コマンドと GitHub plugin skill で代替 |
+| `claude-md-management@claude-plugins-official` | project docs / shared instructions で代替                |
+| `claude-code-setup@claude-plugins-official`    | dotfiles の project init / pack 設計で代替               |
+| `hookify@claude-plugins-official`              | 作った hook 自体だけを必要に応じて移植                   |
+| `playground@claude-plugins-official`           | Codex/browser/frontend skills で代替                     |
+| `frontend-design@claude-plugins-official`      | shared `frontend-design` skill で代替                    |
 
 ## 実態メモ
 
@@ -43,6 +55,5 @@
 
 ## 次の候補
 
-1. `pdf` と `xlsx` を `agent-skills.nix` で有効化するか判断
-2. Figma 系を共有 asset 化するなら plugin 依存を外した新しい skill を別途作る
-3. review workflow は `post-review` を使って Claude command 依存を徐々に減らす
+1. review workflow は `post-review` を使って Claude command 依存を徐々に減らす
+2. 必要になった外部連携だけ Codex plugin / MCP / shared skill として個別追加する

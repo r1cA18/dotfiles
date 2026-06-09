@@ -57,6 +57,10 @@
     lottie.url = "github:diffusionstudio/lottie";
     lottie.flake = false;
 
+    # Codex plugin: ask local Claude Code from Codex
+    claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
+    claude-plugin-codex.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -179,7 +183,7 @@
     in
     {
       # Skill packs library (per-project skill/plugin management)
-      lib = forAllSystems (system: mkSkillPacksLib system);
+      lib = forAllSystems mkSkillPacksLib;
 
       # Custom packages
       packages = forAllSystems (system: import ./nix/pkgs nixpkgs.legacyPackages.${system});
