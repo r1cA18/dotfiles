@@ -174,11 +174,16 @@
               subdir = "skills";
             };
           };
+          packsLib = import ./nix/lib/skill-packs.nix {
+            inherit (nixpkgs) lib;
+            inherit pkgs asLib sources;
+          };
+          devShellLib = import ./nix/lib/dev-shell.nix {
+            inherit pkgs;
+            inherit (packsLib) mkProjectShellHook;
+          };
         in
-        import ./nix/lib/skill-packs.nix {
-          inherit (nixpkgs) lib;
-          inherit pkgs asLib sources;
-        };
+        packsLib // devShellLib;
 
     in
     {

@@ -1,0 +1,67 @@
+# Project dev-shell builder for this dotfiles agent workflow.
+#
+# This is the entry point every project flake uses to create its devShell. It
+# layers the selected skill packs (skills / Claude plugins / Codex plugins / MCP
+# servers) on top of a base shell via mkProjectShellHook.
+#
+# Base shell uses mkShellNoCC, NOT mkShell, on purpose:
+#
+#   On Darwin, pkgs.mkShell pulls the nixpkgs C toolchain into the shell even
+#   with zero buildInputs. That toolchain exports DEVELOPER_DIR/SDKROOT pointing
+#   at the nixpkgs apple-sdk (macOS SDK only) and shadows `xcrun`/`clang` with
+#   nix builds. Inside such a shell the system Xcode toolchain is hidden, so
+#   swift, swiftc, xcodebuild, simctl, the iOS/iPadOS simulator SDKs, and mdv's
+#   WebKit snapshot helper all break with "tool 'swift' not found" /
+#   "unable to find sdk: 'iphonesimulator'".
+#
+#   mkShellNoCC uses stdenvNoCC, so it pulls no apple-sdk / cc wrapper: it leaves
+#   DEVELOPER_DIR/SDKROOT unset and keeps `xcrun`/`clang` resolving to system
+#   Xcode. Prebuilt nix tooling (python.withPackages, node, CLI tools) needs no
+#   in-shell compiler, so nothing is lost. If a project genuinely needs to
+#   compile native code with nix's clang in-shell, it should pass an explicit
+#   compiler (e.g. nativeBuildInputs = [ pkgs.clang ]) for that project.
+{
+  pkgs,
+  mkProjectShellHook,
+}:
+{
+  mkShellWithSkills =
+    {
+      selectedPacks ? [ ],
+      extraSkills ? [ ],
+      extraPlugins ? [ ],
+      extraClaudePlugins ? [ ],
+      extraCodexPlugins ? [ ],
+      extraCodexMarketplaces ? { },
+      extraMcpServers ? { },
+      ...
+    }@args:
+    let
+      packHook = mkProjectShellHook {
+        inherit
+          selectedPacks
+          extraSkills
+          extraPlugins
+          extraClaudePlugins
+          extraCodexPlugins
+          extraCodexMarketplaces
+          extraMcpServers
+          ;
+      };
+      cleanArgs = builtins.removeAttrs args [
+        "selectedPacks"
+        "extraSkills"
+        "extraPlugins"
+        "extraClaudePlugins"
+        "extraCodexPlugins"
+        "extraCodexMarketplaces"
+        "extraMcpServers"
+      ];
+    in
+    pkgs.mkShellNoCC (
+      cleanArgs
+      // {
+        shellHook = packHook + (args.shellHook or "");
+      }
+    );
+}
