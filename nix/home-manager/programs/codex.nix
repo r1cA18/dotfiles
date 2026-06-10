@@ -12,10 +12,14 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
+  # home, dotfiles, vault は homeDir 由来で両OS共通。
+  # Develop 配下の個別プロジェクトは macOS にしか無いので Darwin 限定。
   trustedProjects = [
-    "/Users/r1ca18"
-    "/Users/r1ca18/dotfiles"
-    "/Users/r1ca18/vault"
+    homeDir
+    dotfilesDir
+    "${homeDir}/vault"
+  ]
+  ++ lib.optionals pkgs.stdenv.isDarwin [
     "/Users/r1ca18/Develop/github.com/r1cA18/syoki"
     "/Users/r1ca18/Develop/github.com/r1cA18/NomadPad-app"
     "/Users/r1ca18/Develop/github.com/r1cA18/mado"
