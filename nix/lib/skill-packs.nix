@@ -11,7 +11,6 @@ let
     concatMap
     elem
     filter
-    removeAttrs
     toJSON
     ;
   inherit (lib) unique;
@@ -320,46 +319,6 @@ let
     in
     skillsHook + claudePluginsHook + codexHook + mcpHook;
 
-  mkShellWithSkills =
-    {
-      selectedPacks ? [ ],
-      extraSkills ? [ ],
-      extraPlugins ? [ ],
-      extraClaudePlugins ? [ ],
-      extraCodexPlugins ? [ ],
-      extraCodexMarketplaces ? { },
-      extraMcpServers ? { },
-      ...
-    }@args:
-    let
-      packHook = mkProjectShellHook {
-        inherit
-          selectedPacks
-          extraSkills
-          extraPlugins
-          extraClaudePlugins
-          extraCodexPlugins
-          extraCodexMarketplaces
-          extraMcpServers
-          ;
-      };
-      cleanArgs = removeAttrs args [
-        "selectedPacks"
-        "extraSkills"
-        "extraPlugins"
-        "extraClaudePlugins"
-        "extraCodexPlugins"
-        "extraCodexMarketplaces"
-        "extraMcpServers"
-      ];
-    in
-    pkgs.mkShell (
-      cleanArgs
-      // {
-        shellHook = packHook + (args.shellHook or "");
-      }
-    );
-
 in
 {
   inherit
@@ -375,6 +334,5 @@ in
     resolveCodexMarketplaces
     mkPackBundle
     mkProjectShellHook
-    mkShellWithSkills
     ;
 }
