@@ -31,23 +31,17 @@ let
   };
 
   # 1Password SSH agent による commit/tag 署名 (両OS)。
-  # op-ssh-sign のパスのみ OS 別。Linux は 1Password desktop 導入が前提
-  # (未導入だと commit.gpgsign により全 commit が署名失敗するため、
-  #  1Password を入れてから dr すること)。
+  # op-ssh-sign のパスのみ OS 別。署名設定は静的に書かず、activation で
+  # op-ssh-sign の存在を確認してから include ファイルに書き出す。
+  # 1Password 未導入のマシン (初期セットアップ直後の Ubuntu 等) では
+  # include が空になり、commit は無署名で通る。導入後に dr すれば有効化。
   opSshSign =
     if pkgs.stdenv.isDarwin then
       "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
     else
       "/opt/1Password/op-ssh-sign";
 
-  signingSettings = {
-    user.signingkey = signingKey;
-    commit.gpgsign = true;
-    tag.gpgsign = true;
-    gpg.format = "ssh";
-    gpg.ssh.program = opSshSign;
-    gpg.ssh.allowedSignersFile = allowedSignersPath;
-  };
+  signingIncludePath = "${config.xdg.configHome}/git/1password-signing";
 in
 {
   programs.gh.enable = true;
@@ -77,9 +71,35 @@ in
       ".venv"
       "result"
     ];
-    settings = lib.recursiveUpdate baseSettings signingSettings;
+    settings = lib.recursiveUpdate baseSettings {
+      # 存在しない include は git が黙って無視するので、署名無効時も無害
+      include.path = signingIncludePath;
+    };
   };
 
   # ローカル検証用の信頼鍵リスト (両OS)
   xdg.configFile."git/allowed_signers".text = "${userEmail} ${signingKey}\n";
+
+  # op-ssh-sign があるマシンだけ署名を有効化 (self-healing: 1Password 導入後の
+  # dr で自動有効化、アンインストールしたら次の dr で自動無効化)
+  home.activation.gitSigningInclude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -x "${opSshSign}" ]; then
+      run install -D -m 644 /dev/stdin "${signingIncludePath}" <<'EOF'
+    [user]
+      signingkey = ${signingKey}
+    [commit]
+      gpgsign = true
+    [tag]
+      gpgsign = true
+    [gpg]
+      format = ssh
+    [gpg "ssh"]
+      program = ${opSshSign}
+      allowedSignersFile = ${allowedSignersPath}
+    EOF
+    else
+      run rm -f "${signingIncludePath}"
+      echo "git signing disabled: ${opSshSign} not found (install 1Password desktop and re-run dr)"
+    fi
+  '';
 }
