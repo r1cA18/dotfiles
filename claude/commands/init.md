@@ -31,7 +31,7 @@ Available packs (~/dotfiles/nix/lib/skill-packs.nix):
 
 | Pack | Skills | Plugins | Auto-select when |
 |------|--------|---------|-----------------|
-| ios | swift-dev-toolkit, ios-device-build | swift-lsp | .swift files, Package.swift, Xcode project |
+| swift | swift-dev-toolkit, ios-device-build | swift-lsp | .swift files, Package.swift, Xcode project |
 | web | frontend-design, baseline-ui, ui-skills, vercel-react-best-practices, web-design-guidelines | typescript-lsp, frontend-design, playground | package.json with react/next/vue/svelte, .tsx files |
 | media | video-editing, remotion-best-practices | - | Remotion config, video processing scripts |
 | research | - | academic-research-skills | Academic papers, .bib files, research docs |

@@ -43,7 +43,7 @@ Figure out:
 Use AskUserQuestion to ask which pack this skill belongs to:
 
 Options based on the skill's purpose:
-- ios (Swift/iOS/macOS development)
+- swift (Swift/iOS/macOS development)
 - web (Web frontend, React, TypeScript)
 - media (Video, audio, image processing)
 - research (Academic, papers, literature)
