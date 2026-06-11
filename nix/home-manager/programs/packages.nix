@@ -4,6 +4,8 @@
 }:
 let
   inherit (pkgs.stdenv) isDarwin;
+  mkGithubReleaseApp = pkgs.callPackage ../../lib/github-app.nix { };
+  recordlyPackage = pkgs.callPackage ../../pkgs/recordly { inherit mkGithubReleaseApp; };
   agentSkillPath = pkgs.writeShellApplication {
     name = "agent-skill-path";
     text = ''
@@ -186,7 +188,7 @@ let
 
     # GUI apps (Homebrew cask / nixpkgs に無いため .dmg を自前パッケージ化)
     # home-manager が ~/Applications/Home Manager Apps/ に配置する
-    recordly
+    recordlyPackage
   ];
 
   # Linux 専用パッケージ

@@ -1,7 +1,5 @@
 pkgs:
 let
-  mkGithubReleaseApp = pkgs.callPackage ../lib/github-app.nix { };
-
   mdv = pkgs.rustPlatform.buildRustPackage rec {
     pname = "mdv";
     version = "0.1.1-unstable-2026-04-11";
@@ -55,7 +53,4 @@ in
   agent-browser = pkgs.callPackage ./agent-browser { };
   difit = pkgs.callPackage ./difit { };
   inherit mdv;
-}
-// pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
-  recordly = pkgs.callPackage ./recordly { inherit mkGithubReleaseApp; };
 }

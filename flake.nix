@@ -197,7 +197,21 @@
       lib = forAllSystems mkSkillPacksLib;
 
       # Custom packages
-      packages = forAllSystems (system: import ./nix/pkgs (pkgsFor system));
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = pkgsFor system;
+          isDarwin = builtins.elem system [
+            "aarch64-darwin"
+            "x86_64-darwin"
+          ];
+          mkGithubReleaseApp = pkgs.callPackage ./nix/lib/github-app.nix { };
+        in
+        import ./nix/pkgs pkgs
+        // nixpkgs.lib.optionalAttrs isDarwin {
+          recordly = pkgs.callPackage ./nix/pkgs/recordly { inherit mkGithubReleaseApp; };
+        }
+      );
 
       # treefmt (unified formatting)
       formatter = forAllSystems (

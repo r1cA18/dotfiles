@@ -1,14 +1,20 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   inherit (pkgs.stdenv) isDarwin;
+  homeDir = config.home.homeDirectory;
   # 1Password SSH agent のソケット (OS別)。
   # macOS: 1Password.app の Group Container。
   # Linux: 1Password desktop の標準パス (1Password desktop 導入が前提)。
   agentSock =
     if isDarwin then
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+      "${homeDir}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
     else
-      "$HOME/.1password/agent.sock";
+      "${homeDir}/.1password/agent.sock";
 in
 {
   home.sessionVariables = {
