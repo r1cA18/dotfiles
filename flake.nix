@@ -92,6 +92,12 @@
         "aarch64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
+      pkgsFor =
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
       # Helper to build a darwin configuration
       mkDarwinConfig =
@@ -191,7 +197,7 @@
       lib = forAllSystems mkSkillPacksLib;
 
       # Custom packages
-      packages = forAllSystems (system: import ./nix/pkgs nixpkgs.legacyPackages.${system});
+      packages = forAllSystems (system: import ./nix/pkgs (pkgsFor system));
 
       # treefmt (unified formatting)
       formatter = forAllSystems (

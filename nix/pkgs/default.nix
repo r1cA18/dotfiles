@@ -54,6 +54,8 @@ in
 {
   agent-browser = pkgs.callPackage ./agent-browser { };
   difit = pkgs.callPackage ./difit { };
-  recordly = pkgs.callPackage ./recordly { inherit mkGithubReleaseApp; };
   inherit mdv;
+}
+// pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+  recordly = pkgs.callPackage ./recordly { inherit mkGithubReleaseApp; };
 }
