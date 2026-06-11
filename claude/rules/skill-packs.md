@@ -12,7 +12,7 @@ agent-browser, pdf, xlsx, post-review, skill-builder, skill-auditor, autonomous-
 | Pack | Skills | Claude plugins | Codex plugins |
 |------|--------|----------------|---------------|
 | design | - | - | product-design |
-| ios | swift-dev-toolkit, ios-device-build | swift-lsp | - |
+| swift | swift-dev-toolkit, ios-device-build | swift-lsp | - |
 | web | vercel-react-best-practices | typescript-lsp | - |
 | media | video-editing, remotion-best-practices | - | - |
 | research | typst-author, touying-author | academic-research-skills | - |

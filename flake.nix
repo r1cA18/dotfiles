@@ -136,7 +136,7 @@
       # Usage in project flake.nix:
       #   inputs.dotfiles.url = "git+file:///Users/r1ca18/dotfiles";
       #   devShells.default = dotfiles.lib.${system}.mkShellWithSkills {
-      #     selectedPacks = [ "ios" ];
+      #     selectedPacks = [ "swift" ];
       #   };
       mkSkillPacksLib =
         system:
@@ -311,29 +311,5 @@
         ];
       };
 
-      # OpenClaw VM configuration
-      # Build with: nh home switch . -c openclaw@linux
-      homeConfigurations."openclaw@linux" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config.allowUnfree = true;
-        };
-        extraSpecialArgs = {
-          inherit inputs;
-          username = "openclaw";
-          hostname = null;
-        };
-        modules = [
-          agent-skills-nix.homeManagerModules.default
-          nix-index-database.homeModules.nix-index
-          ./nix/home-manager/home.nix
-          {
-            nixpkgs.config.allowUnfree = true;
-            nixpkgs.overlays = [
-              self.overlays.additions
-            ];
-          }
-        ];
-      };
     };
 }

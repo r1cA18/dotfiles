@@ -38,18 +38,10 @@ let
           ];
           type = "stdio";
         };
-        pencil = {
-          command = "/Users/r1ca18/.cursor/extensions/highagency.pencildev-0.6.30-universal/out/mcp-server-darwin-arm64";
-          args = [
-            "--app"
-            "cursor"
-          ];
-          env = { };
-          type = "stdio";
-        };
       };
     };
-    ios = {
+    # Swift / Xcode (iOS + macOS) 開発全般。macOS ホスト前提
+    swift = {
       skills = [
         "swift-dev-toolkit"
         "ios-device-build"

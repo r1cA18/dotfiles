@@ -14,6 +14,7 @@
     ./programs/neovim.nix
     ./programs/packages.nix
     ./programs/ghostty.nix
+    ./programs/linux-desktop.nix
     ./programs/karabiner.nix
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
