@@ -16,6 +16,17 @@ home-manager (standalone) を使った Ubuntu Desktop 環境のセットアッ�
 
 ## 初回セットアップ
 
+### 0. Bootstrap 依存のインストール
+
+Nix を入れる前に必要な最小限のツールは、Ubuntu 側で入れる。
+`curl` は home-manager 適用後にも Nix package として入るが、Nix installer
+を取得する段階ではまだ Nix が使えない。
+
+```bash
+sudo apt update
+sudo apt install -y curl git xz-utils ca-certificates
+```
+
 ### 1. Nix インストール
 
 ```bash
@@ -157,6 +168,17 @@ flatpak install アプリ名
 ```
 
 > **Note**: GUI アプリは Nix での管理対象外としています。
+
+### Ghostty
+
+Ghostty は GTK/OpenGL 周りで system library / GPU driver と密接に噛み合うため、
+Ubuntu Desktop では Nix package を入れず、home-manager は
+`~/.config/ghostty/config` だけ管理する。
+
+本体は Ghostty 公式の binary package、Ubuntu の package、または Flatpak など
+system 側の手段で入れる。`unable to acquire an OpenGL context` が出る場合は、
+Ghostty 公式の [GTK OpenGL Context Errors](https://ghostty.org/docs/help/gtk-opengl-context)
+に従い、system package 更新、GPU driver、Wayland/X11 の組み合わせを確認する。
 
 ### 設定ファイルのパス
 
