@@ -42,6 +42,23 @@ let
       "/opt/1Password/op-ssh-sign";
 
   signingIncludePath = "${config.xdg.configHome}/git/1password-signing";
+
+  # 署名設定の中身を store ファイルに固める。activation では install で
+  # コピーするだけにする (heredoc + /dev/stdin だと coreutils install が
+  # fifo を "replaced while being copied" と誤検知して skip するため)。
+  signingConfigFile = pkgs.writeText "git-1password-signing" ''
+    [user]
+      signingkey = ${signingKey}
+    [commit]
+      gpgsign = true
+    [tag]
+      gpgsign = true
+    [gpg]
+      format = ssh
+    [gpg "ssh"]
+      program = ${opSshSign}
+      allowedSignersFile = ${allowedSignersPath}
+  '';
 in
 {
   programs.gh.enable = true;
@@ -84,19 +101,7 @@ in
   # dr で自動有効化、アンインストールしたら次の dr で自動無効化)
   home.activation.gitSigningInclude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -x "${opSshSign}" ]; then
-      run install -D -m 644 /dev/stdin "${signingIncludePath}" <<'EOF'
-    [user]
-      signingkey = ${signingKey}
-    [commit]
-      gpgsign = true
-    [tag]
-      gpgsign = true
-    [gpg]
-      format = ssh
-    [gpg "ssh"]
-      program = ${opSshSign}
-      allowedSignersFile = ${allowedSignersPath}
-    EOF
+      run install -D -m 644 "${signingConfigFile}" "${signingIncludePath}"
     else
       run rm -f "${signingIncludePath}"
       echo "git signing disabled: ${opSshSign} not found (install 1Password desktop and re-run dr)"
