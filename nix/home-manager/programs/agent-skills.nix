@@ -64,6 +64,7 @@
       enable = [
         # custom (global)
         "agent-browser"
+        "agent-reach"
         "pdf"
         "xlsx"
         "post-review"
