@@ -20,6 +20,7 @@
     ./programs/agent-skills.nix
     ./programs/claude-code.nix
     ./programs/codex.nix
+    ./programs/zed.nix
     ./programs/nix-index.nix
   ];
 
