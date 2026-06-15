@@ -34,7 +34,12 @@ python3Packages.buildPythonApplication rec {
 
   postInstall = ''
     wrapProgram "$out/bin/agent-reach" \
-      --prefix PATH : "${lib.makeBinPath [ gh nodejs ]}"
+      --prefix PATH : "${
+        lib.makeBinPath [
+          gh
+          nodejs
+        ]
+      }"
   '';
 
   doCheck = false;
