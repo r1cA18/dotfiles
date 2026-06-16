@@ -276,6 +276,7 @@ in
       remoteControlAtStartup = true;
       theme = "light";
       editorMode = "vim";
+      model = "claude-opus-4-6";
     };
   };
 

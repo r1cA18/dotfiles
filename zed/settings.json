@@ -33,5 +33,11 @@
   },
   "terminal": {
     "font_family": "JetBrainsMono Nerd Font"
+  },
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-6"
+    }
   }
 }
