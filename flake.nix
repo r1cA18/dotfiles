@@ -61,6 +61,10 @@
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
 
+    # SuperClaude Framework (agent/command definitions, cherry-picked via superclaude.nix)
+    superclaude.url = "github:SuperClaude-Org/SuperClaude_Framework";
+    superclaude.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";

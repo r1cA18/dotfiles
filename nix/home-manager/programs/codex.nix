@@ -100,6 +100,18 @@ let
   };
 
   codexConfigFile = tomlFormat.generate "codex-config.toml" codexSettings;
+
+  # Individual file symlinks for .codex/prompts/ (allows superclaude.nix to
+  # add sc-*.md alongside self-owned prompts in the same directory).
+  # readDir uses the flake-relative path (pure-eval safe); symlinks point to
+  # the mutable dotfilesDir so edits take effect without rebuild.
+  promptFiles = lib.mapAttrs' (
+    name: _:
+    lib.nameValuePair ".codex/prompts/${name}" {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
+      force = true;
+    }
+  ) (builtins.readDir ../../../codex/prompts);
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.
@@ -116,10 +128,9 @@ in
       # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
       ".codex/AGENTS.md".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
-      ".codex/prompts" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts";
-        force = true;
-      };
+    }
+    // promptFiles
+    // {
 
       # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
       # auth.json (OAuth tokens) stays separate; everything else is shared.

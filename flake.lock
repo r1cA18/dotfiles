@@ -269,9 +269,26 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "notebooklm-skill": "notebooklm-skill",
+        "superclaude": "superclaude",
         "taste-skill": "taste-skill",
         "treefmt-nix": "treefmt-nix",
         "typst-skills": "typst-skills"
+      }
+    },
+    "superclaude": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777259337,
+        "narHash": "sha256-+fevnhx2j/qJo56XSoPwmRxJoLr8EMuxd8pvOFhnuG4=",
+        "owner": "SuperClaude-Org",
+        "repo": "SuperClaude_Framework",
+        "rev": "226c45cc93b865108843a669c6545d421784b68c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SuperClaude-Org",
+        "repo": "SuperClaude_Framework",
+        "type": "github"
       }
     },
     "taste-skill": {
