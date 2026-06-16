@@ -18,6 +18,14 @@ let
     source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${relativePath}";
     force = true;
   };
+
+  # Individual file symlinks for .claude/agents/ (allows superclaude.nix to
+  # add sc-*.md alongside self-owned agents in the same directory).
+  # readDir uses the flake-relative path (pure-eval safe); symlinks point to
+  # the mutable dotfilesDir so edits take effect without rebuild.
+  agentFiles = lib.mapAttrs' (
+    name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}")
+  ) (builtins.readDir ../../../claude/agents);
 in
 {
   programs.claude-code = {
@@ -289,7 +297,9 @@ in
     ".claude/rules" = mkClaudeSymlink "claude/rules";
     ".claude/hooks" = mkClaudeSymlink "claude/hooks";
     ".claude/commands" = mkClaudeSymlink "claude/commands";
-    ".claude/agents" = mkClaudeSymlink "claude/agents";
+  }
+  // agentFiles
+  // {
   };
 
   # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
