@@ -116,15 +116,24 @@ in
       # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
       ".codex/AGENTS.md".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
-      ".codex/prompts".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts";
+      ".codex/prompts" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts";
+        force = true;
+      };
 
       # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
       # auth.json (OAuth tokens) stays separate; everything else is shared.
       ".codex-sub/config.toml".source =
         config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/config.toml";
       ".codex-sub/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/AGENTS.md";
-      ".codex-sub/skills".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
-      ".codex-sub/prompts".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/prompts";
+      ".codex-sub/skills" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
+        force = true;
+      };
+      ".codex-sub/prompts" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/prompts";
+        force = true;
+      };
     };
 
     activation = {
