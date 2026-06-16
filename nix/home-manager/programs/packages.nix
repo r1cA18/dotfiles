@@ -134,47 +134,6 @@ let
     '';
   };
 
-  updateAgentReach = pkgs.writeShellApplication {
-    name = "update-agent-reach";
-    runtimeInputs = with pkgs; [
-      gh
-      jq
-      gnused
-      coreutils
-      nix
-    ];
-    text = ''
-      repo_root="''${DOTFILES_DIR:-$HOME/dotfiles}"
-      nixfile="$repo_root/nix/pkgs/agent-reach/default.nix"
-      [ -f "$nixfile" ] || {
-        echo "agent-reach: nixfile not found: $nixfile" >&2
-        exit 1
-      }
-
-      tag=$(gh release view --repo Panniantong/Agent-Reach --json tagName -q .tagName 2>/dev/null) || {
-        echo "agent-reach: failed to fetch latest release" >&2
-        exit 1
-      }
-      version="''${tag#v}"
-
-      cur=$(sed -nE 's/^[[:space:]]*version = "([^"]+)";/\1/p' "$nixfile" | head -1)
-      if [ "$cur" = "$version" ]; then
-        echo "agent-reach: up to date ($version)"
-        exit 0
-      fi
-
-      echo "agent-reach: $cur -> $version"
-      hash=$(nix flake prefetch --json "github:Panniantong/Agent-Reach/$tag" | jq -r .hash)
-
-      sed -i.bak -E \
-        -e "s|^([[:space:]]*version = \")[^\"]+(\";)|\1$version\2|" \
-        -e "s|^([[:space:]]*hash = \")[^\"]+(\";)|\1$hash\2|" \
-        "$nixfile"
-      rm -f "$nixfile.bak"
-      echo "agent-reach: updated; review 'git diff' then run dr."
-    '';
-  };
-
   # 共通パッケージ (両OS)
   commonPackages = with pkgs; [
     # Development
@@ -201,11 +160,9 @@ let
     tmux
     ffmpeg
     agent-browser
-    agent-reach
     agentSkillPath
     difit
     _1password-cli
-    updateAgentReach
     updateGithubApps
     updateClaudeCode
   ];

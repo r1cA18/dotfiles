@@ -51,7 +51,6 @@ let
 in
 {
   agent-browser = pkgs.callPackage ./agent-browser { };
-  agent-reach = pkgs.callPackage ./agent-reach { };
   difit = pkgs.callPackage ./difit { };
   inherit mdv;
 }
