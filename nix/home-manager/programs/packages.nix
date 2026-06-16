@@ -139,6 +139,7 @@ let
     # Development
     bun
     nodejs_22
+    nodePackages.pnpm
     codex
     gemini-cli
 
