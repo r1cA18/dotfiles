@@ -105,13 +105,16 @@ let
   # add sc-*.md alongside self-owned prompts in the same directory).
   # readDir uses the flake-relative path (pure-eval safe); symlinks point to
   # the mutable dotfilesDir so edits take effect without rebuild.
-  promptFiles = lib.mapAttrs' (
-    name: _:
-    lib.nameValuePair ".codex/prompts/${name}" {
-      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
-      force = true;
-    }
-  ) (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../codex/prompts));
+  promptFiles =
+    lib.mapAttrs'
+      (
+        name: _:
+        lib.nameValuePair ".codex/prompts/${name}" {
+          source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
+          force = true;
+        }
+      )
+      (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../codex/prompts));
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.
