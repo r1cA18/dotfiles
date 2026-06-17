@@ -111,7 +111,7 @@ let
       source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
       force = true;
     }
-  ) (builtins.readDir ../../../codex/prompts);
+  ) (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../codex/prompts));
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.

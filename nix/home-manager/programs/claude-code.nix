@@ -25,7 +25,7 @@ let
   # the mutable dotfilesDir so edits take effect without rebuild.
   agentFiles = lib.mapAttrs' (
     name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}")
-  ) (builtins.readDir ../../../claude/agents);
+  ) (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../claude/agents));
 in
 {
   programs.claude-code = {

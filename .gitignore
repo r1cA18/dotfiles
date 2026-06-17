@@ -24,6 +24,10 @@ Icon?
 # home-manager
 *.hm-backup
 
+# SuperClaude agents (deployed by superclaude.nix, not repo-owned)
+claude/agents/sc-*
+codex/prompts/sc-*
+
 # direnv
 .direnv/
 
