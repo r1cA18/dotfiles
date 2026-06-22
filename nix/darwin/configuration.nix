@@ -43,6 +43,12 @@
     wget
   ];
 
+  homebrew = {
+    enable = true;
+    onActivation.autoUpdate = true;
+    casks = [ "notunes" ];
+  };
+
   system = {
     primaryUser = username;
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
