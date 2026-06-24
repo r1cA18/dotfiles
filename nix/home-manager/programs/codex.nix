@@ -11,6 +11,7 @@ let
   dotfilesDir = "${homeDir}/dotfiles";
 
   tomlFormat = pkgs.formats.toml { };
+  sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
 
   # home, dotfiles, vault は homeDir 由来で両OS共通。
   # Develop 配下の個別プロジェクトは macOS にしか無いので Darwin 限定。
@@ -36,15 +37,24 @@ let
     "github@openai-curated"
     "browser-use@openai-bundled"
     "documents@openai-primary-runtime"
+    "pdf@openai-primary-runtime"
     "spreadsheets@openai-primary-runtime"
     "presentations@openai-primary-runtime"
+    "browser@openai-bundled"
+    "chrome@openai-bundled"
   ];
 
   codexSettings = {
     # Top-level model is the default for `codex` with no --profile (= the cx abbr).
     # Profiles below override per-invocation: cxh = heavy, cxsp = spark.
     model = "gpt-5.5";
-    model_reasoning_effort = "high";
+    model_reasoning_effort = "medium";
+
+    # Keep normal commands automatic inside the workspace. Commands that need
+    # broader access request escalation and are reviewed by the policy engine.
+    approval_policy = "on-request";
+    approvals_reviewer = "auto_review";
+    sandbox_mode = "workspace-write";
 
     project_doc_fallback_filenames = [
       "CODEX.md"
@@ -128,9 +138,8 @@ in
 
   home = {
     file = {
-      # AGENTS.md is shared with Claude (edit-and-go, no rebuild needed for content updates)
-      ".codex/AGENTS.md".source =
-        config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/agents/INSTRUCTIONS.md";
+      # Built from agents/INSTRUCTIONS.md + agents/rules/*.md.
+      ".codex/AGENTS.md".source = sharedAgentInstructions;
     }
     // promptFiles
     // {

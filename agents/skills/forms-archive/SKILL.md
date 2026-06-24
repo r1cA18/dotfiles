@@ -1,6 +1,15 @@
 ---
 name: forms-archive
-description: Archive every page of a Microsoft Forms (Office 365, forms.office.com) survey/quiz/assignment as PDF and/or MHTML using a pre-saved logged-in browser session. MUST use when the user shares a forms.office.com URL and asks to save, archive, back up, download, PDF化, MHTML化, 手元に残す, or 問題文を保存. Auto-fills required fields only to traverse multi-page forms, and NEVER clicks Submit. Not for Google Forms (docs.google.com/forms) or generic web pages. Triggers: "Forms保存して", "フォームをPDF化", "フォームをアーカイブ", "office formsを保存", "MS Formsアーカイブ", "問題文を保存", "save forms as pdf", "archive ms forms", "forms-archive <URL>", "/forms-archive".
+description: >-
+  Archive every page of a Microsoft Forms (Office 365, forms.office.com)
+  survey/quiz/assignment as PDF and/or MHTML using a pre-saved logged-in
+  browser session. MUST use when the user shares a forms.office.com URL and asks
+  to save, archive, back up, download, PDF化, MHTML化, 手元に残す, or 問題文を保存.
+  Auto-fills required fields only to traverse multi-page forms, and NEVER clicks
+  Submit. Not for Google Forms (docs.google.com/forms) or generic web pages.
+  Triggers: "Forms保存して", "フォームをPDF化", "フォームをアーカイブ",
+  "office formsを保存", "MS Formsアーカイブ", "問題文を保存", "save forms as pdf",
+  "archive ms forms", "forms-archive <URL>", "formsarchive", "/forms-archive".
 ---
 
 # Microsoft Forms Archive

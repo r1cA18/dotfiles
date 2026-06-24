@@ -7,7 +7,7 @@
 
 | 項目                         | Source of truth                            | 補足                                                |
 | ---------------------------- | ------------------------------------------ | --------------------------------------------------- |
-| グローバル instruction       | `shared/GLOBAL_INSTRUCTIONS.md`            | 両方に配布する                                      |
+| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/` | Nix で結合して両方に配布する                        |
 | project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント | repo 直下で管理                                     |
 | reusable skills              | `skills/`                                  | `~/.claude/skills` と `~/.codex/skills` に同期      |
 | Claude hooks                 | `claude/hooks/`                            | Claude 専用                                         |
@@ -22,7 +22,8 @@
 
 ## 共有できるもの
 
-- `shared/GLOBAL_INSTRUCTIONS.md`
+- `agents/INSTRUCTIONS.md`
+- `agents/rules/`
 - `skills/`
 - project docs
 - MCP のうち plugin 非依存で宣言的に書ける server 定義

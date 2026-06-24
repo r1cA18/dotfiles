@@ -9,6 +9,7 @@ let
   homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
+  sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
 
   # Claude Code (native installer) の追従チャネル。"latest" で du のたびに
   # 最新へ追従、版番号 (例 "2.1.150") でその版に固定/ロールバック。
@@ -289,11 +290,10 @@ in
     };
   };
 
-  # CLAUDE.md + editable directories — kept as out-of-store symlinks so
-  # edits to ~/dotfiles/{shared,claude}/* take effect immediately without
-  # requiring a `dr` (programs.claude-code.context would copy to nix store).
+  # Shared instructions are generated from agents/INSTRUCTIONS.md and
+  # agents/rules/*.md. Claude-specific assets remain editable symlinks.
   home.file = {
-    ".claude/CLAUDE.md" = mkClaudeSymlink "agents/INSTRUCTIONS.md";
+    ".claude/CLAUDE.md".source = sharedAgentInstructions;
     ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";
     ".claude/rules" = mkClaudeSymlink "claude/rules";
     ".claude/hooks" = mkClaudeSymlink "claude/hooks";

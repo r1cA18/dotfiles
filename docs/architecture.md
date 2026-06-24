@@ -77,21 +77,21 @@ dotfiles/
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース                                | リンク先                                 | 管理ファイル                                       |
-| ------------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| `nvim/`                               | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
-| `programs.ghostty.settings`           | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
-| `karabiner/karabiner.json`            | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
-| `skills/`                             | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `claude/settings.json`                | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `shared/GLOBAL_INSTRUCTIONS.md`       | `~/.claude/CLAUDE.md`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/rules/`                       | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/hooks/`                       | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/commands/`                    | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/agents/`                      | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `nix/home-manager/programs/codex.nix` | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
-| `shared/GLOBAL_INSTRUCTIONS.md`       | `~/.codex/AGENTS.md`                     | `codex.nix` (mkOutOfStoreSymlink)                  |
-| `codex/prompts/`                      | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
+| ソース                                     | リンク先                                 | 管理ファイル                                       |
+| ------------------------------------------ | ---------------------------------------- | -------------------------------------------------- |
+| `nvim/`                                    | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
+| `programs.ghostty.settings`                | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
+| `karabiner/karabiner.json`                 | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
+| `skills/`                                  | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
+| `claude/settings.json`                     | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.claude/CLAUDE.md`                    | `agent-instructions.nix` で結合                    |
+| `claude/rules/`                            | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/hooks/`                            | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/commands/`                         | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/agents/`                           | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
+| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.codex/AGENTS.md`                     | `agent-instructions.nix` で結合                    |
+| `codex/prompts/`                           | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Agent 運用の基本方針
 
@@ -110,16 +110,16 @@ home-managerが以下のシンボリックリンクを自動管理：
 Claude への指示は強度順に以下の仕組みで管理する:
 
 ```
-Hook (自動強制)  > Rule (常時ロード)  > CLAUDE.md (人格)  > Skill (オンデマンド)
-claude/hooks/      claude/rules/        shared/GLOBAL_...    skills/*/SKILL.md
+Hook (自動強制)  > Rule (常時ロード)  > CLAUDE.md (人格)       > Skill (オンデマンド)
+claude/hooks/      claude/rules/        agents/{INSTRUCTIONS,rules}  agents/skills/*/SKILL.md
 ```
 
-| 階層      | 配置先                          | 役割                               | 例                                          |
-| --------- | ------------------------------- | ---------------------------------- | ------------------------------------------- |
-| Hook      | `claude/hooks/*.sh`             | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard    |
-| Rule      | `claude/rules/*.md`             | ドメイン別の明示的指示             | code-conventions, workflow, nix-environment |
-| CLAUDE.md | `shared/GLOBAL_INSTRUCTIONS.md` | 人格・行動原則（薄く保つ）         | 忖度禁止、調査と検証の義務                  |
-| Skill     | `skills/*/SKILL.md`             | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
+| 階層      | 配置先                                     | 役割                               | 例                                          |
+| --------- | ------------------------------------------ | ---------------------------------- | ------------------------------------------- |
+| Hook      | `claude/hooks/*.sh`                        | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard    |
+| Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | code-conventions, workflow, nix-environment |
+| CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                      |
+| Skill     | `skills/*/SKILL.md`                        | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
 
 学習内容の蓄積先も同じ階層で選択する:
 

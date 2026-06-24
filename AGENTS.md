@@ -14,7 +14,7 @@
 
 ## このリポジトリでの agent 運用
 
-- 共有 instruction は `shared/GLOBAL_INSTRUCTIONS.md`
+- 共有 instruction は `agents/INSTRUCTIONS.md` + `agents/rules/`
 - project-specific な運用はこの `AGENTS.md` と `docs/agent-platforms.md` に置く
 - `Claude Code` 専用の hooks / plugin / runtime state と、`Codex` 専用の agents / config は分離して管理する
 - 再利用したい workflow は `skills/` に置き、片方の製品専用機能に閉じ込めない
@@ -50,7 +50,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Claude ルール         | `claude/rules/` ディレクトリ                       |
 | Claude フック         | `claude/hooks/` ディレクトリ                       |
 | Codex設定             | `codex/config.toml`                                |
-| グローバル指示        | `shared/GLOBAL_INSTRUCTIONS.md`                    |
+| グローバル指示        | `agents/INSTRUCTIONS.md` + `agents/rules/`         |
 
 ## シンボリックリンク設定済み
 

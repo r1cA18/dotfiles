@@ -174,7 +174,7 @@ let
 
   # Codex abbreviations.
   # `cx` uses the top-level `model` / `model_reasoning_effort` from
-  # ~/.codex/config.toml (gpt-5.4 medium). `--profile heavy` / `--profile spark`
+  # ~/.codex/config.toml (gpt-5.5 medium). `--profile heavy` / `--profile spark`
   # override per-invocation; `cxs` switches to the sub-account.
   codexAliases = {
     # base + profile variants

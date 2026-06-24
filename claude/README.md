@@ -8,7 +8,7 @@
 
 ```
 ~/.claude/
-├── CLAUDE.md            ← dotfiles/shared/GLOBAL_INSTRUCTIONS.md (symlink)
+├── CLAUDE.md            ← dotfiles/agents/{INSTRUCTIONS.md,rules/*} (Nix で結合)
 ├── settings.json        ← dotfiles/claude/settings.json (symlink)
 ├── mcp-servers.json     ← dotfiles/claude/mcp-servers.json
 ├── settings.local.json  ← ランタイム生成（管理対象外）
