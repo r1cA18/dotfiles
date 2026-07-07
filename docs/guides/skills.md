@@ -3,15 +3,16 @@
 ## 仕組み
 
 ```
-dotfiles/skills/<name>/SKILL.md
+dotfiles/agents/skills/<name>/SKILL.md
         ↓ dr でリビルド（agent-skills-nix）
-~/.claude/skills/<name> → dotfiles/skills/<name> (symlink)
-~/.codex/skills/<name>  → dotfiles/skills/<name> (symlink)
+~/.claude/skills/<name>
+~/.codex/skills/<name>
         ↓
 Claude Code / Codex の両方から利用
 ```
 
-`enableAll = ["custom"]` により `skills/` 以下の全スキルが自動で有効化される。
+スキルはすべて global として `nix/home-manager/programs/agent-skills.nix` の
+`skills.enable` に明示する。project flake では skill を切り替えない。
 
 ## CLI 依存
 
@@ -34,24 +35,17 @@ command -v agent-browser
 
 ## スキルの種類と置き場所
 
-### グローバルスキル（dotfiles/skills/）
+### グローバルスキル（dotfiles/agents/skills/）
 
 どのプロジェクトでも使う汎用スキル。`dr` でリビルドすると Claude / Codex の両環境に反映される。
 
 追加方法：
 
 ```bash
-mkdir skills/my-skill
+mkdir agents/skills/my-skill
 # SKILL.mdを作成
 dr  # リビルドで自動反映
 ```
-
-### プロジェクトローカルスキル（flake.nixのdevShell）
-
-そのプロジェクトだけで必要なスキル（例: Next.jsプロジェクトにvercel/next-skillsを入れる）。
-`nix develop`（または direnv）に入った瞬間に `~/.claude/skills/` に配置され、抜けると消える。
-
-詳細な設定例: [docs/guides/project-env.md](project-env.md)
 
 ### 公式スキル（anthropic/skills）
 
@@ -97,7 +91,6 @@ skills.enable = [
 | `enhance-prompt`              | Stitch 向けに UI prompt を強化                       |
 | `react-components`            | Stitch screen を React component system に変換       |
 | `shadcn-ui`                   | shadcn/ui 統合のガイド                               |
-| `ui-skills`                   | UI構築の制約・ベストプラクティス                     |
 | `design-capture`              | WebデザインのスクショとデザイントークンをVaultに保存 |
 | `web-design-guidelines`       | UIコードのアクセシビリティ・設計レビュー             |
 | `vercel-react-best-practices` | React/Next.jsのパフォーマンス最適化ガイドライン      |
@@ -119,6 +112,8 @@ skills.enable = [
 | ----------------------- | ------------------------------------- |
 | `knowledge-extract`     | セッションの学びをVaultに保存         |
 | `session-documentation` | セッション内容をdocs/にドキュメント化 |
+| `scheduled-triage`      | 定期トリアージ（朝/日中）を固定形式で生成 |
+| `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存      |
 
 ## Plugin skill との関係
 
@@ -131,16 +126,11 @@ Claude / Codex の両方で使いたいものは `skills/` に共有 skill と�
 - 外部 OSS skill repo を使う場合は `flake.nix` + `agent-skills.nix` で source を追加して宣言的に管理する
 
 Codex plugin も同じく runtime cache は source of truth にしない。
-Codex 側で継続利用する plugin は、`nix/home-manager/programs/codex.nix` か
-project pack の `codexPlugins` / `codexMarketplaces` に宣言する。
+Codex 側で継続利用する plugin は、`nix/home-manager/programs/codex.nix` に宣言する。
 
 - runtime Codex plugin cache: `~/.codex/plugins/cache/...`
 - global Codex plugin: `nix/home-manager/programs/codex.nix`
-- project Codex plugin: `nix/lib/skill-packs.nix` の `codexPlugins`
 - Codex から Claude Code を呼ぶ bridge: `claude-code-advisor@claude-plugin-codex`
-
-global plugin は home-manager activation、project plugin は `mkShellWithSkills` の shellHook が
-`codex plugin marketplace add` / `codex plugin add` を実行して `~/.codex/config.toml` と runtime cache に同期する。
 
 ## スキルの呼び出し方
 

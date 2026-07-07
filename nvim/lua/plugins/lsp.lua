@@ -12,7 +12,6 @@ return {
         marksman = {},
         nixd = {},
         taplo = {},
-        ts_ls = {},
         yamlls = {},
       },
     },

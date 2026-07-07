@@ -111,20 +111,17 @@ let
 
   codexConfigFile = tomlFormat.generate "codex-config.toml" codexSettings;
 
-  # Individual file symlinks for .codex/prompts/ (allows superclaude.nix to
-  # add sc-*.md alongside self-owned prompts in the same directory).
+  # Individual file symlinks for .codex/prompts/. All prompts (including the
+  # repo-owned sc-*.md personas) live in codex/prompts/ and are deployed here.
   # readDir uses the flake-relative path (pure-eval safe); symlinks point to
   # the mutable dotfilesDir so edits take effect without rebuild.
-  promptFiles =
-    lib.mapAttrs'
-      (
-        name: _:
-        lib.nameValuePair ".codex/prompts/${name}" {
-          source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
-          force = true;
-        }
-      )
-      (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../codex/prompts));
+  promptFiles = lib.mapAttrs' (
+    name: _:
+    lib.nameValuePair ".codex/prompts/${name}" {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/prompts/${name}";
+      force = true;
+    }
+  ) (builtins.readDir ../../../codex/prompts);
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.

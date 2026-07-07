@@ -20,14 +20,13 @@ let
     force = true;
   };
 
-  # Individual file symlinks for .claude/agents/ (allows superclaude.nix to
-  # add sc-*.md alongside self-owned agents in the same directory).
+  # Individual file symlinks for .claude/agents/. All agents (including the
+  # repo-owned sc-*.md personas) live in claude/agents/ and are deployed here.
   # readDir uses the flake-relative path (pure-eval safe); symlinks point to
   # the mutable dotfilesDir so edits take effect without rebuild.
-  agentFiles =
-    lib.mapAttrs'
-      (name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}"))
-      (lib.filterAttrs (name: _: !(lib.hasPrefix "sc-" name)) (builtins.readDir ../../../claude/agents));
+  agentFiles = lib.mapAttrs' (
+    name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}")
+  ) (builtins.readDir ../../../claude/agents);
 in
 {
   programs.claude-code = {
@@ -55,7 +54,10 @@ in
 
       permissions = {
         allow = [
-          "Bash(bun *)"
+          "Bash(bun install*)"
+          "Bash(bun run *)"
+          "Bash(bun test*)"
+          "Bash(bun build *)"
           "Bash(npx prettier *)"
           "Bash(npx eslint *)"
           "Bash(git status)"
@@ -71,7 +73,6 @@ in
           "Bash(git switch *)"
           "Bash(git branch *)"
           "Bash(git merge --ff-only *)"
-          "Bash(git rebase *)"
           "Bash(ls *)"
         ];
         deny = [

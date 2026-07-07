@@ -59,8 +59,8 @@
     };
 
     skills = {
-      # Global skills only. Domain-specific skills are in packs
-      # (nix/lib/skill-packs.nix) and loaded per-project via devShell.
+      # All skills are global. Keep project flakes focused on ordinary Nix
+      # dev environments, not agent runtime switching.
       enable = [
         # custom (global)
         "agent-browser"
@@ -70,11 +70,25 @@
         "skill-builder"
         "skill-auditor"
         "autonomous-dev"
+        "idea-to-ship"
         "project-init"
+        "swift-dev-toolkit"
+        "ios-device-build"
+        "codex-app-screenshots"
+        "shipswift-add-component"
+        "shipswift-build-feature"
+        "shipswift-explore-recipes"
+        "vercel-react-best-practices"
+        "remotion-best-practices"
+        "session-documentation"
+        "scheduled-triage"
+        "design-capture"
+        "forms-archive"
+        "x-article-publisher"
+        "x-research"
         # design (global)
         "frontend-design"
         "baseline-ui"
-        "ui-skills"
         "web-design-guidelines"
         # difit
         "difit"
@@ -83,6 +97,13 @@
         "notebooklm-skill"
         # vault (global)
         "knowledge-extract"
+        # app screenshots
+        "app-store-screenshots"
+        # research / publishing helpers
+        "typst-author"
+        "touying-author"
+        # media helpers
+        "text-to-lottie"
         # taste-skill collection (anti-slop frontend). Managed as one unit:
         # comment out this block to disable all 13 at once.
         # IDs are directory names; the frontmatter `name` (what triggers) differs.

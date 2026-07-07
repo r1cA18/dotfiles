@@ -7,7 +7,57 @@ user-invocable: true
 
 # Session Documentation Skill
 
-セッションで行った作業・調査・学びをdocs/ディレクトリに構造化されたMarkdownとして記録する。
+セッションで行った作業・調査・学びを構造化されたMarkdownとして記録する。
+生成するファイルには必ず下記のfrontmatterスキーマを付与する。
+
+## Frontmatter スキーマ（全ドキュメント共通）
+
+生成するすべてのMarkdownは、本文の先頭に次のYAML frontmatterを付ける。
+キーは4つだけに固定する。増やさない。
+
+| キー | 必須 | 値 |
+|------|------|-----|
+| `title` | 必須 | 内容を表す簡潔な文字列。日本語可。`:` を含む場合はダブルクオートで囲む |
+| `created` | 必須 | 作成日 `YYYY-MM-DD`（`date` や `updated` は使わない） |
+| `type` | 必須 | `session-log` / `research` / `adr` / `guide` のいずれか1つ |
+| `tags` | 必須 | 小文字ケバブケースの配列。最低1個。日本語タグは使わない |
+
+good（この形式に統一する）:
+
+```yaml
+---
+title: "卒研方向性整理: syoki と AI時代のインタフェースデザイン"
+created: 2026-06-16
+type: session-log
+tags: [research-direction, syoki, hci, graduation-thesis]
+---
+```
+
+bad（vault内に実在した非統一形式。修正対象）:
+
+```yaml
+---
+date: 2026-03-02
+type: ai-session
+topic: Matsuo Lab LLM course final competition
+tags: [llm, fine-tuning, lora]
+---
+```
+
+badの問題点:
+- `date` は `created` に統一する
+- `type: ai-session` は許可値ではない。`session-log` にする
+- `topic` は使わない。内容は `title` に入れる
+- frontmatterを持たないファイルも実在するが、frontmatterは必須
+
+## 保存先ルール（condition -> action）
+
+- カレントがプロジェクトのコードリポジトリ内（vault以外のgit repo）-> `docs/ai/sessions/` に保存
+- vault内での作業、または複数プロジェクトを横断する作業 -> `$VAULT/40_AI/sessions/` に保存（vaultは `~/vault`）
+- 上記以外で保存先が判断できない -> ユーザーに確認する
+
+`type` が `session-log` 以外（research/adr/guide）でプロジェクトリポジトリ内の場合は、
+下記「テンプレート選択」の保存先（`docs/research/` など）を優先する。
 
 ## テンプレート選択
 
@@ -18,7 +68,7 @@ user-invocable: true
 | **default** (guide) | `docs/guides/` | 手順書・ハウツー | 「ドキュメント化して」「まとめて」 |
 | **adr** | `docs/decisions/` | 技術選定・設計判断 | 「ADR形式で」「決定を記録して」 |
 | **research** | `docs/research/` | 調査結果・比較分析 | 「調査結果をまとめて」「リサーチを記録」 |
-| **session-log** | `docs/sessions/` | 作業ログ・日報 | 「今日の作業をログに」「セッションログ」 |
+| **session-log** | 上記「保存先ルール」に従う | 作業ログ・日報 | 「今日の作業をログに」「セッションログ」 |
 
 ## 選択フロー
 
@@ -76,6 +126,7 @@ user-invocable: true
    - 不明な場合はユーザーに確認
 
 3. **ドキュメント生成**
+   - 先頭に共通frontmatterスキーマ（`title` / `created` / `type` / `tags`）を付ける
    - 選択したテンプレート（`templates/*.md`）を参照
    - セッション内容を適切なセクションに配置
    - ファイル名: `{適切な名前}.md` または `{YYYY-MM-DD}-{title}.md`

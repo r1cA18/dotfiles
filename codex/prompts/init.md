@@ -1,5 +1,5 @@
 ---
-description: Initialize this project with flake.nix, direnv, agent docs, and skill packs
+description: Initialize this project with flake.nix, direnv, and agent docs
 argument-hint: "[project description or context]"
 ---
 

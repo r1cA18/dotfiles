@@ -24,10 +24,6 @@ Icon?
 # home-manager
 *.hm-backup
 
-# SuperClaude agents (deployed by superclaude.nix, not repo-owned)
-claude/agents/sc-*
-codex/prompts/sc-*
-
 # direnv
 .direnv/
 
@@ -42,7 +38,7 @@ secrets/
 **/*.pem
 
 # Claude Code local settings
-.claude/settings.local.json
+**/.claude/settings.local.json
 
 # Node.js (skills may have deps)
 **/node_modules/

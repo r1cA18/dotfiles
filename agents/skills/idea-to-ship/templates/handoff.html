@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>__DOCUMENT_TITLE__</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f3f0e9;
+        --surface: #fffdf8;
+        --ink: #1c211d;
+        --muted: #626a63;
+        --line: #d7d5ce;
+        --accent: #1f6b4f;
+        --accent-soft: #dcebe3;
+        --warn: #8a5318;
+        --warn-soft: #f3e5cf;
+        --radius: 18px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+      main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 80px; }
+      header { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: start; border-bottom: 1px solid var(--line); padding-bottom: 36px; }
+      .eyebrow { margin: 0 0 10px; color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+      h1 { max-width: 15ch; margin: 0; font-size: clamp(2.5rem, 8vw, 6.5rem); font-weight: 760; letter-spacing: -.065em; line-height: .94; }
+      .subtitle { max-width: 58ch; margin: 24px 0 0; color: var(--muted); font-size: 1.12rem; }
+      .status { border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; background: var(--accent-soft); color: var(--accent); padding: 8px 14px; font-size: .8rem; font-weight: 750; text-transform: uppercase; }
+      .lede { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0 48px; }
+      .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 24px; }
+      .card h2, section > h2 { margin: 0 0 12px; font-size: 1rem; letter-spacing: -.01em; }
+      .card p { margin: 0; }
+      section { margin-top: 48px; }
+      section > h2 { font-size: 1.5rem; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .item { min-height: 150px; }
+      .item h3 { margin: 0 0 8px; font-size: 1.05rem; }
+      .item p { margin: 0; color: var(--muted); }
+      .evidence { margin-top: 18px !important; border-top: 1px solid var(--line); padding-top: 12px; color: var(--ink) !important; font-size: .88rem; }
+      code { border-radius: 7px; background: #e9e6de; padding: 2px 6px; color: #28332c; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .87em; overflow-wrap: anywhere; }
+      .command { display: block; margin-top: 12px; padding: 12px 14px; white-space: pre-wrap; }
+      .result { display: inline-block; margin-top: 14px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); padding: 5px 10px; font-size: .75rem; font-weight: 750; }
+      .result[data-result="blocked"], .result[data-result="not-run"], .caution { background: var(--warn-soft); color: var(--warn); }
+      .repo { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 18px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+      a { color: var(--accent); text-underline-offset: 3px; }
+      footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 24px; color: var(--muted); font-size: .82rem; }
+      @media (max-width: 720px) {
+        main { padding-top: 32px; }
+        header { grid-template-columns: 1fr; }
+        .status { justify-self: start; }
+        .lede, .grid { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(2.8rem, 16vw, 5rem); }
+      }
+      @media (prefers-color-scheme: dark) {
+        :root { color-scheme: dark; --paper: #161916; --surface: #1d211d; --ink: #eef1ec; --muted: #a7afa7; --line: #363c36; --accent: #78c99f; --accent-soft: #203d2f; --warn: #e6b36d; --warn-soft: #49341d; }
+        code { background: #2a2f2a; color: #e7ece7; }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script id="handoff-data" type="application/json">__HANDOFF_DATA__</script>
+    <script>
+      const data = JSON.parse(document.querySelector("#handoff-data").textContent);
+      const app = document.querySelector("#app");
+      const esc = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+      const href = (value = "") => {
+        try {
+          const url = new URL(String(value));
+          return ["https:", "http:"].includes(url.protocol) ? esc(url.href) : "#";
+        } catch {
+          return "#";
+        }
+      };
+      const list = (items, render) => (items || []).map(render).join("");
+      const repo = data.repository || {};
+      app.innerHTML = `
+        <header>
+          <div>
+            <p class="eyebrow">Build handoff</p>
+            <h1>${esc(data.title)}</h1>
+            <p class="subtitle">${esc(data.subtitle)}</p>
+          </div>
+          <span class="status">${esc(data.status)}</span>
+        </header>
+        ${repo.name ? `<div class="repo"><span>${esc(repo.name)}</span><span>${esc(repo.branch || "")}</span><span>${esc(repo.commit || "")}</span>${repo.url ? `<a href="${href(repo.url)}" rel="noreferrer">Repository</a>` : ""}${repo.pullRequest ? `<a href="${href(repo.pullRequest)}" rel="noreferrer">Pull request</a>` : ""}</div>` : ""}
+        <div class="lede">
+          <article class="card"><h2>概要</h2><p>${esc(data.summary)}</p></article>
+          <article class="card"><h2>最終Goal</h2><p>${esc(data.goal)}</p></article>
+        </div>
+        ${list(data.sections, (section) => `<section><h2>${esc(section.title)}</h2><div class="grid">${list(section.items, (item) => `<article class="card item"><h3>${esc(item.label)}</h3><p>${esc(item.detail)}</p>${item.evidence ? `<p class="evidence"><strong>Evidence</strong><br>${esc(item.evidence)}</p>` : ""}</article>`)}</div></section>`)}
+        <section><h2>検証</h2><div class="grid">${list(data.verification, (item) => `<article class="card item"><h3>${esc(item.name)}</h3><p>${esc(item.detail || "")}</p>${item.command ? `<code class="command">${esc(item.command)}</code>` : ""}<span class="result" data-result="${esc(item.result)}">${esc(item.result)}</span></article>`)}</div></section>
+        <section><h2>動作確認</h2><div class="grid">${list(data.usage, (item, index) => `<article class="card item"><p class="eyebrow">Step ${index + 1}</p><h3>${esc(item.step)}</h3><p>${esc(item.detail || "")}</p>${item.command ? `<code class="command">${esc(item.command)}</code>` : ""}</article>`)}</div></section>
+        ${(data.decisions || []).length ? `<section><h2>設計判断</h2><div class="grid">${list(data.decisions, (item) => `<article class="card item"><h3>${esc(item.decision)}</h3><p>${esc(item.reason)}</p>${item.alternatives ? `<p class="evidence"><strong>Alternatives</strong><br>${esc(item.alternatives)}</p>` : ""}</article>`)}</div></section>` : ""}
+        ${(data.cautions || []).length ? `<section><h2>注意点</h2><div class="grid">${list(data.cautions, (item) => `<article class="card item caution"><h3>${esc(item.title)}</h3><p>${esc(item.detail)}</p></article>`)}</div></section>` : ""}
+        <footer>Generated ${esc(data.generatedAt)}</footer>
+      `;
+    </script>
+  </body>
+</html>

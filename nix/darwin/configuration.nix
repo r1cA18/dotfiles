@@ -43,6 +43,9 @@
     wget
   ];
 
+  documentation.doc.enable = false;
+  system.tools.darwin-uninstaller.enable = false;
+
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;

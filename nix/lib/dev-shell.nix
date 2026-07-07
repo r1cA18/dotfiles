@@ -1,8 +1,7 @@
-# Project dev-shell builder for this dotfiles agent workflow.
+# Project dev-shell builder for this dotfiles workflow.
 #
-# This is the entry point every project flake uses to create its devShell. It
-# layers the selected skill packs (skills / Claude plugins / Codex plugins / MCP
-# servers) on top of a base shell via mkProjectShellHook.
+# Agent skills are global, so this wrapper only preserves the old
+# mkShellWithSkills entry point for existing project flakes.
 #
 # Base shell uses mkShellNoCC, NOT mkShell, on purpose:
 #
@@ -22,7 +21,6 @@
 #   compiler (e.g. nativeBuildInputs = [ pkgs.clang ]) for that project.
 {
   pkgs,
-  mkProjectShellHook,
 }:
 {
   mkShellWithSkills =
@@ -36,19 +34,8 @@
       extraMcpServers ? { },
       ...
     }@args:
-    let
-      packHook = mkProjectShellHook {
-        inherit
-          selectedPacks
-          extraSkills
-          extraPlugins
-          extraClaudePlugins
-          extraCodexPlugins
-          extraCodexMarketplaces
-          extraMcpServers
-          ;
-      };
-      cleanArgs = builtins.removeAttrs args [
+    pkgs.mkShellNoCC (
+      builtins.removeAttrs args [
         "selectedPacks"
         "extraSkills"
         "extraPlugins"
@@ -56,12 +43,6 @@
         "extraCodexPlugins"
         "extraCodexMarketplaces"
         "extraMcpServers"
-      ];
-    in
-    pkgs.mkShellNoCC (
-      cleanArgs
-      // {
-        shellHook = packHook + (args.shellHook or "");
-      }
+      ]
     );
 }

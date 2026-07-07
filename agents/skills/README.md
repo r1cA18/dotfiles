@@ -1,6 +1,6 @@
 # Agent Skills
 
-`skills/` を agent-skills-nix で宣言的に管理。
+`agents/skills/` を agent-skills-nix で宣言的に管理。
 
 ## 概要
 
@@ -10,7 +10,7 @@ Skills はエージェントの能力を拡張するための定義ファイル�
 ## ディレクトリ構造
 
 ```
-skills/
+agents/skills/
 ├── README.md           # このファイル
 ├── agent-browser/      # 各スキルディレクトリ
 │   └── SKILL.md        # スキル定義
@@ -23,8 +23,8 @@ skills/
 
 ### カスタムスキル（自作）
 
-`skills/` 直下にディレクトリを作成し、`SKILL.md` を配置。
-`enableAll = ["custom"]` により自動で有効化。
+`agents/skills/` 直下にディレクトリを作成し、`SKILL.md` を配置。
+`nix/home-manager/programs/agent-skills.nix` の `skills.enable` にIDを追加して有効化。
 
 ### 公式スキル
 
@@ -40,11 +40,10 @@ agent-skills-nix が提供するスキル。
   programs.agent-skills = {
     enable = true;
 
-    sources.custom.path = ../../../skills;
+    sources.custom.path = ../../../agents/skills;
 
     skills = {
-      enableAll = ["custom"];
-      enable = [ "pdf" "xlsx" ];
+      enable = [ "agent-browser" "pdf" "xlsx" ];
     };
   };
 }
@@ -52,10 +51,10 @@ agent-skills-nix が提供するスキル。
 
 ## カスタムスキルの追加
 
-1. `skills/` に新しいディレクトリを作成
+1. `agents/skills/` に新しいディレクトリを作成
 
    ```bash
-   mkdir skills/my-new-skill
+   mkdir agents/skills/my-new-skill
    ```
 
 2. `SKILL.md` を作成
@@ -74,7 +73,9 @@ agent-skills-nix が提供するスキル。
    スキルの詳細な指示...
    ```
 
-3. `dr` でビルド・適用
+3. `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に `my-new-skill` を追加
+
+4. `dr` でビルド・適用
 
    ```bash
    dr
@@ -98,7 +99,7 @@ agent-skills-nix が提供するスキル。
 
 - skills 本体は Nix store 経由で同期されるため **read-only**
 - 設定やキャッシュが必要なスキルは `~/.config/agent-skills/` や `~/.local/share/agent-skills/` を使う
-- 編集は `dotfiles/skills/` で行い、`dr` で適用が必要
+- 編集は `dotfiles/agents/skills/` で行い、`dr` で適用が必要
 - `~/.claude/skills/` / `~/.codex/skills/` を直接編集しても次回の `dr` で上書きされる
 - 同梱ファイル参照は `agent-skill-path <skill> [relative/path]` を使う
 

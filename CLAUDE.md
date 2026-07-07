@@ -43,13 +43,13 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | 環境変数/PATH         | `nix/home-manager/programs/packages.nix`           |
 | Git設定               | `nix/home-manager/programs/git.nix`                |
 | Neovim設定            | `nvim/` ディレクトリ                               |
-| Ghostty設定           | `ghostty/config`                                   |
+| Ghostty設定           | `nix/home-manager/programs/ghostty.nix`            |
 | Karabiner設定         | `karabiner/karabiner.json`                         |
 | Agent Skills管理      | `nix/home-manager/programs/agent-skills.nix`       |
-| スキル追加/編集       | `skills/` ディレクトリ                             |
+| スキル追加/編集       | `agents/skills/` ディレクトリ                      |
 | グローバルルール      | `claude/rules/` ディレクトリ                       |
 | フック                | `claude/hooks/` ディレクトリ                       |
-| Codex設定             | `codex/config.toml`                                |
+| Codex設定             | `nix/home-manager/programs/codex.nix`              |
 | グローバル指示        | `agents/INSTRUCTIONS.md` + `agents/rules/`         |
 
 ## シンボリックリンク設定済み
@@ -57,10 +57,10 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 以下は home-manager により自動でシンボリックリンクが設定される：
 
 - `nvim/` -> `~/.config/nvim`
-- `ghostty/config` -> `~/Library/Application Support/com.mitchellh.ghostty/config`
 - `karabiner/karabiner.json` -> `~/.config/karabiner/karabiner.json`
-- `skills/` -> `~/.claude/skills/` + `~/.codex/skills/` (agent-skills-nix 経由で同期)
-- `codex/config.toml` -> `~/.codex/config.toml`
+- `agents/skills/` -> `~/.claude/skills/` + `~/.codex/skills/` (agent-skills-nix 経由で同期)
+- Ghostty の設定は `nix/home-manager/programs/ghostty.nix` から生成される
+- `~/.codex/config.toml` は `nix/home-manager/programs/codex.nix` から生成される
 
 ## ビルド
 

@@ -1,6 +1,6 @@
 interface:
   display_name: "Project Init"
   short_description: "Set up flake, direnv, and agent docs"
-  default_prompt: "Use $project-init to initialize this repository with flake.nix, direnv, agent docs, and skill packs."
+  default_prompt: "Use $project-init to initialize this repository with flake.nix, direnv, and agent docs."
 policy:
   allow_implicit_invocation: true

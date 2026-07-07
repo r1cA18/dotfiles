@@ -79,11 +79,11 @@ home-managerが以下のシンボリックリンクを自動管理：
 
 | ソース                                     | リンク先                                 | 管理ファイル                                       |
 | ------------------------------------------ | ---------------------------------------- | -------------------------------------------------- |
-| `nvim/`                                    | `~/.config/nvim`                         | `neovim.nix` (xdg.configFile)                      |
+| `nvim/`                                    | `~/.config/nvim`                         | `neovim.nix` (mkOutOfStoreSymlink)                 |
 | `programs.ghostty.settings`                | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
 | `karabiner/karabiner.json`                 | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
 | `skills/`                                  | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `claude/settings.json`                     | `~/.claude/settings.json`                | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `programs.claude-code.settings` (attrset)  | `~/.claude/settings.json`                | `claude-code.nix` (Nix生成)                        |
 | `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.claude/CLAUDE.md`                    | `agent-instructions.nix` で結合                    |
 | `claude/rules/`                            | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
 | `claude/hooks/`                            | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
@@ -215,6 +215,10 @@ home.sessionPath = [
 
 **編集:** `nvim/` ディレクトリ内のファイル
 
+`nvim/` は out-of-store symlink なので編集は即反映（`dr` 不要）。プラグインは lazy.nvim が
+`nvim/lazy-lock.json` で管理し、バイナリ / grammar は Nix (`neovim.nix`) が供給する。
+詳細: [docs/guides/neovim.md](guides/neovim.md)
+
 ### Ghostty設定を変更
 
 **編集:** `nix/home-manager/programs/ghostty.nix`
@@ -256,7 +260,10 @@ Claude の実ランタイム設定は `~/.claude.json` にあり、そのまま�
 
 ### Claude Code設定を変更
 
-**編集:** `claude/settings.json`
+**編集:** `nix/home-manager/programs/claude-code.nix`
+
+`~/.claude/settings.json` は `programs.claude-code.settings` の attrset から生成される。
+Nix が source of truth なので、`dr` のたびにこの attrset の値で上書きされる。
 
 ### Claude の hooks / rules / commands / agents を変更
 
@@ -304,10 +311,7 @@ tools:
 
 `~/.codex/config.toml` は Nix から writable copy として生成される。
 global な model / plugin / marketplace / MCP 設定は `codex.nix` に追加する。
-
-project pack 由来の Codex plugin / marketplace は `nix/lib/skill-packs.nix` に宣言できる。
-`mkShellWithSkills` はそれを `~/.codex/config.toml` と plugin cache へ同期する。
-Codex MCP は現行では user config 側で管理する。
+Codex は user-level config を中心に扱うため、project flake で plugin や skill を切り替えない。
 
 ### Codex custom agent を追加
 

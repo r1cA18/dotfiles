@@ -119,85 +119,13 @@ nix search nixpkgs <name>
 # または https://search.nixos.org/packages
 ```
 
-## agent-skills-nixのプロジェクトローカル使用
+## Agent skills
 
-プロジェクト固有のSkillsが必要な場合（例: Next.jsプロジェクトにvercel/next-skillsを入れる）、
-`flake.nix` の `devShell` に組み込むことで `nix develop`（direnv）に入ったとき自動で配置できる。
+Agent skills は project flake で切り替えない。
+`~/dotfiles/agents/skills/` と `nix/home-manager/programs/agent-skills.nix` で global 管理し、
+`dr` で `~/.claude/skills` と `~/.codex/skills` に同期する。
 
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    agent-skills.url = "github:Kyure-A/agent-skills-nix";
-    some-skills = {
-      url = "github:vercel/next-skills";
-      flake = false;
-    };
-  };
-
-  outputs = { nixpkgs, agent-skills, some-skills, ... }: let
-    system = "aarch64-darwin";
-    pkgs = nixpkgs.legacyPackages.${system};
-    agentLib = agent-skills.lib.agent-skills;
-
-    sources = {
-      vercel = { path = some-skills; };
-    };
-    catalog = agentLib.discoverCatalog sources;
-    allowlist = agentLib.allowlistFor { inherit catalog sources; enableAll = true; };
-    selection = agentLib.selectSkills { inherit catalog allowlist sources; skills = {}; };
-    bundle = agentLib.mkBundle { inherit pkgs selection; };
-    localTargets = {
-      claude = agentLib.defaultLocalTargets.claude // { enable = true; };
-    };
-  in {
-    devShells.${system}.default = pkgs.mkShell {
-      buildInputs = with pkgs; [ nodejs_latest pnpm ];
-      # direnvに入るとSkillsが自動配置される
-      shellHook = agentLib.mkShellHook { inherit pkgs bundle; targets = localTargets; };
-    };
-  };
-}
-```
-
-## dotfiles の skill pack を使う
-
-普段は低レベルの `agent-skills-nix` を直接書かず、dotfiles の pack helper を使う。
-`selectedPacks` は Claude / Codex 共通の入口で、pack側が tool-specific plugin の出力先を吸収する。
-`extraCodexPlugins` を使う場合は、`codex` CLI があれば marketplace 追加と plugin install を実行する。
-現行の Codex CLI は project-local plugin config を読まないため、結果は `~/.codex/config.toml` と plugin cache に入る。
-このため、Codex plugin は project ごとの enable/disable ではなく「必要な plugin を global に入れておく」運用になる。
-`product-design@openai-curated-remote` のような Codex app の curated remote plugin は、
-公開 Git marketplace ではなく app 側が提供する selector として pack に宣言する。
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    dotfiles.url = "git+file:///Users/r1ca18/dotfiles";
-  };
-
-  outputs = { nixpkgs, dotfiles, ... }:
-    let
-      system = "aarch64-darwin";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in
-    {
-      devShells.${system}.default = dotfiles.lib.${system}.mkShellWithSkills {
-        selectedPacks = [ "web" ];
-        buildInputs = with pkgs; [ bun ];
-
-        # 任意。Claude / Codex plugin は分けて宣言する。
-        # extraClaudePlugins = [ "typescript-lsp@claude-plugins-official" ];
-        # extraCodexPlugins = [ "some-plugin@some-marketplace" ];
-        # extraCodexMarketplaces.some-marketplace = {
-        #   source_type = "local";
-        #   source = "/absolute/path/to/marketplace";
-        # };
-      };
-    };
-}
-```
+project flake は、そのprojectのbuild/test/devに必要なNix packageだけを扱う。
 
 ## `.envrc` と `.direnv` の扱い
 

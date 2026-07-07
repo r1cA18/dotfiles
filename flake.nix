@@ -61,10 +61,6 @@
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
 
-    # SuperClaude Framework (agent/command definitions, cherry-picked via superclaude.nix)
-    superclaude.url = "github:SuperClaude-Org/SuperClaude_Framework";
-    superclaude.flake = false;
-
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -142,63 +138,21 @@
             }
           ];
         };
-      # Skill pack library for per-project skill/plugin management.
+      # Backwards-compatible project dev-shell helper.
       # Usage in project flake.nix:
       #   inputs.dotfiles.url = "git+file:///Users/r1ca18/dotfiles";
-      #   devShells.default = dotfiles.lib.${system}.mkShellWithSkills {
-      #     selectedPacks = [ "swift" ];
-      #   };
-      mkSkillPacksLib =
+      #   devShells.default = dotfiles.lib.${system}.mkShellWithSkills { };
+      mkDevShellLib =
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          asLib = import "${agent-skills-nix}/lib" {
-            inherit (nixpkgs) lib;
-            inherit inputs;
-          };
-          sources = {
-            custom = {
-              path = ./agents/skills;
-              filter.maxDepth = 1;
-            };
-            anthropic = {
-              path = inputs.anthropic-skills;
-              subdir = "skills";
-            };
-            difit = {
-              path = inputs.difit-skills;
-              subdir = "skills";
-            };
-            app-store-screenshots = {
-              path = inputs.app-store-screenshots;
-              subdir = "skills";
-            };
-            notebooklm-skill = {
-              path = inputs.notebooklm-skill;
-            };
-            typst-skills = {
-              path = inputs.typst-skills;
-            };
-            lottie = {
-              path = inputs.lottie;
-              subdir = "skills";
-            };
-          };
-          packsLib = import ./nix/lib/skill-packs.nix {
-            inherit (nixpkgs) lib;
-            inherit pkgs asLib sources;
-          };
-          devShellLib = import ./nix/lib/dev-shell.nix {
-            inherit pkgs;
-            inherit (packsLib) mkProjectShellHook;
-          };
         in
-        packsLib // devShellLib;
+        import ./nix/lib/dev-shell.nix { inherit pkgs; };
 
     in
     {
-      # Skill packs library (per-project skill/plugin management)
-      lib = forAllSystems mkSkillPacksLib;
+      # Small project dev-shell helper. Agent skills are managed globally.
+      lib = forAllSystems mkDevShellLib;
 
       # Custom packages
       packages = forAllSystems (
