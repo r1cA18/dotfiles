@@ -61,6 +61,9 @@
       dock = {
         autohide = true;
         show-recents = false;
+        showAppExposeGestureEnabled = true;
+        showDesktopGestureEnabled = true;
+        showMissionControlGestureEnabled = true;
       };
       finder = {
         AppleShowAllExtensions = true;
@@ -72,8 +75,17 @@
         InitialKeyRepeat = 15;
       };
       trackpad = {
-        Clicking = true;
-        TrackpadThreeFingerDrag = true;
+        Clicking = false;
+        ForceSuppressed = true;
+        TrackpadPinch = true;
+        TrackpadRightClick = true;
+        TrackpadRotate = true;
+        TrackpadThreeFingerDrag = false;
+        TrackpadThreeFingerHorizSwipeGesture = 2;
+        TrackpadThreeFingerTapGesture = 2;
+        TrackpadThreeFingerVertSwipeGesture = 2;
+        TrackpadTwoFingerDoubleTapGesture = true;
+        TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
       };
       screencapture.location = "~/Downloads";
     };
