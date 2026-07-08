@@ -5,20 +5,20 @@
 
 ## Source Of Truth
 
-| 項目                         | Source of truth                            | 補足                                                |
-| ---------------------------- | ------------------------------------------ | --------------------------------------------------- |
-| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/` | Nix で結合して両方に配布する                        |
-| project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント | repo 直下で管理                                     |
-| reusable skills              | `skills/`                                  | `~/.claude/skills` と `~/.codex/skills` に同期      |
-| Claude hooks                 | `claude/hooks/`                            | Claude 専用                                         |
-| Claude commands              | `claude/commands/`                         | 可能なら `skills/` へ昇格                           |
-| Codex prompt wrappers        | `codex/prompts/`                           | deprecated なので reusable workflow は skill が正本 |
-| Claude agents                | `claude/agents/`                           | Markdown frontmatter 形式                           |
-| Codex agents                 | `.codex/agents/`                           | TOML 形式                                           |
-| Codex user config            | `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml` を writable copy 生成        |
+| 項目                         | Source of truth                             | 補足                                                                  |
+| ---------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
+| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`  | Nix で結合して両方に配布する                                          |
+| project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント  | repo 直下で管理                                                       |
+| reusable skills              | `skills/`                                   | `~/.claude/skills` と `~/.codex/skills` に同期                        |
+| Claude hooks                 | `claude/hooks/`                             | Claude 専用                                                           |
+| Claude commands              | `claude/commands/`                          | 可能なら `skills/` へ昇格                                             |
+| Codex prompt wrappers        | `codex/prompts/`                            | deprecated なので reusable workflow は skill が正本                   |
+| Claude agents                | `claude/agents/`                            | Markdown frontmatter 形式                                             |
+| Codex agents                 | `.codex/agents/`                            | TOML 形式                                                             |
+| Codex user config            | `nix/home-manager/programs/codex.nix`       | `~/.codex/config.toml` を writable copy 生成                          |
 | Claude settings              | `nix/home-manager/programs/claude-code.nix` | `programs.claude-code.settings` から `~/.claude/settings.json` を生成 |
-| Claude user MCP seed         | `claude/mcp-servers.json`                  | `~/.claude.json` へ merge する前提                  |
-| Claude Code binary           | native install                             | dotfiles では bootstrap しない                      |
+| Claude user MCP seed         | `claude/mcp-servers.json`                   | `~/.claude.json` へ merge する前提                                    |
+| Claude Code binary           | native install                              | dotfiles では bootstrap しない                                        |
 
 ## 共有できるもの
 

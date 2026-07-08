@@ -108,12 +108,12 @@ skills.enable = [
 
 ### 知識管理
 
-| スキル                  | 用途                                  |
-| ----------------------- | ------------------------------------- |
-| `knowledge-extract`     | セッションの学びをVaultに保存         |
-| `session-documentation` | セッション内容をdocs/にドキュメント化 |
+| スキル                  | 用途                                      |
+| ----------------------- | ----------------------------------------- |
+| `knowledge-extract`     | セッションの学びをVaultに保存             |
+| `session-documentation` | セッション内容をdocs/にドキュメント化     |
 | `scheduled-triage`      | 定期トリアージ（朝/日中）を固定形式で生成 |
-| `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存      |
+| `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存          |
 
 ## Plugin skill との関係
 

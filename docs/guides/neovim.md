@@ -22,14 +22,14 @@ Mason は無効化してある (`core.lua`)。バイナリは全て Nix 側か�
 
 ## どこに何があるか
 
-| 対象                     | 場所                                       |
-| ------------------------ | ------------------------------------------ |
-| nvim 本体 / LSP / grammar | `nix/home-manager/programs/neovim.nix`     |
-| エントリポイント         | `nvim/init.lua`                            |
-| lazy.nvim 設定           | `nvim/lua/config/lazy.lua`                 |
-| プラグイン spec          | `nvim/lua/plugins/*.lua`                   |
-| lockfile (source of truth) | `nvim/lazy-lock.json`                    |
-| 基本設定                 | `nvim/lua/config/{options,keymaps,autocmds}.lua` |
+| 対象                       | 場所                                             |
+| -------------------------- | ------------------------------------------------ |
+| nvim 本体 / LSP / grammar  | `nix/home-manager/programs/neovim.nix`           |
+| エントリポイント           | `nvim/init.lua`                                  |
+| lazy.nvim 設定             | `nvim/lua/config/lazy.lua`                       |
+| プラグイン spec            | `nvim/lua/plugins/*.lua`                         |
+| lockfile (source of truth) | `nvim/lazy-lock.json`                            |
+| 基本設定                   | `nvim/lua/config/{options,keymaps,autocmds}.lua` |
 
 ## 日常フロー
 
@@ -53,12 +53,12 @@ nvim か git が無い環境では hook は何もしない。
 
 ## 主なプラグイン
 
-| プラグイン                  | 用途                          | keymap / ft         |
-| --------------------------- | ----------------------------- | ------------------- |
-| `oil.nvim`                  | バッファとしてファイル操作    | `-` で親ディレクトリ |
-| `sidekick.nvim`             | Claude Code / Codex CLI 連携  | `<leader>aa/ac/ax`  |
-| `render-markdown.nvim`      | Markdown のバッファ内レンダリング | markdown ft のみ |
-| `obsidian.nvim` (fork)      | Obsidian vault 連携           | `~/vault` 検出時のみ |
+| プラグイン             | 用途                              | keymap / ft          |
+| ---------------------- | --------------------------------- | -------------------- |
+| `oil.nvim`             | バッファとしてファイル操作        | `-` で親ディレクトリ |
+| `sidekick.nvim`        | Claude Code / Codex CLI 連携      | `<leader>aa/ac/ax`   |
+| `render-markdown.nvim` | Markdown のバッファ内レンダリング | markdown ft のみ     |
+| `obsidian.nvim` (fork) | Obsidian vault 連携               | `~/vault` 検出時のみ |
 
 `obsidian.nvim` の spec は `~/vault` が無いマシンでは空 spec に畳まれるので、
 vault が同期されていない環境でも nvim はエラーにならない。

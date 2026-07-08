@@ -1,14 +1,14 @@
 # Nix Modernization — ryoppippi dotfiles 参考の再構築計画
 
 ryoppippi の dotfiles を参考に自分の Nix 構成を近代化するための
-調査結果と方針の記録。旧ブランチ `codex/nix-modernize` から main に吸収した。
+調査結果と方針の記録。旧ブランチ "codex/nix-modernize" から main に吸収した。
 
 > 出典: Claude Code セッション `260be7c3`（2026-06-02）の比較調査。
 > 進捗 (2026-07-04 時点):
 >
 > - 実装済み: treefmt + git-hooks (deadnix / statix) の flake checks 組込
 > - 実装済み: Neovim の ryoppippi 式ハイブリッド化（`docs/guides/neovim.md` 参照）
-> - 未実装（提案のまま）: flake-parts 化・`nix/modules` 再編・`nix run .#switch`。
+> - 未実装（提案のまま）: flake-parts 化・nix modules 再編・`nix run .#switch`。
 >   大規模リファクタのため、着手時は Plan mode で段階分割してから進める
 
 参考リポジトリ: `~/Develop/github.com/ryoppippi/dotfiles`（ローカルクローン）
@@ -26,16 +26,16 @@ ryoppippi の dotfiles を参考に自分の Nix 構成を近代化するため�
 
 ## 構造の比較
 
-| 項目 | ryoppippi | 自分（現状） |
-|---|---|---|
-| flake モジュール構造 | `nix/modules/{home,darwin,linux,lib}` で完全分離 | `nix/{home-manager,darwin,overlays,pkgs}` 平置き |
-| flake-parts | 使用（`perSystem` で `apps`/`devShells` 分離） | 未使用（手書き `forAllSystems`） |
-| `nix run .#switch` | flake app として定義済み | 外部の `nh` コマンドに依存 |
-| treefmt / git-hooks | flake-module 組込（pre-commit で treefmt + deadnix + statix） | 導入済み（`flake.nix` の checks + devShell） |
-| シェル | fish（function 30 / config 9） | zsh |
-| AI tool 取得 | `numtide/llm-agents.nix` overlay で codex/opencode/cursor-agent/copilot-cli/coderabbit-cli を全部 nix 管理 | claude-code + codex のみ |
-| nix-claude-code | 自作の `ryoppippi/nix-claude-code` overlay | 無し |
-| Cachix | 4 種設定済（自前 cache 含む） | 無し |
+| 項目                 | ryoppippi                                                                                                  | 自分（現状）                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| flake モジュール構造 | `nix/modules/{home,darwin,linux,lib}` で完全分離                                                           | `nix/{home-manager,darwin,overlays,pkgs}` 平置き |
+| flake-parts          | 使用（`perSystem` で `apps`/`devShells` 分離）                                                             | 未使用（手書き `forAllSystems`）                 |
+| `nix run .#switch`   | flake app として定義済み                                                                                   | 外部の `nh` コマンドに依存                       |
+| treefmt / git-hooks  | flake-module 組込（pre-commit で treefmt + deadnix + statix）                                              | 導入済み（`flake.nix` の checks + devShell）     |
+| シェル               | fish（function 30 / config 9）                                                                             | zsh                                              |
+| AI tool 取得         | `numtide/llm-agents.nix` overlay で codex/opencode/cursor-agent/copilot-cli/coderabbit-cli を全部 nix 管理 | claude-code + codex のみ                         |
+| nix-claude-code      | 自作の `ryoppippi/nix-claude-code` overlay                                                                 | 無し                                             |
+| Cachix               | 4 種設定済（自前 cache 含む）                                                                              | 無し                                             |
 
 ---
 
@@ -99,15 +99,15 @@ ryoppippi の dotfiles を参考に自分の Nix 構成を近代化するため�
 
 ## 優先順位テーブル（調査時点）
 
-| 優先度 | 取り込む案 | 工数 | テーマ |
-|---|---|---|---|
-| 高 | `commit` skill 移植（hunk-revertable + `git apply --cached`） | 30min | claude 運用 |
-| 高 | `codex-review` skill + PR 作成前ブロック hook | 1h | claude 運用 |
-| 中 | `council` skill（並列 subagent 起動） | 30min | claude 運用 |
-| 中 | `tdd` の runner 別 reference 分離を `autonomous-dev` に取り込む | 1h | skill |
-| 中 | **flake-parts 化 + treefmt/git-hooks flake module** | 半日 | nix 構成 |
-| 低 | `numtide/llm-agents.nix` overlay で他 AI tool も nix 管理に寄せる | 1h | nix 構成 |
-| 低 | output-styles 機能で専用 style を作る | 30min | claude 運用 |
+| 優先度 | 取り込む案                                                        | 工数  | テーマ      |
+| ------ | ----------------------------------------------------------------- | ----- | ----------- |
+| 高     | `commit` skill 移植（hunk-revertable + `git apply --cached`）     | 30min | claude 運用 |
+| 高     | `codex-review` skill + PR 作成前ブロック hook                     | 1h    | claude 運用 |
+| 中     | `council` skill（並列 subagent 起動）                             | 30min | claude 運用 |
+| 中     | `tdd` の runner 別 reference 分離を `autonomous-dev` に取り込む   | 1h    | skill       |
+| 中     | **flake-parts 化 + treefmt/git-hooks flake module**               | 半日  | nix 構成    |
+| 低     | `numtide/llm-agents.nix` overlay で他 AI tool も nix 管理に寄せる | 1h    | nix 構成    |
+| 低     | output-styles 機能で専用 style を作る                             | 30min | claude 運用 |
 
 ---
 
@@ -119,7 +119,7 @@ nix 構成そのものに当たるのは以下で、これらは密結合のた�
 ### nix 構成の本丸（未着手分。着手時は専用ブランチを切る）
 
 1. **flake-parts 化** — 手書き `forAllSystems` を `perSystem` に移行
-2. **nix/modules 構造へ再編** — `nix/{home-manager,darwin,...}` 平置き → `nix/modules/{home,darwin,linux,lib}`
+2. **nix modules 構造へ再編** — `nix/{home-manager,darwin,...}` 平置き → `nix/{modules/home,modules/darwin,modules/linux,modules/lib}`
    （flake-parts 導入時に出力を modules へ切り出すのが自然なので 1 と同時にやる）
 3. ~~treefmt + git-hooks~~ — 導入済み（flake checks + devShell の pre-commit）
 4. **`nix run .#switch`** — 外部 `nh` 依存を減らし flake app として switch/build を定義（上記のついで）
