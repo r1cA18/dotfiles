@@ -103,6 +103,17 @@ async function runArchive(formsUrl: string): Promise<void> {
     });
     const page = await context.newPage();
 
+    let formImages: Array<string | null> = [];
+    page.on("response", async (res) => {
+      if (!res.url().includes("runtimeFormsWithResponses")) return;
+      try {
+        const json = await res.json();
+        formImages = extractFormImages(json);
+      } catch {
+        /* not JSON or already consumed */
+      }
+    });
+
     console.log(`Opening: ${formsUrl}`);
     await page.goto(formsUrl, { waitUntil: "networkidle", timeout: 60_000 });
     await waitForFormReady(page);
@@ -118,6 +129,7 @@ async function runArchive(formsUrl: string): Promise<void> {
     for (let n = 1; n <= MAX_PAGES; n++) {
       await settle(page);
       await loadAllLazyContent(page);
+      await injectMissingImages(page, formImages);
 
       if (SAVE_PDF) await savePDF(page, join(pdfDir, `${n}.pdf`));
       if (SAVE_MHTML) await saveMHTML(page, join(mhtmlDir, `${n}.mhtml`));
@@ -244,6 +256,60 @@ async function loadAllLazyContent(page: Page): Promise<void> {
     .catch(() => {});
 
   await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
+}
+
+/**
+ * MS Forms sometimes defines an image on a question (formapi returns a
+ * resourceUrl) but the client silently fails to render it as an <img> —
+ * observed from the 5th distinct image onward in a single form. Parse the
+ * form definition response so injectMissingImages() can patch the gap.
+ * Returns resourceUrl (or null) indexed by question order, ascending.
+ */
+function extractFormImages(json: unknown): Array<string | null> {
+  const questions = (json as any)?.form?.questions;
+  if (!Array.isArray(questions)) return [];
+  return [...questions]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((q) => q?.image?.resourceUrl ?? null);
+}
+
+/** Insert an <img> for any question whose DOM is missing one despite formapi defining it. */
+async function injectMissingImages(page: Page, images: Array<string | null>): Promise<void> {
+  if (images.length === 0) return;
+  await page.evaluate((imgUrls: Array<string | null>) => {
+    const items = document.querySelectorAll('[data-automation-id="questionItem"]');
+    items.forEach((item, idx) => {
+      const url = imgUrls[idx];
+      if (!url) return;
+      if (item.querySelector("img")) return;
+      const titleBlock = item.querySelector('[data-automation-id="questionTitle"]')?.closest("div");
+      const anchor = titleBlock?.parentElement ?? item;
+      const img = document.createElement("img");
+      img.src = url;
+      img.setAttribute("data-injected-by-archive", "true");
+      img.style.display = "block";
+      img.style.maxWidth = "100%";
+      img.style.margin = "8px 0";
+      anchor.parentElement?.insertBefore(img, anchor.nextSibling);
+    });
+  }, images);
+
+  await page
+    .evaluate(async () => {
+      const imgs = Array.from(document.querySelectorAll("img[data-injected-by-archive]")) as HTMLImageElement[];
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>((res) => {
+                img.addEventListener("load", () => res(), { once: true });
+                img.addEventListener("error", () => res(), { once: true });
+                setTimeout(() => res(), 5000);
+              })
+        )
+      );
+    })
+    .catch(() => {});
 }
 
 async function existsAndVisible(locator: Locator): Promise<boolean> {
