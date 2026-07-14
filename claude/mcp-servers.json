@@ -2,7 +2,11 @@
   "mcpServers": {
     "olympus": {
       "command": "ssh",
-      "args": ["homelab", "cd /opt/olympus && bun apps/mcp/src/index.ts"]
+      "args": [
+        "-T",
+        "homelab",
+        "/home/r1ca18/.nix-profile/bin/bun /home/r1ca18/Develop/github.com/r1cA18/olympus/apps/mcp/src/index.ts"
+      ]
     }
   }
 }
