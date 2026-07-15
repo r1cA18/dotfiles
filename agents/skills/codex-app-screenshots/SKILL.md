@@ -1,5 +1,5 @@
 ---
-name: app-store-screenshots
+name: codex-app-screenshots
 description: >
   Use when generating App Store marketing screenshots via ChatGPT Web UI.
   Opens ChatGPT in Chrome, uploads reference images + app screenshots,

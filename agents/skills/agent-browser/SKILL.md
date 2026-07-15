@@ -1,6 +1,6 @@
 ---
 name: agent-browser
-description: Primary browser automation tool. Use for ALL web interactions including browsing URLs, viewing web pages, reading page content, navigating websites, web testing, form filling, screenshots, and data extraction. This is the default tool whenever the user needs to open a URL, check a website, interact with web pages, or extract information from web pages. Prefer this over claude-in-chrome MCP tools.
+description: Primary browser automation tool. Use when a page must be operated or actually rendered in a browser - clicking, form filling, scrolling, screenshots, logins, JS-rendered or dynamic sites, and web app testing. For reading static page content or web search, use the built-in WebFetch/WebSearch tools instead (see tool-preferences rule). Prefer this over claude-in-chrome MCP tools. JA: 「ブラウザで開いて」「クリックして」「フォーム入力して」「スクショ撮って」「ログインして操作して」
 ---
 
 # Browser Automation with agent-browser

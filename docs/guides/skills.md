@@ -74,7 +74,6 @@ skills.enable = [
 
 | スキル              | 用途                                        |
 | ------------------- | ------------------------------------------- |
-| `autonomous-dev`    | 要件整理→TDD→レビュー→マージまで自律実行    |
 | `ios-device-build`  | iOSアプリを実機にビルド・インストール・起動 |
 | `swift-dev-toolkit` | Swift/iOS/macOS開発ツールキット             |
 | `skill-builder`     | スキルの作成・改善                          |
@@ -112,7 +111,6 @@ skills.enable = [
 | ----------------------- | ----------------------------------------- |
 | `knowledge-extract`     | セッションの学びをVaultに保存             |
 | `session-documentation` | セッション内容をdocs/にドキュメント化     |
-| `scheduled-triage`      | 定期トリアージ（朝/日中）を固定形式で生成 |
 | `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存          |
 
 ## Plugin skill との関係
