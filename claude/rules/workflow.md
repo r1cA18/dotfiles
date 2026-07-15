@@ -39,3 +39,7 @@
 
 auto-memory は使用しない。全ての記録は vault 内の明示的な場所に書く。
 CLAUDE.md に lessons を蓄積しない。version controlled な rules/ に昇格させる。
+
+観測の昇格ルール: 同じ問題や障害が observations.md に2回以上記録されたら
+記録を続けるのではなく修正アクション（環境修正 / rule / hook / skill）に昇格させ
+解消後に古い観測エントリを整理する。

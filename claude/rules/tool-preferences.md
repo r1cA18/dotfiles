@@ -30,6 +30,7 @@ URL を開く・Web ページを見る・ページ内容を読む・フォーム
 - `agent-browser` コマンドが使えない環境
 - ユーザーが明示的に `claude-in-chrome` の使用を指示した場合
 - GIF 録画 (`gif_creator`) など agent-browser に対応する機能がない場合
+- スキルが手順として `claude-in-chrome` を明示的に要求する場合（`x-article-publisher` / `codex-app-screenshots` 等）
 
 判断フロー:
 

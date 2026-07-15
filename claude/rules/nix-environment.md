@@ -50,14 +50,14 @@ comma (`,`) を最優先で使う。パッケージ名不要でコマンド名�
 | GUI アプリ (macOS)    | `~/dotfiles/nix/darwin/configuration.nix`           |
 | エイリアス            | `~/dotfiles/nix/home-manager/programs/zsh.nix`      |
 | 環境変数/PATH         | `~/dotfiles/nix/home-manager/programs/packages.nix` |
-| Claude Code 設定      | `~/dotfiles/claude/settings.json`                   |
+| Claude Code 設定      | `~/dotfiles/nix/home-manager/programs/claude-code.nix` |
 | エージェント          | `~/dotfiles/claude/agents/`                         |
 | グローバルルール      | `~/dotfiles/claude/rules/`                          |
 | グローバルスキル      | `~/dotfiles/agents/skills/<name>/SKILL.md`          |
 
 ## symlink 構造
 
-- `~/dotfiles/claude/settings.json` -> `~/.claude/settings.json`
+- `~/.claude/settings.json` は `claude-code.nix` から生成される read-only ファイル（直接編集しない）
 - `~/dotfiles/agents/INSTRUCTIONS.md` -> `~/.claude/CLAUDE.md` & `~/.codex/AGENTS.md`
 - `~/dotfiles/claude/agents/` -> `~/.claude/agents/`
 - `~/dotfiles/claude/rules/` -> `~/.claude/rules/`
