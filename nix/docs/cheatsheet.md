@@ -82,7 +82,7 @@ dg
 | ----------- | -------------------------------------------------- |
 | `dev`       | `~/Develop/`                                       |
 | `drive`     | `~/Library/CloudStorage/GoogleDrive-.../My Drive/` |
-| `kosen`     | `.../Kosen/4y/fall_semester/`                      |
+| `kosen`     | `~/Develop/.../kosen/5y/spring_semester/`          |
 | `downloads` | `~/Downloads/`                                     |
 
 ### Linux

@@ -102,7 +102,7 @@ let
       desc = "Go to Vault";
     };
     kosen = {
-      cmd = "cd ~/vault/31_Areas/Kosen/5y/spring_semester/";
+      cmd = "cd ~/Develop/github.com/r1cA18/kosen/5y/spring_semester/";
       desc = "Go to Kosen";
     };
     downloads = {
