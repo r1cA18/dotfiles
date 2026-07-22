@@ -6,6 +6,7 @@ let
     ../../agents/rules/engineering.md
     ../../agents/rules/style.md
     ../../agents/rules/environment.md
+    ../../agents/rules/tool-preferences.md
   ];
 in
 pkgs.writeText "shared-agent-instructions.md" (
