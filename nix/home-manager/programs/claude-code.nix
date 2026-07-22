@@ -304,6 +304,15 @@ in
   // {
   };
 
+  # Older generations managed .claude/agents as one directory symlink. If its
+  # Nix store target has been garbage-collected, linkGeneration cannot replace
+  # the broken symlink with the directory required by per-agent file links.
+  home.activation.cleanBrokenClaudeAgentsSymlink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    if [ -L "$HOME/.claude/agents" ] && [ ! -e "$HOME/.claude/agents" ]; then
+      rm -f "$HOME/.claude/agents"
+    fi
+  '';
+
   # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
   # it as a regular file (plugin installs, in-app /config edits). The next `dr`
   # then tries to back it up to settings.json.hm-backup and fails if a previous

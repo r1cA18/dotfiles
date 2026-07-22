@@ -157,6 +157,14 @@ in
     };
 
     activation = {
+      cleanBrokenCodexPromptSymlinks = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        for target in "$HOME/.codex/prompts" "$HOME/.codex-sub/prompts"; do
+          if [ -L "$target" ] && [ ! -e "$target" ]; then
+            rm -f "$target"
+          fi
+        done
+      '';
+
       codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         install -d "$HOME/.codex"
         # Remove possible old symlink-to-store (from previous programs.codex.settings setup),
