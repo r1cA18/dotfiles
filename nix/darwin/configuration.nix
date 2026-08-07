@@ -49,7 +49,66 @@
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;
-    casks = [ "notunes" ];
+    casks = [
+      "1password"
+      "affinity"
+      "alt-tab"
+      "amical"
+      "arc"
+      "audacity"
+      "autodesk-fusion"
+      "balenaetcher"
+      "beeper"
+      "bibdesk"
+      "claude"
+      "discord"
+      "figma"
+      "ghostty"
+      "google-chrome"
+      "google-drive"
+      "google-japanese-ime"
+      "karabiner-elements"
+      "keyboardcleantool"
+      "latexit"
+      "linearmouse"
+      "microsoft-excel"
+      "microsoft-outlook"
+      "microsoft-powerpoint"
+      "microsoft-word"
+      "notion"
+      "notunes"
+      "obsidian"
+      "ollama-app"
+      "onedrive"
+      "open-design"
+      "orbstack"
+      "orcaslicer"
+      "raycast"
+      "steam"
+      "stirling-pdf"
+      "superset"
+      "tailscale-app"
+      "tex-live-utility"
+      "texshop"
+      "ultimaker-cura"
+      "utm"
+      "visual-studio-code"
+      "zed"
+      "zoom"
+    ];
+    masApps = {
+      "AirDraw" = 6759186461;
+      "Developer" = 640199958;
+      "Keynote" = 361285480;
+      "Kindle" = 302584613;
+      "Numbers" = 361304891;
+      "Pages" = 361309726;
+      "RunCat Neo" = 6757801838;
+      "Swift Playgrounds" = 1496833156;
+      "TestFlight" = 899247664;
+      "Windows App" = 1295203466;
+      "Xcode" = 497799835;
+    };
   };
 
   system = {
