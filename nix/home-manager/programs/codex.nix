@@ -137,6 +137,14 @@ in
     file = {
       # Built from agents/INSTRUCTIONS.md + agents/rules/*.md.
       ".codex/AGENTS.md".source = sharedAgentInstructions;
+
+      # Lifecycle hooks (Claude 互換スキーマ)。スクリプト本体は
+      # agents/hooks/ に置き Claude Code と共有する。内容を変えたら
+      # codex 側で /hooks から再 trust が必要。
+      ".codex/hooks.json" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/codex/hooks.json";
+        force = true;
+      };
     }
     // promptFiles
     // {

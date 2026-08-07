@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+          },
+          {
+            "type": "command",
+            "command": "if command -v bun >/dev/null 2>&1; then bun \"$HOME/dotfiles/agents/hooks/check-knowledge-index.ts\" --all --if-cwd \"$HOME/vault\"; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

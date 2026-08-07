@@ -163,6 +163,13 @@ in
                 type = "command";
                 command = "~/.claude/hooks/test-reminder.sh";
               }
+              {
+                # vault 20_Knowledge の index カバレッジ検査 (agents/hooks/ は
+                # Codex と共有。Codex 側は codex/hooks.json の Stop hook で同じ
+                # スクリプトを --all モードで呼ぶ)
+                type = "command";
+                command = "${lib.getExe pkgs.bun} ~/dotfiles/agents/hooks/check-knowledge-index.ts";
+              }
             ];
           }
           {

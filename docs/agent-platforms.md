@@ -10,6 +10,7 @@
 | グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`  | Nix で結合して両方に配布する                                          |
 | project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント  | repo 直下で管理                                                       |
 | reusable skills              | `skills/`                                   | `~/.claude/skills` と `~/.codex/skills` に同期                        |
+| shared hook implementations  | `agents/hooks/`                             | 製品ごとのhook登録から呼び出す                                        |
 | Claude hooks                 | `claude/hooks/`                             | Claude 専用                                                           |
 | Claude commands              | `claude/commands/`                          | 可能なら `skills/` へ昇格                                             |
 | Codex prompt wrappers        | `codex/prompts/`                            | deprecated なので reusable workflow は skill が正本                   |
@@ -24,13 +25,14 @@
 
 - `agents/INSTRUCTIONS.md`
 - `agents/rules/`
+- `agents/hooks/` の製品非依存script
 - `skills/`
 - project docs
 - MCP のうち plugin 非依存で宣言的に書ける server 定義
 
 ## 共有できないもの
 
-- `Claude Code` hooks
+- 製品固有のhook登録とschema
 - `Claude Code` plugins / marketplaces
 - `Claude Code` custom commands のうち UI 依存のもの
 - `Codex` custom prompts の UI 呼び出し部分

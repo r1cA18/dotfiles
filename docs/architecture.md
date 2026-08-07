@@ -13,6 +13,11 @@ dotfiles/
 ├── docs/                     # ドキュメント（このファイルを含む）
 │   └── architecture.md       # このファイル
 │
+├── agents/                   # Claude / Codex 共有agent資産
+│   ├── INSTRUCTIONS.md       # 共有instruction本体
+│   ├── rules/                # 共有rule
+│   └── hooks/                # 製品非依存のhook実装
+│
 ├── nix/                      # Nix設定（メイン）
 │   ├── darwin/               # macOS専用 (nix-darwin)
 │   │   └── configuration.nix # システム設定、Homebrew管理
@@ -69,7 +74,8 @@ dotfiles/
 ├── .codex/                  # リポジトリローカル Codex assets
 │   └── agents/              # Codex custom agents
 │
-└── codex/                   # Codex prompt wrappers 等
+└── codex/                   # Codex設定
+    ├── hooks.json           # Codex lifecycle hook登録
     └── prompts/             # ~/.codex/prompts へリンク（skill呼び出し用）
 ```
 
@@ -91,11 +97,13 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `claude/agents/`                           | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
 | `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
 | `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.codex/AGENTS.md`                     | `agent-instructions.nix` で結合                    |
+| `codex/hooks.json`                         | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `codex/prompts/`                           | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 ## Agent 運用の基本方針
 
 - 共有したい知識は `skills/` と project docs に置く
+- 製品非依存の hook 実装は `agents/hooks/` に置き、登録は各製品側で管理する
 - Claude 固有の強制は `claude/hooks/`, `claude/rules/`, `claude/commands/`, `claude/agents/` に置く
 - Codex 固有の custom agent は `.codex/agents/` に置く
 - Codex custom prompt は deprecated なので、`codex/prompts/` には skill wrapper だけを置く
