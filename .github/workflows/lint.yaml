@@ -11,9 +11,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - name: Check flake
-        run: nix flake check --no-build
-      - name: Check formatting
-        run: nix fmt -- --fail-on-change
+        run: nix flake check
       - name: Check documentation paths
         run: bash scripts/lint-doc-paths.sh
 

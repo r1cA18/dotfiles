@@ -82,7 +82,6 @@
       # Supported systems (macOS + Linux)
       systems = [
         "aarch64-darwin"
-        "x86_64-darwin"
         "x86_64-linux"
         "aarch64-linux"
       ];
@@ -154,14 +153,10 @@
         system:
         let
           pkgs = pkgsFor system;
-          isDarwin = builtins.elem system [
-            "aarch64-darwin"
-            "x86_64-darwin"
-          ];
           mkGithubReleaseApp = pkgs.callPackage ./nix/lib/github-app.nix { };
         in
         import ./nix/pkgs pkgs
-        // nixpkgs.lib.optionalAttrs isDarwin {
+        // nixpkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
           recordly = pkgs.callPackage ./nix/pkgs/recordly { inherit mkGithubReleaseApp; };
         }
       );
@@ -271,12 +266,14 @@
                 '';
               }
             }/bin/homelab-${action}";
+            meta.description = "Run the homelab ${action} workflow";
           };
         in
         {
           fmt = {
             type = "app";
             program = "${(treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix).config.build.wrapper}/bin/treefmt";
+            meta.description = "Format the dotfiles repository";
           };
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {

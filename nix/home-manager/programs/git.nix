@@ -61,36 +61,38 @@ let
   '';
 in
 {
-  programs.gh.enable = true;
+  programs = {
+    gh.enable = true;
 
-  programs.delta = {
-    enable = true;
-    enableGitIntegration = true;
-    options = {
-      navigate = true;
-      side-by-side = true;
-      line-numbers = true;
+    delta = {
+      enable = true;
+      enableGitIntegration = true;
+      options = {
+        navigate = true;
+        side-by-side = true;
+        line-numbers = true;
+      };
     };
-  };
 
-  programs.git = {
-    enable = true;
-    ignores = [
-      ".DS_Store"
-      "*.swp"
-      ".direnv"
-      ".envrc"
-      ".claude/skills"
-      ".claude/settings.local.json"
-      "__pycache__"
-      "*.pyc"
-      "node_modules"
-      ".venv"
-      "result"
-    ];
-    settings = lib.recursiveUpdate baseSettings {
-      # 存在しない include は git が黙って無視するので、署名無効時も無害
-      include.path = signingIncludePath;
+    git = {
+      enable = true;
+      ignores = [
+        ".DS_Store"
+        "*.swp"
+        ".direnv"
+        ".envrc"
+        ".claude/skills"
+        ".claude/settings.local.json"
+        "__pycache__"
+        "*.pyc"
+        "node_modules"
+        ".venv"
+        "result"
+      ];
+      settings = lib.recursiveUpdate baseSettings {
+        # 存在しない include は git が黙って無視するので、署名無効時も無害
+        include.path = signingIncludePath;
+      };
     };
   };
 

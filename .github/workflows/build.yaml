@@ -16,5 +16,3 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Build Linux home config
         run: nix build .#homeConfigurations.\"r1ca18@homelab\".activationPackage
-      - name: Check homelab provisioning
-        run: nix build .#checks.x86_64-linux.homelab

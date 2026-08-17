@@ -24,16 +24,7 @@
 }:
 {
   mkShellWithSkills =
-    {
-      selectedPacks ? [ ],
-      extraSkills ? [ ],
-      extraPlugins ? [ ],
-      extraClaudePlugins ? [ ],
-      extraCodexPlugins ? [ ],
-      extraCodexMarketplaces ? { },
-      extraMcpServers ? { },
-      ...
-    }@args:
+    args:
     pkgs.mkShellNoCC (
       builtins.removeAttrs args [
         "selectedPacks"

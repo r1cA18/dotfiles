@@ -306,67 +306,69 @@ in
 
   # Shared instructions are generated from agents/INSTRUCTIONS.md and
   # agents/rules/*.md. Claude-specific assets remain editable symlinks.
-  home.file = {
-    ".claude/CLAUDE.md".source = sharedAgentInstructions;
-    ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";
-    ".claude/rules" = mkClaudeSymlink "claude/rules";
-    ".claude/hooks" = mkClaudeSymlink "claude/hooks";
-    ".claude/commands" = mkClaudeSymlink "claude/commands";
-  }
-  // agentFiles
-  // {
+  home = {
+    file = {
+      ".claude/CLAUDE.md".source = sharedAgentInstructions;
+      ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";
+      ".claude/rules" = mkClaudeSymlink "claude/rules";
+      ".claude/hooks" = mkClaudeSymlink "claude/hooks";
+      ".claude/commands" = mkClaudeSymlink "claude/commands";
+    }
+    // agentFiles;
+
+    activation = {
+      # Older generations managed .claude/agents as one directory symlink. If its
+      # Nix store target has been garbage-collected, linkGeneration cannot replace
+      # the broken symlink with the directory required by per-agent file links.
+      cleanBrokenClaudeAgentsSymlink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        if [ -L "$HOME/.claude/agents" ] && [ ! -e "$HOME/.claude/agents" ]; then
+          rm -f "$HOME/.claude/agents"
+        fi
+      '';
+
+      # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
+      # it as a regular file (plugin installs, in-app /config edits). The next `dr`
+      # then tries to back it up to settings.json.hm-backup and fails if a previous
+      # backup already exists. Since Nix is the source of truth here, the backup has
+      # no value — drop it before checkLinkTargets runs.
+      cleanClaudeSettingsBackup = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        rm -f "$HOME/.claude/settings.json.hm-backup"
+      '';
+
+      # MCP servers cannot use programs.claude-code.mcpServers (requires package!=null
+      # and our claude is self-installed). Keep the python merge script that syncs
+      # claude/mcp-servers.json into ~/.claude.json on every dr.
+      syncClaudeMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        echo "Syncing Claude MCP servers..."
+        ${python3} \
+          "${dotfilesDir}/claude/scripts/sync-mcp-servers.py" \
+          "$HOME/.claude.json" \
+          "${dotfilesDir}/claude/mcp-servers.json" || true
+      '';
+
+      # Claude Code native 版の導入/固定。更新 (latest 追従) は du の
+      # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
+      # claudeChannel を managed-channel に書き出し、du スクリプトへ状態を渡す。
+      setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        channel="${claudeChannel}"
+        bin="$HOME/.local/bin/claude"
+        mkdir -p "$HOME/.claude"
+        printf '%s\n' "$channel" > "$HOME/.claude/managed-channel"
+
+        if [ ! -x "$bin" ]; then
+          if [ "$channel" = "latest" ]; then
+            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash || true
+          else
+            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+          fi
+        elif [ "$channel" != "latest" ] && ! "$bin" --version 2>/dev/null | grep -q "$channel"; then
+          ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+        fi
+
+        if command -v npm >/dev/null 2>&1; then
+          ${pkgs.nodejs}/bin/npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true
+        fi
+      '';
+    };
   };
-
-  # Older generations managed .claude/agents as one directory symlink. If its
-  # Nix store target has been garbage-collected, linkGeneration cannot replace
-  # the broken symlink with the directory required by per-agent file links.
-  home.activation.cleanBrokenClaudeAgentsSymlink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    if [ -L "$HOME/.claude/agents" ] && [ ! -e "$HOME/.claude/agents" ]; then
-      rm -f "$HOME/.claude/agents"
-    fi
-  '';
-
-  # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
-  # it as a regular file (plugin installs, in-app /config edits). The next `dr`
-  # then tries to back it up to settings.json.hm-backup and fails if a previous
-  # backup already exists. Since Nix is the source of truth here, the backup has
-  # no value — drop it before checkLinkTargets runs.
-  home.activation.cleanClaudeSettingsBackup = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    rm -f "$HOME/.claude/settings.json.hm-backup"
-  '';
-
-  # MCP servers cannot use programs.claude-code.mcpServers (requires package!=null
-  # and our claude is self-installed). Keep the python merge script that syncs
-  # claude/mcp-servers.json into ~/.claude.json on every dr.
-  home.activation.syncClaudeMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    echo "Syncing Claude MCP servers..."
-    ${python3} \
-      "${dotfilesDir}/claude/scripts/sync-mcp-servers.py" \
-      "$HOME/.claude.json" \
-      "${dotfilesDir}/claude/mcp-servers.json" || true
-  '';
-
-  # Claude Code native 版の導入/固定。更新 (latest 追従) は du の
-  # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
-  # claudeChannel を managed-channel に書き出し、du スクリプトへ状態を渡す。
-  home.activation.setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    channel="${claudeChannel}"
-    bin="$HOME/.local/bin/claude"
-    mkdir -p "$HOME/.claude"
-    printf '%s\n' "$channel" > "$HOME/.claude/managed-channel"
-
-    if [ ! -x "$bin" ]; then
-      if [ "$channel" = "latest" ]; then
-        ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash || true
-      else
-        ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
-      fi
-    elif [ "$channel" != "latest" ] && ! "$bin" --version 2>/dev/null | grep -q "$channel"; then
-      ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
-    fi
-
-    if command -v npm >/dev/null 2>&1; then
-      ${pkgs.nodejs}/bin/npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true
-    fi
-  '';
 }

@@ -49,11 +49,12 @@ in
   # Out-of-store symlink so config edits apply instantly without a rebuild.
   # The store-copy alternative would make ~/.config/nvim read-only and force a
   # `dr` for every tweak, and also block lazy.nvim from writing its lockfile.
-  xdg.configFile."nvim/lua".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/lua";
-  xdg.configFile."nvim/lazy-lock.json".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/lazy-lock.json";
-  xdg.configFile."nvim/stylua.toml".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/stylua.toml";
+  xdg.configFile = {
+    "nvim/lua".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/lua";
+    "nvim/lazy-lock.json".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/lazy-lock.json";
+    "nvim/stylua.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/nvim/stylua.toml";
+  };
 
   # Converge plugins to the committed lockfile on every `dr`. lazy.nvim writes
   # nvim/lazy-lock.json (now writable via the out-of-store symlink); `Lazy!
