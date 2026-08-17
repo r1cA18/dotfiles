@@ -152,11 +152,12 @@ nix run .#homelab-stop
 
 start・stopはsystem provisioningを再実行しないためofflineでも利用できる。
 
-## 6. ChatGPTと1Password
+## 6. Google Chrome・ChatGPT・1Password
 
 Ansibleが公式`.deb`をinstallする。packageが追加する署名済みAPT repositoryから更新される。
 
 ```bash
+google-chrome
 chatgpt
 1password
 ```

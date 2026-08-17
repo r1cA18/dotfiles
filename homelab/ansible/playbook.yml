@@ -340,6 +340,25 @@
       ansible.builtin.package_facts:
         manager: auto
 
+    - name: Download the official Google Chrome package
+      ansible.builtin.get_url:
+        url: >-
+          https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        dest: /tmp/google-chrome-stable_current_amd64.deb
+        mode: "0644"
+      when:
+        - homelab_install_desktop_apps | bool
+        - homelab_dpkg_arch.stdout == "amd64"
+        - "'google-chrome-stable' not in ansible_facts.packages"
+
+    - name: Install Google Chrome and its signed update repository
+      ansible.builtin.apt:
+        deb: /tmp/google-chrome-stable_current_amd64.deb
+      when:
+        - homelab_install_desktop_apps | bool
+        - homelab_dpkg_arch.stdout == "amd64"
+        - "'google-chrome-stable' not in ansible_facts.packages"
+
     - name: Download the official ChatGPT package
       ansible.builtin.get_url:
         url: >-

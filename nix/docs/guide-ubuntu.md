@@ -90,11 +90,12 @@ Ansibleが公式`.deb`と署名済みAPT repositoryを導入する。その後1P
 - `SSH_AUTH_SOCK` は `~/.1password/agent.sock` を指す。1Password 起動前は
   agent 経由の鍵は使えないが、ssh 自体は通常の鍵認証にフォールバックする
 
-### 7. ChatGPT desktop app
+### 7. Google ChromeとChatGPT desktop app
 
-AnsibleがUbuntu向け公式`.deb`を導入する。
+AnsibleがUbuntu向け公式`.deb`を導入する。各packageが追加する署名済みAPT repositoryから更新される。
 
 ```bash
+google-chrome
 chatgpt
 ```
 
@@ -172,7 +173,7 @@ cd ~/dotfiles
 nix run .#homelab-apply
 ```
 
-GUI app本体はNixの管理対象外。ChatGPTと1Passwordは公式APT repositoryから更新する。
+GUI app本体はNixの管理対象外。Google Chrome・ChatGPT・1Passwordは公式APT repositoryから更新する。
 
 ### Ghostty
 
