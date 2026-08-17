@@ -51,13 +51,9 @@ Ubuntu system設定とHome Managerを一括適用する。初回はHome Assistan
 
 ```bash
 nix run .#homelab-apply
-
-zsh_path="$HOME/.nix-profile/bin/zsh"
-grep -qxF "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
-chsh -s "$zsh_path"
 ```
 
-一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
+`homelab-apply`はHome Managerの`zsh`をlogin shellとして登録する。一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
 
 ## 2. Tailscale
 

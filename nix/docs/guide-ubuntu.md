@@ -318,15 +318,10 @@ git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 nix run .#homelab-apply
 
-# 4. デフォルトシェル変更
-zsh_path="$HOME/.nix-profile/bin/zsh"
-grep -qxF "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
-chsh -s "$zsh_path"
-
-# 5. Claude Code公式installer（以後はduで更新）
+# 4. Claude Code公式installer（以後はduで更新）
 curl -fsSL https://claude.ai/install.sh | bash
 
-# 6. 1PasswordでSSH Agentを有効化
+# 5. 1PasswordでSSH Agentを有効化
 ```
 
 ---

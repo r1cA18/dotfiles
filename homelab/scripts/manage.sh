@@ -44,6 +44,27 @@ run_playbook() {
     "$dotfiles_root/homelab/ansible/playbook.yml"
 }
 
+configure_login_shell() {
+  local current_shell homelab_user zsh_path
+
+  homelab_user="$(id -un)"
+  zsh_path="$HOME/.nix-profile/bin/zsh"
+
+  [[ -x $zsh_path ]] || {
+    printf 'Home Manager did not install zsh at %s\n' "$zsh_path" >&2
+    exit 1
+  }
+
+  if ! grep -qxF "$zsh_path" /etc/shells; then
+    printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+  fi
+
+  current_shell="$(getent passwd "$homelab_user" | cut -d: -f7)"
+  if [[ $current_shell != "$zsh_path" ]]; then
+    sudo usermod --shell "$zsh_path" "$homelab_user"
+  fi
+}
+
 start_homelab_services() {
   local home_assistant_root required_input
   local -a required_inputs=(
@@ -80,6 +101,8 @@ apply)
   require_homelab_host
   run_playbook
   home-manager switch --flake "$dotfiles_root#r1ca18@homelab"
+  configure_login_shell
+  printf 'homelab applied; log out and back in to activate shell and group changes\n'
   ;;
 start)
   require_homelab_host

@@ -22,6 +22,8 @@ printf 'os:   %s\n' "$PRETTY_NAME"
 printf 'arch: %s\n' "$(uname -m)"
 printf 'ip:   %s\n' "$(hostname -I 2>/dev/null || true)"
 
+check 'Login shell' test \
+  "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$HOME/.nix-profile/bin/zsh"
 check 'Nix daemon' systemctl is-active nix-daemon
 check 'Docker daemon' systemctl is-active docker
 check 'Tailscale daemon' systemctl is-active tailscaled
