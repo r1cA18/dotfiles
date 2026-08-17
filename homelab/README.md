@@ -152,7 +152,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 claude --version
 ```
 
-## Firewall
+## 6. Firewall
 
 すべてのserviceはTailscaleから利用できる。home LANの`192.168.0.0/24`にはHome Assistant・HomeKit・Syncthing・discoveryだけを公開し、SSHとESPHome dashboardは公開しない。Tailscale exit node向けのforwardingだけを明示的に許可する。
 
