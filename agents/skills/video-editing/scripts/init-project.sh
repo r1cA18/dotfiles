@@ -7,7 +7,7 @@ echo "Creating FrameScript project: $PROJECT_NAME"
 bunx @frame-script/create-frame-script "$PROJECT_NAME"
 
 if [ -d "$PROJECT_NAME" ]; then
-    cd "$PROJECT_NAME"
+    cd "$PROJECT_NAME" || exit 1
     bun install
     echo ""
     echo "Project created successfully!"

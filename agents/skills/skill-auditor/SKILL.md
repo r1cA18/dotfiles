@@ -51,10 +51,10 @@ description: |
 | ...                        |     |     |     |     |     |     |     |       |            |                 |
 
 ## Duplicate Detection
-- baseline-ui <-> ui-skills: 95% overlap (同一内容)
+- skill-a <-> skill-b: 95% overlap (同一内容)
 
 ## Anti-Patterns Found
-- [AP-1] baseline-ui / ui-skills: Near-Duplicate
+- [AP-1] skill-a / skill-b: Near-Duplicate
 - [AP-3] remotion-best-practices: Missing JA Triggers
 - ...
 

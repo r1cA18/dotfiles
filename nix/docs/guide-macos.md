@@ -210,8 +210,11 @@ mas search "アプリ名"
 # 詳細エラーを確認
 nh darwin switch ~/dotfiles -H RMB --show-trace
 
-# 変更を戻す
-cd ~/dotfiles && git checkout .
+# local変更と直前の正常commitを確認する
+cd ~/dotfiles
+git status --short
+git diff
+git log -1 --oneline
 ```
 
 ### Homebrew でエラー

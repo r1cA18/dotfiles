@@ -13,7 +13,7 @@ case "$EXT" in
   py|js|jsx|ts|tsx|swift|go|rs)
     # テストファイル自体の編集は除外
     case "$FILE_PATH" in
-      *test*|*spec*|*_test.*|*_spec.*) exit 0 ;;
+      */test/*|*/tests/*|*/spec/*|*/specs/*|*test.*|*spec.*) exit 0 ;;
     esac
     echo "REMINDER: ソースコードが変更された。関連するテストの実行を忘れずに。"
     ;;

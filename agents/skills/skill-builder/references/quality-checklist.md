@@ -49,13 +49,13 @@ skill-auditor のルーブリックと Anthropic公式ガイドのベストプ�
 
 ### 6. 環境対応
 
-- [ ] パスが ~/dotfiles/skills/ 前提で正しい
+- [ ] パスが`~/dotfiles/agents/skills/`前提で正しい
 - [ ] Nix 環境固有の考慮事項がある場合、記載されている
 - [ ] 外部ツールの依存が明記されている
 
 ### 7. 重複回避
 
-- [ ] ~/dotfiles/skills/ 内の既存スキルとの重複を確認済み
+- [ ] `~/dotfiles/agents/skills/`内の既存スキルとの重複を確認済み
 - [ ] 関連スキルとの境界が明確（description で区別）
 - [ ] 統合すべきスキルがないか検討済み
 

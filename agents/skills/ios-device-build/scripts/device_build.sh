@@ -11,8 +11,8 @@
 set -e
 
 # スキルディレクトリを特定
-SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-CONFIG_FILE="$SKILL_DIR/config/settings.conf"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/agent-skills/ios-device-build"
+CONFIG_FILE="$CONFIG_DIR/settings.conf"
 
 # 色定義
 RED='\033[0;31m'
@@ -33,6 +33,7 @@ NOTIFY_LANGUAGE="ja"
 BUILD_LOG_LINES=30
 
 if [ -f "$CONFIG_FILE" ]; then
+    # shellcheck source=/dev/null
     source "$CONFIG_FILE"
     log_info "設定ファイルを読み込みました"
 fi
@@ -41,7 +42,7 @@ fi
 PROJECT_PATH="${1:-.}"
 SCHEME="${2:-$DEFAULT_SCHEME}"
 DEVICE_NAME="${3:-$DEFAULT_DEVICE_NAME}"
-BUNDLE_ID="${4}"
+BUNDLE_ID="${4:-}"
 
 # プロジェクトパスに移動
 cd "$PROJECT_PATH"
@@ -49,26 +50,30 @@ log_info "Working directory: $(pwd)"
 
 # プロジェクトファイルを検出
 if [ -z "$SCHEME" ]; then
-    XCWORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
-    if [ -n "$XCWORKSPACE" ]; then
+    shopt -s nullglob
+    WORKSPACES=(./*.xcworkspace)
+    PROJECTS=(./*.xcodeproj)
+    shopt -u nullglob
+    if [ "${#WORKSPACES[@]}" -gt 0 ]; then
+        XCWORKSPACE="${WORKSPACES[0]#./}"
         SCHEME=$(basename "$XCWORKSPACE" .xcworkspace)
         log_info "Detected workspace: $XCWORKSPACE"
     else
-        XCODEPROJ=$(ls -d *.xcodeproj 2>/dev/null | head -1)
-        if [ -z "$XCODEPROJ" ]; then
+        if [ "${#PROJECTS[@]}" -eq 0 ]; then
             log_error "No .xcodeproj or .xcworkspace found in $(pwd)"
             exit 1
         fi
+        XCODEPROJ="${PROJECTS[0]#./}"
         SCHEME=$(basename "$XCODEPROJ" .xcodeproj)
     fi
 fi
 
 # プロジェクトファイルを決定
 if [ -f "${SCHEME}.xcworkspace/contents.xcworkspacedata" ]; then
-    BUILD_TARGET="-workspace ${SCHEME}.xcworkspace"
+    BUILD_TARGET=(-workspace "${SCHEME}.xcworkspace")
     log_info "Using workspace: ${SCHEME}.xcworkspace"
 else
-    BUILD_TARGET="-project ${SCHEME}.xcodeproj"
+    BUILD_TARGET=(-project "${SCHEME}.xcodeproj")
     log_info "Using project: ${SCHEME}.xcodeproj"
 fi
 log_info "Scheme: $SCHEME"
@@ -108,9 +113,9 @@ log_info "Device UDID: $DEVICE_UDID"
 
 # ビルド
 log_step "Building for device..."
-xcodebuild $BUILD_TARGET -scheme "$SCHEME" -destination "id=$DEVICE_UDID" build 2>&1 | tail -"$BUILD_LOG_LINES"
+xcodebuild "${BUILD_TARGET[@]}" -scheme "$SCHEME" -destination "id=$DEVICE_UDID" build 2>&1 | tail -"$BUILD_LOG_LINES"
 
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     log_error "Build failed"
     exit 1
 fi
@@ -128,9 +133,7 @@ log_info "App path: $APP_PATH"
 
 # インストール
 log_step "Installing to device..."
-xcrun devicectl device install app --device "$DEVICE_UDID" "$APP_PATH"
-
-if [ $? -ne 0 ]; then
+if ! xcrun devicectl device install app --device "$DEVICE_UDID" "$APP_PATH"; then
     log_error "Installation failed"
     exit 1
 fi
@@ -148,9 +151,7 @@ fi
 
 # 起動
 log_step "Launching app: $BUNDLE_ID"
-xcrun devicectl device process launch --device "$DEVICE_UDID" "$BUNDLE_ID"
-
-if [ $? -eq 0 ]; then
+if xcrun devicectl device process launch --device "$DEVICE_UDID" "$BUNDLE_ID"; then
     log_info "App launched successfully!"
     if [ "$NOTIFY_LANGUAGE" = "en" ]; then
         say "Build and launch completed"

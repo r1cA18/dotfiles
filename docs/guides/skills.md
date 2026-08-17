@@ -62,7 +62,7 @@ skills.enable = [
 
 利用可能な公式スキル一覧: `ls $(nix eval --raw inputs.anthropic-skills)/skills/`
 
-## 現在のグローバルスキル一覧
+## 主なグローバルskill
 
 ### Web / ブラウザ
 
@@ -79,6 +79,8 @@ skills.enable = [
 | `skill-builder`     | スキルの作成・改善                          |
 | `skill-auditor`     | スキルの品質監査                            |
 | `post-review`       | 実装後レビューと修正のループ                |
+| `idea-to-ship`      | 調査から実装・検証・pushまでのworkflow      |
+| `project-init`      | flake・direnv・agent docsの初期化           |
 
 ### UI / デザイン
 
@@ -86,24 +88,28 @@ skills.enable = [
 | ----------------------------- | ---------------------------------------------------- |
 | `baseline-ui`                 | AI生成UIのスラップ防止ベースライン                   |
 | `frontend-design`             | official の frontend-design skill                    |
-| `design-md`                   | Stitch project から DESIGN.md を生成                 |
-| `enhance-prompt`              | Stitch 向けに UI prompt を強化                       |
-| `react-components`            | Stitch screen を React component system に変換       |
-| `shadcn-ui`                   | shadcn/ui 統合のガイド                               |
 | `design-capture`              | WebデザインのスクショとデザイントークンをVaultに保存 |
 | `web-design-guidelines`       | UIコードのアクセシビリティ・設計レビュー             |
 | `vercel-react-best-practices` | React/Next.jsのパフォーマンス最適化ガイドライン      |
 | `remotion-best-practices`     | Remotion（React動画制作）のベストプラクティス        |
 | `video-editing`               | FFmpeg + FrameScriptによる動画編集                   |
+| `design-taste-frontend`       | project文脈に合わせたanti-slop frontend実装          |
+| `redesign-existing-projects`  | 既存UIのauditと改善                                  |
+| `image-to-code`               | image基準のfrontend実装                              |
 
 ### コンテンツ
 
-| スキル                | 用途                           |
-| --------------------- | ------------------------------ |
-| `x-research`          | X(Twitter)検索を使ったリサーチ |
-| `x-article-publisher` | MarkdownをX Articlesに投稿     |
-| `pdf`                 | PDF の読解・変換               |
-| `xlsx`                | Excel ファイルの読解・変換     |
+| スキル                  | 用途                                |
+| ----------------------- | ----------------------------------- |
+| `x-research`            | X(Twitter)検索を使ったリサーチ      |
+| `x-article-publisher`   | MarkdownをX Articlesに投稿          |
+| `codex-app-screenshots` | ChatGPT Web UIでApp Store画像を生成 |
+| `app-store-screenshots` | App Store screenshot素材の作成      |
+| `pdf`                   | PDF の読解・変換                    |
+| `xlsx`                  | Excel ファイルの読解・変換          |
+| `typst-author`          | Typst文書の作成・修正               |
+| `touying-author`        | Touying slideの作成・修正           |
+| `text-to-lottie`        | Lottie animationの作成・修正        |
 
 ### 知識管理
 
@@ -145,9 +151,4 @@ slash-command 風に呼びたい場合だけ `codex/prompts/*.md` に薄い wrap
 /video-editing
 ```
 
-## 削除・整理の検討候補
-
-| スキル                          | 理由                                                     |
-| ------------------------------- | -------------------------------------------------------- |
-| `x-article-publisher-workspace` | SKILL.mdがなく、`trigger-eval.json` のみ。動作しない残骸 |
-| `security-check`                | デモスキルと明記されている。実用性なし                   |
+正確な有効一覧は`nix/home-manager/programs/agent-skills.nix`の`skills.enable`と`skills.explicit`をsource of truthにする。

@@ -5,7 +5,7 @@
 
 set -e
 
-PROJECT_PATH="${1:-.}"
+PROJECT_PATH="$(cd "${1:-.}" && pwd)"
 SCHEME="${2:-}"
 PLATFORM="${3:-ios}"
 
@@ -13,8 +13,11 @@ cd "$PROJECT_PATH"
 
 # スキーム自動検出
 if [ -z "$SCHEME" ]; then
-    XCODEPROJ=$(ls -d *.xcodeproj 2>/dev/null | head -1)
-    if [ -n "$XCODEPROJ" ]; then
+    shopt -s nullglob
+    PROJECTS=(./*.xcodeproj)
+    shopt -u nullglob
+    if [ "${#PROJECTS[@]}" -gt 0 ]; then
+        XCODEPROJ="${PROJECTS[0]#./}"
         SCHEME=$(basename "$XCODEPROJ" .xcodeproj)
     else
         echo "Error: No .xcodeproj found and no scheme specified"
@@ -38,8 +41,8 @@ case "$PLATFORM" in
         ;;
     both)
         echo "Building for iOS first, then macOS..."
-        $0 "$PROJECT_PATH" "$SCHEME" ios
-        $0 "$PROJECT_PATH" "$SCHEME" macos
+        "$0" "$PROJECT_PATH" "$SCHEME" ios
+        "$0" "$PROJECT_PATH" "$SCHEME" macos
         exit 0
         ;;
     *)

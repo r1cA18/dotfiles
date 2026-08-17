@@ -1,6 +1,0 @@
-Original statusLine config (restore by replacing statusLine block in settings.json):
-
-"statusLine": {
-  "type": "command",
-  "command": "bun x ccusage statusline"
-}

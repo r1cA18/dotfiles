@@ -117,7 +117,7 @@ Linux版はpreview。Computer Useは未対応。Wayland native modeはexperiment
 
 ### 9. Claude Code セットアップ
 
-`programs.claude-code` は `package = null` で settings.json と plugins だけを管理し、バイナリ自体は公式インストーラ (auto-update) に任せている。Linux でも公式手順で `~/.local/bin/claude` に入れる。
+`programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`du`から明示的に更新する。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -276,8 +276,11 @@ nh home switch ~/dotfiles -c r1ca18@homelab
 # 詳細エラーを確認
 nh home switch ~/dotfiles -c r1ca18@homelab --show-trace
 
-# 変更を戻す
-cd ~/dotfiles && git checkout .
+# local変更と直前の正常commitを確認する
+cd ~/dotfiles
+git status --short
+git diff
+git log -1 --oneline
 ```
 
 ### 特定の世代に戻したい
@@ -316,10 +319,11 @@ cd ~/dotfiles
 nix run .#homelab-apply
 
 # 4. デフォルトシェル変更
-echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
-chsh -s "$HOME/.nix-profile/bin/zsh"
+zsh_path="$HOME/.nix-profile/bin/zsh"
+grep -qxF "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
+chsh -s "$zsh_path"
 
-# 5. Claude Code 公式インストーラ (auto-update に任せる方針)
+# 5. Claude Code公式installer（以後はduで更新）
 curl -fsSL https://claude.ai/install.sh | bash
 
 # 6. 1PasswordでSSH Agentを有効化

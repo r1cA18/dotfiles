@@ -51,9 +51,13 @@ Ubuntu system設定とHome Managerを一括適用する。初回はHome Assistan
 
 ```bash
 nix run .#homelab-apply
+
+zsh_path="$HOME/.nix-profile/bin/zsh"
+grep -qxF "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
+chsh -s "$zsh_path"
 ```
 
-一度logoutして入り直す。これで`docker` groupとhardware access groupが反映される。
+一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
 
 ## 2. Tailscale
 
@@ -140,6 +144,13 @@ chatgpt
 ```
 
 1PasswordのSSH Agentを有効にする。常駐serviceにsecretが必要になった時点で1Password Service Accountを追加する。現在はsecretを必要とするCompose serviceがないためtokenを配置しない。
+
+Claude Codeも使う場合はnative installerで一度だけ導入する。以後は`du`が明示的に更新する。
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+claude --version
+```
 
 ## Firewall
 

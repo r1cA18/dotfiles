@@ -15,7 +15,7 @@ description: 'X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_
 ## Prerequisites
 
 - `XAI_API_KEY` が `~/vault/40_AI/x-research/.env` に設定されていること
-- `tsx` が使えること（`npx tsx` でOK）
+- BunがNix profileから使えること
 
 ## Intake (ask first if missing)
 
@@ -33,12 +33,12 @@ description: 'X(Twitter)検索を使った周辺リサーチ。xAI (Grok) の x_
 2. 以下のコマンドでGrok x_searchに委任:
 
 ```bash
-export $(cat ~/vault/40_AI/x-research/.env | xargs) && \
-cd "$(agent-skill-path x-research)" && npx tsx scripts/grok_context_research.ts \
+cd "$(agent-skill-path x-research)" && bun scripts/grok_context_research.ts \
+  --dotenv "$HOME/vault/40_AI/x-research/.env" \
   --topic "<TOPIC>" \
   --locale <ja|global> \
   --audience <engineer|investor|both> \
-  --out-dir ~/vault/40_AI/x-research
+  --out-dir "$HOME/vault/40_AI/x-research"
 ```
 
 3. 出力された Context Pack をユーザーに提示

@@ -15,13 +15,15 @@ macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定
 
 ## クイックスタート
 
-### 1. Nix インストール
+### macOS
+
+#### 1. Nixインストール
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
-### 2. dotfiles クローン & ビルド
+#### 2. dotfiles clone・build
 
 ```bash
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
@@ -32,25 +34,11 @@ nix run nix-darwin -- switch --flake .#RMB
 
 # macOS (r1ca18lab)
 nix run nix-darwin -- switch --flake .#r1ca18lab
-
-# Ubuntu homelab
-nix run .#homelab-apply
 ```
 
-> **Linux初回セットアップの注意点**
->
-> `nix run` がエラーになる場合は experimental features を有効化してから再実行:
->
-> ```bash
-> echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
-> sudo systemctl restart nix-daemon
-> ```
->
-> Ghostty を使っている場合、SSH先に terminfo を転送する（Mac側で実行）:
->
-> ```bash
-> infocmp -x xterm-ghostty | ssh USER@HOST 'tic -x /dev/stdin'
-> ```
+### Ubuntu homelab
+
+UbuntuはNixの前に必要なbootstrap packageがある。初回手順は[homelab/README.md](homelab/README.md)を上から実行する。
 
 ### 3. 以降の更新
 
@@ -125,12 +113,7 @@ dotfiles/
 
 ### Skills
 
-- **ui-skills** - UI/UXレビュー用スキル
-- **vercel-react-best-practices** - React/Next.jsベストプラクティス
-- **web-design-guidelines** - Webデザインガイドライン
-- **design-md / enhance-prompt / react-components / shadcn-ui** - Stitch 周辺 workflow
-
-CLI 依存の skill 運用は [docs/guides/skills.md](docs/guides/skills.md) にまとめてある。
+共有skillの正本は`agents/skills/`に置き、外部skillと合わせて`agent-skills-nix`からClaude/Codexへ配布する。有効なskill一覧と追加方法は[docs/guides/skills.md](docs/guides/skills.md)にまとめてある。
 
 ## ドキュメント
 

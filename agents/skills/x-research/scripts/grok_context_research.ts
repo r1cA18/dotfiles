@@ -6,11 +6,11 @@
  * - Saves artifacts under data/context-research/ (json/txt/md) with timestamps.
  *
  * Requires:
- *   XAI_API_KEY in env or .env
+ *   XAI_API_KEY in env or a dotenv file
  *
  * Usage:
- *   npx tsx scripts/grok_context_research.ts --topic "ClaudeにX検索を足してリサーチを自動化する"
- *   npx tsx scripts/grok_context_research.ts --topic "X API recent search rate limits" --locale global --audience engineer
+ *   bun scripts/grok_context_research.ts --topic "ClaudeにX検索を足してリサーチを自動化する"
+ *   bun scripts/grok_context_research.ts --topic "X API recent search rate limits" --locale global --audience engineer
  */
 
 import fs from "node:fs";
@@ -70,6 +70,7 @@ function parseArgs(argv: string[]) {
     goal: "記事を深くするための周辺情報リサーチ（一次情報/用語/反論/数字を揃える）",
     days: 30,
     out_dir: "data/context-research",
+    dotenv_path: "",
     xai_api_key: "",
     xai_base_url: "",
     xai_model: "",
@@ -90,6 +91,7 @@ function parseArgs(argv: string[]) {
     } else if (a === "--goal") args.goal = next() || args.goal;
     else if (a === "--days") args.days = Number(next());
     else if (a === "--out-dir") args.out_dir = next() || args.out_dir;
+    else if (a === "--dotenv") args.dotenv_path = next();
     else if (a === "--xai_api_key") args.xai_api_key = next();
     else if (a === "--xai_base_url") args.xai_base_url = next();
     else if (a === "--xai_model") args.xai_model = next();
@@ -98,7 +100,7 @@ function parseArgs(argv: string[]) {
     else if (a === "-h" || a === "--help") {
       // eslint-disable-next-line no-console
       console.log(`Usage:
-  tsx scripts/grok_context_research.ts --topic "..."
+  bun scripts/grok_context_research.ts --topic "..."
 
 Options:
   --topic TEXT       what to research (required)
@@ -107,6 +109,7 @@ Options:
   --goal TEXT        research goal (default: pre-writing context)
   --days N           lookback hint in days (default: 30)
   --out-dir DIR      output directory (default: data/context-research)
+  --dotenv FILE      dotenv file containing XAI_API_KEY
   --dry-run          print request payload and exit
   --raw-json         also print raw JSON response to stderr
 `);
@@ -119,7 +122,8 @@ Options:
 }
 
 function getConfig(args: ReturnType<typeof parseArgs>) {
-  const dotenv = loadDotenv(path.join(repoRoot(), ".env"));
+  const dotenvPath = args.dotenv_path || path.join(repoRoot(), ".env");
+  const dotenv = loadDotenv(dotenvPath);
   const getStr = (envKey: string, cliValue: string, fallback: string) =>
     cliValue || process.env[envKey] || dotenv[envKey] || fallback;
 
@@ -260,11 +264,6 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const cfg = getConfig(args);
 
-  if (!cfg.xai_api_key.trim()) {
-    // eslint-disable-next-line no-console
-    console.error("Missing XAI_API_KEY. Set it in .env or environment.");
-    process.exit(2);
-  }
   if (!args.topic.trim()) {
     // eslint-disable-next-line no-console
     console.error("Missing --topic. Example: --topic \"ClaudeにX検索を足してリサーチを自動化する\"");
@@ -291,6 +290,12 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log(JSON.stringify(payload, null, 2));
     return;
+  }
+
+  if (!cfg.xai_api_key.trim()) {
+    // eslint-disable-next-line no-console
+    console.error("Missing XAI_API_KEY. Set it in the environment or pass --dotenv FILE.");
+    process.exit(2);
   }
 
   const url = `${cfg.xai_base_url}/v1/responses`;

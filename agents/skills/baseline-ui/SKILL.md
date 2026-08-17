@@ -1,6 +1,6 @@
 ---
 name: baseline-ui
-description: Enforces an opinionated UI baseline to prevent AI-generated interface slop.
+description: Enforces an opinionated UI baseline when building or reviewing interfaces to prevent AI-generated UI slop. Triggers: "apply UI baseline", "review UI constraints", "prevent UI slop". 日本語: 「UI基準を適用して」「UI制約を確認して」「AIっぽいUIを避けて」
 ---
 
 # Baseline UI

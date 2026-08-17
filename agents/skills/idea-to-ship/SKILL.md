@@ -79,7 +79,7 @@ skill起動時の依頼文から許可範囲を判断する。「最後まで」
 6. failureを原因別に切り分け、実装修正とtest修正を混同しない。
 7. 各milestone後にGoalとplanを更新する。
 
-実装詳細は既存の`autonomous-dev`、project固有skill、domain skillを必要に応じて使う。指示が競合する場合はproject-local instructionsを優先する。
+実装詳細はproject固有skillとdomain skillを必要に応じて使う。指示が競合する場合はproject-local instructionsを優先する。
 
 ## Review and Refactor Loop
 

@@ -16,6 +16,7 @@ missing=0
 while IFS= read -r file; do
   [ -n "$file" ] || continue
   # Extract backtick-quoted tokens, keep those that look like repo paths.
+  # shellcheck disable=SC2016
   grep -oE '`[^`]+`' "$file" 2>/dev/null | tr -d '`' | while IFS= read -r token; do
     # Strip trailing punctuation/junk that commonly follows an inline path.
     path=${token%%[[:space:]]*}
@@ -28,6 +29,7 @@ while IFS= read -r file; do
     esac
     if printf '%s\n' "$path" | grep -qE "^($prefixes)"; then
       if [ ! -e "$path" ]; then
+        # shellcheck disable=SC2016
         printf '%s: missing path `%s`\n' "$file" "$path"
       fi
     fi

@@ -29,6 +29,6 @@ echo ""
 
 ffmpeg -i "$INPUT" -vf "fps=$FPS" "$OUTPUT_DIR/frame%04d.png"
 
-COUNT=$(ls -1 "$OUTPUT_DIR"/*.png 2>/dev/null | wc -l)
+COUNT=$(find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l | tr -d ' ')
 echo ""
 echo "Done! Extracted $COUNT frames to $OUTPUT_DIR/"
