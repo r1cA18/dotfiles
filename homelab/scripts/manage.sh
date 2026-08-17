@@ -38,8 +38,12 @@ require_homelab_host() {
 }
 
 run_playbook() {
-  ANSIBLE_CONFIG="$dotfiles_root/homelab/ansible/ansible.cfg" \
-    ansible-playbook -K \
+  local ansible_playbook
+
+  ansible_playbook="$(command -v ansible-playbook)"
+  sudo /usr/bin/env \
+    "ANSIBLE_CONFIG=$dotfiles_root/homelab/ansible/ansible.cfg" \
+    "$ansible_playbook" \
     -i "$dotfiles_root/homelab/ansible/inventory.yml" \
     "$dotfiles_root/homelab/ansible/playbook.yml"
 }

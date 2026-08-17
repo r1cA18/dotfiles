@@ -1,11 +1,13 @@
 ---
 - name: Configure the Ubuntu homelab
   hosts: all
-  become: true
   vars:
     homelab_user: r1ca18
     homelab_hostname: homelab
     homelab_home: "/home/{{ homelab_user }}"
+    homelab_nix_cache_url: https://r1ca18.cachix.org
+    homelab_nix_cache_public_key: >-
+      r1ca18.cachix.org-1:1QuS/Gqqw3o1atOCkrgl+5hQoLlEvTiRN8OwQT6e6lc=
     home_assistant_root: >-
       {{ homelab_home }}/Develop/github.com/r1cA18/home-assistant
     homelab_install_desktop_apps: true
@@ -22,6 +24,12 @@
       - "22000" # Syncthing QUIC transfer
 
   pre_tasks:
+    - name: Require root execution for local provisioning
+      ansible.builtin.assert:
+        that:
+          - ansible_user_uid == 0
+        fail_msg: "Run this playbook through `nix run .#homelab-apply`."
+
     - name: Require a supported Ubuntu release
       ansible.builtin.assert:
         that:
@@ -43,6 +51,19 @@
         fail_msg: "The r1ca18@homelab Home Manager profile currently targets amd64."
 
   tasks:
+    - name: Configure the homelab Nix binary cache
+      ansible.builtin.blockinfile:
+        path: /etc/nix/nix.custom.conf
+        create: true
+        owner: root
+        group: root
+        mode: "0644"
+        marker: "# {mark} ANSIBLE MANAGED HOMELAB CACHE"
+        block: |
+          extra-substituters = {{ homelab_nix_cache_url }}
+          extra-trusted-public-keys = {{ homelab_nix_cache_public_key }}
+      notify: Restart Nix daemon
+
     - name: Set the host name
       ansible.builtin.hostname:
         name: "{{ homelab_hostname }}"
@@ -355,6 +376,11 @@
         (homelab_tailscale_status.stdout | from_json).BackendState != "Running"
 
   handlers:
+    - name: Restart Nix daemon
+      ansible.builtin.systemd_service:
+        name: nix-daemon.service
+        state: restarted
+
     - name: Refresh APT cache
       ansible.builtin.apt:
         update_cache: true

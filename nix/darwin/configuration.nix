@@ -23,6 +23,10 @@
     enable = nixEnable;
     settings = lib.mkIf nixEnable {
       experimental-features = "nix-command flakes";
+      extra-substituters = [ "https://r1ca18.cachix.org" ];
+      extra-trusted-public-keys = [
+        "r1ca18.cachix.org-1:1QuS/Gqqw3o1atOCkrgl+5hQoLlEvTiRN8OwQT6e6lc="
+      ];
     };
     optimise.automatic = lib.mkIf nixEnable true;
     gc = lib.mkIf nixEnable {

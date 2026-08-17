@@ -51,6 +51,8 @@ Ubuntu system設定とHome Managerを一括適用する。初回はHome Assistan
 nix run .#homelab-apply
 ```
 
+通常の`sudo` passwordを一度入力する。Ubuntu 26.04のsudo-rsとAnsibleの`become` promptには互換性問題があるため、local playbook全体をrootで実行し、Home Managerだけを一般userで適用する。
+
 `homelab-apply`はHome Managerの`zsh`をlogin shellとして登録する。一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
 
 ## 2. Tailscale
