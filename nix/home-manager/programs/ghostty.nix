@@ -19,6 +19,7 @@ in
       background-blur = false;
       window-inherit-working-directory = true;
       shell-integration = "detect";
+      shell-integration-features = "cursor,sudo,title,ssh-env,ssh-terminfo,path";
       keybind = [
         "ctrl+h=goto_split:left"
         "ctrl+j=goto_split:down"
