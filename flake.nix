@@ -203,6 +203,25 @@
           formatting = treefmtEval.config.build.check self;
           pre-commit = hooks;
         }
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          homelab =
+            pkgs.runCommand "homelab-check"
+              {
+                nativeBuildInputs = [
+                  pkgs.ansible
+                  pkgs.ansible-lint
+                  pkgs.shellcheck
+                ];
+              }
+              ''
+                export HOME="$TMPDIR"
+                shellcheck ${./homelab/scripts}/*.sh
+                cd ${./homelab/ansible}
+                ansible-playbook --syntax-check -i inventory.yml playbook.yml
+                ansible-lint --offline playbook.yml
+                touch "$out"
+              '';
+        }
       );
 
       # Dev shell with pre-commit hooks
@@ -238,12 +257,38 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          homelabManager = pkgs.writeShellApplication {
+            name = "homelab";
+            runtimeInputs = [
+              pkgs.ansible
+              home-manager.packages.${system}.default
+            ];
+            text = builtins.readFile ./homelab/scripts/manage.sh;
+          };
+          mkHomelabApp = action: {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "homelab-${action}";
+                runtimeInputs = [ homelabManager ];
+                text = ''
+                  exec homelab ${action} "$@"
+                '';
+              }
+            }/bin/homelab-${action}";
+          };
         in
         {
           fmt = {
             type = "app";
             program = "${(treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix).config.build.wrapper}/bin/treefmt";
           };
+        }
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          homelab-apply = mkHomelabApp "apply";
+          homelab-start = mkHomelabApp "start";
+          homelab-stop = mkHomelabApp "stop";
+          homelab-doctor = mkHomelabApp "doctor";
         }
       );
 
@@ -264,9 +309,8 @@
         };
       };
 
-      # Standalone home-manager configuration (Linux/Ubuntu)
-      # Build with: nh home switch . -c r1ca18@linux
-      homeConfigurations."r1ca18@linux" = home-manager.lib.homeManagerConfiguration {
+      # Standalone Home Manager configuration used by homelab-apply.
+      homeConfigurations."r1ca18@homelab" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           system = "x86_64-linux";
           config.allowUnfree = true;
@@ -274,12 +318,12 @@
         extraSpecialArgs = {
           inherit inputs;
           username = "r1ca18";
-          hostname = null;
+          hostname = "homelab";
         };
         modules = [
           agent-skills-nix.homeManagerModules.default
           nix-index-database.homeModules.nix-index
-          ./nix/home-manager/home.nix
+          ./nix/home-manager/hosts/homelab.nix
           {
             nixpkgs.config.allowUnfree = true;
             nixpkgs.overlays = [

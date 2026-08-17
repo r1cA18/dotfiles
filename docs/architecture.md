@@ -24,6 +24,8 @@ dotfiles/
 │   │
 │   ├── home-manager/         # ユーザー設定
 │   │   ├── home.nix          # home-managerエントリポイント
+│   │   ├── hosts/            # host固有profile
+│   │   │   └── homelab.nix   # Ubuntu homelabとSyncthing folder
 │   │   └── programs/         # 各プログラムの設定
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
 │   │       ├── zsh.nix       # Zsh、abbr、help
@@ -61,6 +63,10 @@ dotfiles/
 │
 ├── karabiner/               # Karabiner-Elements設定（macOS専用）
 │   └── karabiner.json       # ~/.config/karabiner/へリンク
+│
+├── homelab/                 # Ubuntu systemとservice起動設定
+│   ├── ansible/             # package・daemon・firewall・power・Compose起動
+│   └── README.md            # bootstrap・data同期・検証
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
 │   ├── settings.json        # 全体設定
@@ -349,14 +355,15 @@ in {
 
 ## ビルドコマンド
 
-| OS    | コマンド                                    | エイリアス |
-| ----- | ------------------------------------------- | ---------- |
-| macOS | `nh darwin switch ~/dotfiles -H <hostname>` | `dr`       |
-| Linux | `nh home switch ~/dotfiles -c <user>@linux` | `dr`       |
+| OS                      | コマンド                                      | エイリアス |
+| ----------------------- | --------------------------------------------- | ---------- |
+| macOS                   | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
+| Linux user設定          | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
+| Linux system + user設定 | `nix run ~/dotfiles#homelab-apply`            | なし       |
 
 ## 重要な注意事項
 
-1. **変更後は必ず `dr` でリビルド**
+1. 変更後は対象に応じて`dr`または`homelab-apply`でリビルド
 2. **Nix設定のフォーマット**: `nix fmt` で整形可能
 3. **パッケージ検索**: `nix search nixpkgs <name>` または https://search.nixos.org/packages
 4. **home-managerオプション検索**: https://home-manager-options.extranix.com/
@@ -367,7 +374,7 @@ in {
 - `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
 - `outputs`:
   - `darwinConfigurations.RMB`: macOS設定
-  - `homeConfigurations."r1ca18@linux"`: Linux設定
+  - `homeConfigurations."r1ca18@homelab"`: Ubuntu homelab設定
 
 ### プロジェクトごとの開発環境を作る
 

@@ -1,4 +1,7 @@
-{ ... }:
+{ pkgs, lib, ... }:
+let
+  inherit (pkgs.stdenv) isDarwin;
+in
 {
   programs.ghostty = {
     enable = true;
@@ -8,12 +11,11 @@
     settings = {
       theme = "TokyoNight";
       maximize = true;
-      font-family = "PlemolJP35 Console NF";
+      font-family = if isDarwin then "PlemolJP35 Console NF" else "JetBrainsMono Nerd Font";
       font-size = 20;
       font-thicken = true;
       adjust-cell-height = 2;
       background-opacity = 0.8;
-      macos-titlebar-style = "tabs";
       background-blur = false;
       window-inherit-working-directory = true;
       shell-integration = "detect";
@@ -22,9 +24,14 @@
         "ctrl+j=goto_split:down"
         "ctrl+k=goto_split:up"
         "ctrl+l=goto_split:right"
+      ]
+      ++ lib.optionals isDarwin [
         "cmd+alt+left=previous_tab"
         "cmd+alt+right=next_tab"
       ];
+    }
+    // lib.optionalAttrs isDarwin {
+      macos-titlebar-style = "tabs";
     };
   };
 }

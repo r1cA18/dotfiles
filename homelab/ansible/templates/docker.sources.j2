@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: {{ ansible_distribution_release }}
+Components: stable
+Architectures: {{ homelab_dpkg_arch.stdout }}
+Signed-By: /etc/apt/keyrings/docker.asc

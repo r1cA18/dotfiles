@@ -1,6 +1,6 @@
 # Ubuntu Desktop セットアップガイド
 
-home-manager (standalone) を使った Ubuntu Desktop 環境のセットアップと運用方法。
+home-manager (standalone) を使った Ubuntu Desktop 26.04 LTS環境のセットアップと運用方法。
 `linux-desktop.nix` により `targets.genericLinux` (XDG/デスクトップ統合) と
 `fonts.fontconfig` (フォント解決) が自動で有効になる。
 
@@ -24,7 +24,17 @@ Nix を入れる前に必要な最小限のツールは、Ubuntu 側で入れる
 
 ```bash
 sudo apt update
-sudo apt install -y curl git xz-utils ca-certificates
+sudo apt full-upgrade -y
+sudo apt install -y \
+  ca-certificates \
+  curl \
+  git \
+  openssh-server \
+  python3 \
+  rsync \
+  xz-utils
+
+sudo systemctl enable --now ssh
 ```
 
 ### 1. Nix インストール
@@ -41,21 +51,27 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 ```
 
-### 3. 初回ビルド
+### 3. system設定
+
+Docker・Tailscale・SSH・firewall・power設定・desktop appはAnsibleで管理する。実行するAnsibleとHome Managerはflakeで固定し、一つのNix appから適用する。
 
 ```bash
 cd ~/dotfiles
-nh home switch . -c r1ca18@linux
+nix run .#homelab-apply
 ```
 
-これで以下が自動的にセットアップされます：
+詳細は[`homelab/README.md`](../../homelab/README.md)を参照。
+
+### 4. 初回ビルド
+
+前節の`homelab-apply`がUbuntu systemとHome Managerを続けて適用する。これで以下が自動的にセットアップされます：
 
 - CLI ツール (Node.js, ripgrep, fd など)
 - Zsh + oh-my-zsh + Powerlevel10k
 - Git, Neovim の設定
 - Ghostty 設定
 
-### 4. デフォルトシェルを Zsh に変更
+### 5. デフォルトシェルを Zsh に変更
 
 ```bash
 # Zsh のパスを確認
@@ -71,20 +87,17 @@ chsh -s "$HOME/.nix-profile/bin/zsh"
 
 ログアウト & ログイン。
 
-### 5. フォント設定
+### 6. フォント設定
 
 `nerd-fonts.jetbrains-mono` は `linuxPackages` 経由で `dr` 時に入り、
 `fonts.fontconfig.enable` (linux-desktop.nix) によりキャッシュも自動で更新される。
 ターミナルアプリのフォント設定で `JetBrainsMono Nerd Font` を選択するだけでよい。
 
-### 6. 1Password desktop (SSH agent + git 署名)
+### 7. 1Password desktop (SSH agent + git 署名)
 
 SSH agent と git commit 署名は 1Password desktop を前提にしている。
 
-```bash
-# https://support.1password.com/install-linux/ に従いインストール
-# その後 1Password の設定で SSH Agent を有効化
-```
+Ansibleが公式`.deb`と署名済みAPT repositoryを導入する。その後1Passwordの設定でSSH Agentを有効化する。
 
 - 未導入でも `dr` は通る。git 署名は op-ssh-sign (`/opt/1Password/op-ssh-sign`)
   が見つからない間は自動で無効化され、commit は無署名で通る
@@ -92,7 +105,17 @@ SSH agent と git commit 署名は 1Password desktop を前提にしている。
 - `SSH_AUTH_SOCK` は `~/.1password/agent.sock` を指す。1Password 起動前は
   agent 経由の鍵は使えないが、ssh 自体は通常の鍵認証にフォールバックする
 
-### 7. Claude Code セットアップ
+### 8. ChatGPT desktop app
+
+AnsibleがUbuntu向け公式`.deb`を導入する。
+
+```bash
+chatgpt
+```
+
+Linux版はpreview。Computer Useは未対応。Wayland native modeはexperimentalなので通常はXWaylandを使う。
+
+### 9. Claude Code セットアップ
 
 `programs.claude-code` は `package = null` で settings.json と plugins だけを管理し、バイナリ自体は公式インストーラ (auto-update) に任せている。Linux でも公式手順で `~/.local/bin/claude` に入れる。
 
@@ -116,21 +139,21 @@ claude --version
 ### 設定変更のフロー
 
 ```
-1. 設定ファイルを編集
-2. dr でリビルド
+1. system設定を含む変更は`nix run ~/dotfiles#homelab-apply`で適用
+2. Home Managerだけの変更は`dr`で適用
 3. 問題なければ git commit & push
 ```
 
 ### よく使うエイリアス
 
-| Alias | 説明                                                     |
-| ----- | -------------------------------------------------------- |
-| `dr`  | `nh home switch ~/dotfiles -c <user>@linux` - 設定を適用 |
-| `db`  | `nh home build ~/dotfiles -c <user>@linux` - ビルドのみ  |
-| `dp`  | `home-manager generations` - 世代一覧                    |
-| `du`  | 依存を更新 (flake.lock)                                  |
-| `ds`  | パッケージ検索                                           |
-| `dg`  | 古い世代と store path を削除                             |
+| Alias | 説明                                                               |
+| ----- | ------------------------------------------------------------------ |
+| `dr`  | `nh home switch ~/dotfiles -c r1ca18@homelab` - user設定だけを適用 |
+| `db`  | `nh home build ~/dotfiles -c r1ca18@homelab` - ビルドのみ          |
+| `dp`  | `home-manager generations` - 世代一覧                              |
+| `du`  | 依存を更新 (flake.lock)                                            |
+| `ds`  | パッケージ検索                                                     |
+| `dg`  | 古い世代と store path を削除                                       |
 
 ### 定期メンテナンス
 
@@ -157,17 +180,14 @@ dg
 
 ### GUI アプリの管理
 
-Linux では Homebrew の代わりに、システムのパッケージマネージャを使用：
+LinuxではHomebrewの代わりにAnsibleからsystem package managerを使用する。
 
 ```bash
-# Ubuntu
-sudo apt install アプリ名
-
-# または Flatpak
-flatpak install アプリ名
+cd ~/dotfiles
+nix run .#homelab-apply
 ```
 
-> **Note**: GUI アプリは Nix での管理対象外としています。
+GUI app本体はNixの管理対象外。ChatGPTと1Passwordは公式APT repositoryから更新する。
 
 ### Ghostty
 
@@ -196,16 +216,16 @@ Ghostty 公式の [GTK OpenGL Context Errors](https://ghostty.org/docs/help/gtk-
 
 | 項目         | macOS        | Linux                 |
 | ------------ | ------------ | --------------------- |
-| システム設定 | nix-darwin   | 対象外                |
+| システム設定 | nix-darwin   | Ansible               |
 | ユーザー設定 | home-manager | home-manager          |
 | GUI アプリ   | Homebrew     | システムのpkg manager |
 
 ### コマンドの違い
 
-| 操作         | macOS                                       | Linux                                       |
-| ------------ | ------------------------------------------- | ------------------------------------------- |
-| リビルド     | `nh darwin switch ~/dotfiles -H <hostname>` | `nh home switch ~/dotfiles -c <user>@linux` |
-| ロールバック | `darwin-rebuild --rollback`                 | 世代を指定して switch                       |
+| 操作         | macOS                                       | Linux                                         |
+| ------------ | ------------------------------------------- | --------------------------------------------- |
+| リビルド     | `nh darwin switch ~/dotfiles -H <hostname>` | `nh home switch ~/dotfiles -c r1ca18@homelab` |
+| ロールバック | `darwin-rebuild --rollback`                 | 世代を指定して switch                         |
 
 ### 共通で動作するもの
 
@@ -247,14 +267,14 @@ echo $PATH | grep nix
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 # または nh で実行
-nh home switch ~/dotfiles -c r1ca18@linux
+nh home switch ~/dotfiles -c r1ca18@homelab
 ```
 
 ### リビルドが失敗する
 
 ```bash
 # 詳細エラーを確認
-nh home switch ~/dotfiles -c r1ca18@linux --show-trace
+nh home switch ~/dotfiles -c r1ca18@homelab --show-trace
 
 # 変更を戻す
 cd ~/dotfiles && git checkout .
@@ -291,9 +311,9 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 # 2. Clone
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 
-# 3. ビルド
+# 3. Ubuntu systemとHome Managerを一括適用
 cd ~/dotfiles
-nix run home-manager -- switch --flake .#r1ca18@linux
+nix run .#homelab-apply
 
 # 4. デフォルトシェル変更
 echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
@@ -302,7 +322,7 @@ chsh -s "$HOME/.nix-profile/bin/zsh"
 # 5. Claude Code 公式インストーラ (auto-update に任せる方針)
 curl -fsSL https://claude.ai/install.sh | bash
 
-# 6. 1Password desktop を導入して再度 dr (SSH agent + git 署名が有効化される)
+# 6. 1PasswordでSSH Agentを有効化
 ```
 
 ---
@@ -311,9 +331,4 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 ### WSL2 での利用
 
-このdotfilesはWSL2でも動作します：
-
-```bash
-# 同じ手順でセットアップ
-nix run home-manager -- switch --flake .#r1ca18@linux
-```
+現在のLinux profileはUbuntu homelab専用。WSL2は別profileを追加してから利用する。

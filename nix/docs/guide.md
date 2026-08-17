@@ -21,8 +21,9 @@
 
 ```
 1. 設定ファイルを編集
-2. dr でリビルド
-3. 問題なければ git commit & push
+2. macOSまたはLinux user設定は`dr`でリビルド
+3. Linux system設定を含む場合は`nix run ~/dotfiles#homelab-apply`でリビルド
+4. 問題なければgit commit & push
 ```
 
 ### 具体例

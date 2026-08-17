@@ -7,6 +7,7 @@
 }:
 let
   inherit (pkgs.stdenv) isDarwin;
+  linuxConfigName = if hostname == null then "${username}@linux" else "${username}@${hostname}";
 
   generalAliases = {
     ll = {
@@ -24,10 +25,6 @@ let
     gacm = {
       cmd = "git add -A && git commit -m";
       desc = "Add all + commit";
-    };
-    homelab-win = {
-      cmd = "ssh -t homelab 'sudo efibootmgr -n 0000 && sudo reboot'";
-      desc = "Reboot homelab into Windows via UEFI BootNext (Boot0000)";
     };
   };
 
@@ -71,11 +68,11 @@ let
 
   nixLinuxAliases = {
     dr = {
-      cmd = "nh home switch ~/dotfiles -c ${username}@linux";
+      cmd = "nh home switch ~/dotfiles -c ${linuxConfigName}";
       desc = "Apply Home Manager config";
     };
     db = {
-      cmd = "nh home build ~/dotfiles -c ${username}@linux";
+      cmd = "nh home build ~/dotfiles -c ${linuxConfigName}";
       desc = "Build Home Manager config";
     };
     dp = {

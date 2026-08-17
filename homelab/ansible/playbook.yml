@@ -1,0 +1,374 @@
+---
+- name: Configure the Ubuntu homelab
+  hosts: all
+  become: true
+  vars:
+    homelab_user: r1ca18
+    homelab_hostname: homelab
+    homelab_home: "/home/{{ homelab_user }}"
+    home_assistant_root: >-
+      {{ homelab_home }}/Develop/github.com/r1cA18/home-assistant
+    homelab_install_desktop_apps: true
+    homelab_lan_networks:
+      - 192.168.0.0/24
+    homelab_lan_tcp_ports:
+      - "8123" # Home Assistant
+      - "21063" # HomeKit bridge
+      - "22000" # Syncthing transfer
+    homelab_lan_udp_ports:
+      - "1900" # SSDP discovery
+      - "5353" # mDNS discovery
+      - "21027" # Syncthing local discovery
+      - "22000" # Syncthing QUIC transfer
+
+  pre_tasks:
+    - name: Require a supported Ubuntu release
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version == "26.04"
+        fail_msg: >-
+          This profile targets Ubuntu Desktop 26.04 LTS.
+          Detected {{ ansible_distribution }} {{ ansible_distribution_version }}.
+
+    - name: Read the Debian architecture
+      ansible.builtin.command: dpkg --print-architecture
+      register: homelab_dpkg_arch
+      changed_when: false
+
+    - name: Require the x86 mini PC architecture used by this flake
+      ansible.builtin.assert:
+        that:
+          - homelab_dpkg_arch.stdout == "amd64"
+        fail_msg: "The r1ca18@homelab Home Manager profile currently targets amd64."
+
+  tasks:
+    - name: Set the host name
+      ansible.builtin.hostname:
+        name: "{{ homelab_hostname }}"
+
+    - name: Read the current time zone
+      ansible.builtin.command: timedatectl show --property=Timezone --value
+      register: homelab_current_timezone
+      changed_when: false
+
+    - name: Set the time zone
+      ansible.builtin.command: timedatectl set-timezone Asia/Tokyo
+      when: homelab_current_timezone.stdout != "Asia/Tokyo"
+      changed_when: true
+
+    - name: Install base system packages
+      ansible.builtin.apt:
+        name:
+          - acl
+          - avahi-daemon
+          - bluetooth
+          - bluez
+          - ca-certificates
+          - curl
+          - dbus
+          - git
+          - gnupg
+          - jq
+          - libcanberra-gtk3-module
+          - openssh-server
+          - rsync
+          - ufw
+          - unattended-upgrades
+          - xz-utils
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Enable host services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - avahi-daemon
+        - bluetooth
+        - ssh
+
+    - name: Disable sleep states for server operation
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        masked: true
+      loop:
+        - sleep.target
+        - suspend.target
+        - hibernate.target
+        - hybrid-sleep.target
+
+    - name: Keep the user service manager running without a GUI login
+      ansible.builtin.command: "loginctl enable-linger {{ homelab_user }}"
+      args:
+        creates: "/var/lib/systemd/linger/{{ homelab_user }}"
+
+    - name: Add the homelab user to hardware access groups
+      ansible.builtin.user:
+        name: "{{ homelab_user }}"
+        groups:
+          - dialout
+          - plugdev
+          - render
+          - video
+        append: true
+
+    - name: Enable IP forwarding for the Tailscale exit node
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-tailscale.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          net.ipv4.ip_forward = 1
+          net.ipv6.conf.all.forwarding = 1
+      notify: Apply sysctl settings
+
+    - name: Create the APT keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Add the Docker signing key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Refresh APT cache
+
+    - name: Add the Docker package repository
+      ansible.builtin.template:
+        src: docker.sources.j2
+        dest: /etc/apt/sources.list.d/docker.sources
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Refresh APT cache
+
+    - name: Add the Tailscale signing key
+      ansible.builtin.get_url:
+        url: >-
+          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.noarmor.gpg
+        dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Refresh APT cache
+
+    - name: Add the Tailscale package repository
+      ansible.builtin.get_url:
+        url: >-
+          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.tailscale-keyring.list
+        dest: /etc/apt/sources.list.d/tailscale.list
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Refresh APT cache
+
+    - name: Apply repository changes before package installation
+      ansible.builtin.meta: flush_handlers
+
+    - name: Remove packages that conflict with Docker Engine
+      ansible.builtin.apt:
+        name:
+          - containerd
+          - docker-compose
+          - docker-compose-v2
+          - docker-doc
+          - docker.io
+          - podman-docker
+          - runc
+        state: absent
+
+    - name: Install Docker Engine and Tailscale
+      ansible.builtin.apt:
+        name:
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose-plugin
+          - tailscale
+        state: present
+        update_cache: true
+
+    - name: Enable Docker and Tailscale
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - docker
+        - tailscaled
+
+    - name: Give the homelab user Docker access
+      ansible.builtin.user:
+        name: "{{ homelab_user }}"
+        groups: docker
+        append: true
+
+    - name: Read installed packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Download the official ChatGPT package
+      ansible.builtin.get_url:
+        url: >-
+          https://persistent.oaistatic.com/codex-app-prod/linux/deb/latest/chatgpt_{{ homelab_dpkg_arch.stdout }}.deb
+        dest: "/tmp/chatgpt_{{ homelab_dpkg_arch.stdout }}.deb"
+        mode: "0644"
+      when:
+        - homelab_install_desktop_apps | bool
+        - "'chatgpt' not in ansible_facts.packages"
+
+    - name: Install ChatGPT and its signed update repository
+      ansible.builtin.apt:
+        deb: "/tmp/chatgpt_{{ homelab_dpkg_arch.stdout }}.deb"
+      when:
+        - homelab_install_desktop_apps | bool
+        - "'chatgpt' not in ansible_facts.packages"
+
+    - name: Download the official 1Password package
+      ansible.builtin.get_url:
+        url: https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb
+        dest: /tmp/1password-latest.deb
+        mode: "0644"
+      when:
+        - homelab_install_desktop_apps | bool
+        - homelab_dpkg_arch.stdout == "amd64"
+        - "'1password' not in ansible_facts.packages"
+
+    - name: Install 1Password and its signed update repository
+      ansible.builtin.apt:
+        deb: /tmp/1password-latest.deb
+      when:
+        - homelab_install_desktop_apps | bool
+        - homelab_dpkg_arch.stdout == "amd64"
+        - "'1password' not in ansible_facts.packages"
+
+    - name: Reset UFW to the declared homelab policy
+      community.general.ufw:
+        state: reset
+
+    - name: Set UFW default policies
+      community.general.ufw:
+        default: "{{ item.policy }}"
+        direction: "{{ item.direction }}"
+      loop:
+        - { policy: deny, direction: incoming }
+        - { policy: allow, direction: outgoing }
+        - { policy: deny, direction: routed }
+
+    - name: Allow all traffic arriving through Tailscale
+      community.general.ufw:
+        rule: allow
+        direction: in
+        interface: tailscale0
+        comment: Tailscale services
+
+    - name: Allow exit-node traffic arriving through Tailscale
+      community.general.ufw:
+        rule: allow
+        route: true
+        interface_in: tailscale0
+        comment: Tailscale exit node
+
+    - name: Allow the Tailscale direct connection port
+      community.general.ufw:
+        rule: allow
+        port: "41641"
+        proto: udp
+        comment: Tailscale WireGuard
+
+    - name: Allow home LAN TCP services
+      community.general.ufw:
+        rule: allow
+        from_ip: "{{ item.0 }}"
+        to_port: "{{ item.1 }}"
+        proto: tcp
+        comment: "Homelab LAN TCP {{ item.1 }}"
+      loop: "{{ homelab_lan_networks | product(homelab_lan_tcp_ports) | list }}"
+
+    - name: Allow home LAN UDP services and discovery
+      community.general.ufw:
+        rule: allow
+        from_ip: "{{ item.0 }}"
+        to_port: "{{ item.1 }}"
+        proto: udp
+        comment: "Homelab LAN UDP {{ item.1 }}"
+      loop: "{{ homelab_lan_networks | product(homelab_lan_udp_ports) | list }}"
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+
+    - name: Read the current service state
+      ansible.builtin.service_facts:
+
+    - name: Remember whether the Compose service was running
+      ansible.builtin.set_fact:
+        homelab_compose_was_running: >-
+          {{ ansible_facts.services.get('homelab-compose.service', {}).get('state') == 'running' }}
+
+    - name: Deploy the Compose system service
+      ansible.builtin.template:
+        src: homelab-compose.service.j2
+        dest: /etc/systemd/system/homelab-compose.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - Reload systemd
+        - Restart homelab services
+
+    - name: Read the Tailscale backend state
+      ansible.builtin.command: tailscale status --json
+      register: homelab_tailscale_status
+      changed_when: false
+      failed_when: false
+
+    - name: Configure the authenticated Tailscale node
+      ansible.builtin.command: >-
+        tailscale set
+        --advertise-exit-node=true
+        --hostname={{ homelab_hostname }}
+        --operator={{ homelab_user }}
+      when:
+        - homelab_tailscale_status.rc == 0
+        - (homelab_tailscale_status.stdout | from_json).BackendState == "Running"
+      changed_when: false
+
+    - name: Explain the one-time Tailscale login
+      ansible.builtin.debug:
+        msg: >-
+          Run `sudo tailscale up`, authenticate in the browser, approve this
+          exit node in the admin console, then rerun this playbook.
+      when: >-
+        homelab_tailscale_status.rc != 0 or
+        (homelab_tailscale_status.stdout | from_json).BackendState != "Running"
+
+  handlers:
+    - name: Refresh APT cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Apply sysctl settings
+      ansible.builtin.command: sysctl --system
+      changed_when: true
+
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Restart homelab services
+      ansible.builtin.systemd_service:
+        name: homelab-compose.service
+        state: restarted
+      when: homelab_compose_was_running

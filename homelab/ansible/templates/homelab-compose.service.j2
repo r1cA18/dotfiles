@@ -1,0 +1,22 @@
+[Unit]
+Description=Homelab Docker Compose services
+Wants=network-online.target
+After=docker.service network-online.target bluetooth.service dbus.service
+Requires=docker.service
+ConditionPathExists={{ home_assistant_root }}/docker-compose.yml
+ConditionPathIsDirectory={{ home_assistant_root }}/config/.storage
+ConditionPathExists={{ home_assistant_root }}/config/secrets.yaml
+ConditionPathExists={{ home_assistant_root }}/esphome/secrets.yaml
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User={{ homelab_user }}
+Group={{ homelab_user }}
+WorkingDirectory={{ home_assistant_root }}
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

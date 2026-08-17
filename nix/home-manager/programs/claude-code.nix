@@ -10,6 +10,12 @@ let
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
+  notificationCommand =
+    sound:
+    if pkgs.stdenv.isDarwin then
+      "afplay /System/Library/Sounds/${sound}.aiff 2>/dev/null || true"
+    else
+      "canberra-gtk-play --id=message 2>/dev/null || true";
 
   # Claude Code (native installer) の追従チャネル。"latest" で du のたびに
   # 最新へ追従、版番号 (例 "2.1.150") でその版に固定/ロールバック。
@@ -188,7 +194,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "afplay /System/Library/Sounds/Submarine.aiff 2>/dev/null || true";
+                command = notificationCommand "Submarine";
               }
             ];
           }
@@ -197,7 +203,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true";
+                command = notificationCommand "Ping";
               }
             ];
           }
@@ -207,7 +213,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true";
+                command = notificationCommand "Funk";
               }
             ];
           }

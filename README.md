@@ -4,10 +4,10 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 
 ## サポート環境
 
-| OS               | 管理方法                  | ビルドコマンド |
-| ---------------- | ------------------------- | -------------- |
-| **macOS**        | nix-darwin + home-manager | `dr`           |
-| **Ubuntu/Linux** | home-manager (standalone) | `dr`           |
+| OS                 | 管理方法                                   | ビルドコマンド            |
+| ------------------ | ------------------------------------------ | ------------------------- |
+| **macOS**          | nix-darwin + home-manager                  | `dr`                      |
+| **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#homelab-apply` |
 
 ## クイックスタート
 
@@ -29,8 +29,8 @@ nix run nix-darwin -- switch --flake .#RMB
 # macOS (r1ca18lab)
 nix run nix-darwin -- switch --flake .#r1ca18lab
 
-# Linux
-nix run home-manager -- switch --flake .#r1ca18@linux
+# Ubuntu homelab
+nix run .#homelab-apply
 ```
 
 > **Linux初回セットアップの注意点**
@@ -51,7 +51,8 @@ nix run home-manager -- switch --flake .#r1ca18@linux
 ### 3. 以降の更新
 
 ```bash
-dr  # rebuild
+dr  # macOS全体またはLinuxのHome Managerだけを適用
+nix run ~/dotfiles#homelab-apply  # Linuxのsystem設定とHome Managerを一括適用
 ```
 
 ## よく使うコマンド
@@ -59,7 +60,7 @@ dr  # rebuild
 ```bash
 h      # エイリアス一覧（説明付き）
 hv nix # エイリアス一覧を絞り込み
-dr     # Nixリビルド (nh経由)
+dr     # macOS全体またはLinuxのHome Managerをリビルド
 du     # flake更新
 ```
 
@@ -89,6 +90,7 @@ dotfiles/
 │   ├── darwin/configuration.nix  # macOS設定、Homebrew
 │   └── home-manager/
 │       ├── home.nix              # ユーザー設定
+│       ├── hosts/homelab.nix     # Ubuntu homelab profile
 │       └── programs/
 │           ├── packages.nix      # CLIパッケージ、PATH
 │           ├── zsh.nix           # エイリアス（自動ヘルプ付き）
@@ -99,6 +101,7 @@ dotfiles/
 │           └── karabiner.nix     # Karabiner
 ├── nvim/                         # Neovim設定
 ├── karabiner/                    # Karabiner設定
+├── homelab/                      # Ansible・service起動・移行手順
 └── docs/                         # ドキュメント
 ```
 
@@ -134,6 +137,7 @@ CLI 依存の skill 運用は [docs/guides/skills.md](docs/guides/skills.md) に
 | [docs/agent-platforms.md](docs/agent-platforms.md)         | Claude / Codex 運用整理 |
 | [docs/claude-plugin-audit.md](docs/claude-plugin-audit.md) | Claude plugin 棚卸し    |
 | [docs/guides/](docs/guides/)                               | 各種ガイド              |
+| [homelab/README.md](homelab/README.md)                     | 新homelab構築・移行     |
 
 ## 参考
 

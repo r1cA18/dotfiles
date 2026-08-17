@@ -24,11 +24,11 @@
 
 ### Linux 専用 (home-manager)
 
-| Alias | Command                                     | Description    |
-| ----- | ------------------------------------------- | -------------- |
-| `dr`  | `nh home switch ~/dotfiles -c <user>@linux` | 設定を適用     |
-| `db`  | `nh home build ~/dotfiles -c <user>@linux`  | ビルドのみ     |
-| `dp`  | `home-manager generations`                  | 世代一覧を表示 |
+| Alias | Command                                       | Description    |
+| ----- | --------------------------------------------- | -------------- |
+| `dr`  | `nh home switch ~/dotfiles -c r1ca18@homelab` | user設定を適用 |
+| `db`  | `nh home build ~/dotfiles -c r1ca18@homelab`  | ビルドのみ     |
+| `dp`  | `home-manager generations`                    | 世代一覧を表示 |
 
 ---
 
@@ -56,8 +56,11 @@ dp
 ### Linux
 
 ```bash
-# 設定を変更したらリビルド
+# Home Managerだけを変更したらリビルド
 dr
+
+# Ubuntu system設定も含めて適用
+nix run ~/dotfiles#homelab-apply
 
 # パッケージを探す
 ds nodejs
@@ -126,8 +129,9 @@ dg
 
 ```
 1. 設定ファイルを編集
-2. dr でリビルド
-3. git commit & push
+2. macOSまたはLinux user設定は`dr`でリビルド
+3. Linux system設定を含む場合は`nix run ~/dotfiles#homelab-apply`でリビルド
+4. git commit & push
 ```
 
 詳細は:
