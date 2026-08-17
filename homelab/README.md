@@ -27,16 +27,14 @@ sudo apt install -y \
   ca-certificates \
   curl \
   git \
-  openssh-server \
   python3 \
-  rsync \
   xz-utils
-
-sudo systemctl enable --now ssh
 
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
   | sh -s -- install
 ```
+
+この段階ではNix installer・repository clone・Ansible実行に必要なpackageだけを入れる。SSH・rsyncを含むsystem packageは`homelab-apply`が管理する。
 
 Nix installerの案内どおりterminalを開き直す。`nix --version`が通ってからcloneする。
 

@@ -29,13 +29,11 @@ sudo apt install -y \
   ca-certificates \
   curl \
   git \
-  openssh-server \
   python3 \
-  rsync \
   xz-utils
-
-sudo systemctl enable --now ssh
 ```
+
+SSH・rsyncを含むsystem packageは`homelab-apply`が管理する。
 
 ### 1. Nix インストール
 
@@ -62,38 +60,25 @@ nix run .#homelab-apply
 
 詳細は[`homelab/README.md`](../../homelab/README.md)を参照。
 
-### 4. 初回ビルド
+### 4. 適用される内容
 
-前節の`homelab-apply`がUbuntu systemとHome Managerを続けて適用する。これで以下が自動的にセットアップされます：
+前節の`homelab-apply`がUbuntu systemとHome Managerを続けて適用する。これで以下が自動的にセットアップされる。
 
 - CLI ツール (Node.js, ripgrep, fd など)
 - Zsh + oh-my-zsh + Powerlevel10k
 - Git, Neovim の設定
 - Ghostty 設定
+- login shell
 
-### 5. デフォルトシェルを Zsh に変更
+適用後に一度logoutして入り直す。これでlogin shellと追加groupが反映される。
 
-```bash
-# Zsh のパスを確認
-which zsh
-# 通常: /home/r1ca18/.nix-profile/bin/zsh
-
-# /etc/shells に追加
-echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
-
-# デフォルトシェルを変更
-chsh -s "$HOME/.nix-profile/bin/zsh"
-```
-
-ログアウト & ログイン。
-
-### 6. フォント設定
+### 5. フォント設定
 
 `nerd-fonts.jetbrains-mono` は `linuxPackages` 経由で `dr` 時に入り、
 `fonts.fontconfig.enable` (linux-desktop.nix) によりキャッシュも自動で更新される。
 ターミナルアプリのフォント設定で `JetBrainsMono Nerd Font` を選択するだけでよい。
 
-### 7. 1Password desktop (SSH agent + git 署名)
+### 6. 1Password desktop (SSH agent + git 署名)
 
 SSH agent と git commit 署名は 1Password desktop を前提にしている。
 
@@ -105,7 +90,7 @@ Ansibleが公式`.deb`と署名済みAPT repositoryを導入する。その後1P
 - `SSH_AUTH_SOCK` は `~/.1password/agent.sock` を指す。1Password 起動前は
   agent 経由の鍵は使えないが、ssh 自体は通常の鍵認証にフォールバックする
 
-### 8. ChatGPT desktop app
+### 7. ChatGPT desktop app
 
 AnsibleがUbuntu向け公式`.deb`を導入する。
 
@@ -115,7 +100,7 @@ chatgpt
 
 Linux版はpreview。Computer Useは未対応。Wayland native modeはexperimentalなので通常はXWaylandを使う。
 
-### 9. Claude Code セットアップ
+### 8. Claude Code セットアップ
 
 `programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`du`から明示的に更新する。
 
@@ -307,22 +292,7 @@ nix store gc
 
 ## 新しい Linux マシンへの移行
 
-```bash
-# 1. Nix インストール
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-
-# 2. Clone
-git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
-
-# 3. Ubuntu systemとHome Managerを一括適用
-cd ~/dotfiles
-nix run .#homelab-apply
-
-# 4. Claude Code公式installer（以後はduで更新）
-curl -fsSL https://claude.ai/install.sh | bash
-
-# 5. 1PasswordでSSH Agentを有効化
-```
+新しい実機への完全移行は[`homelab/README.md`](../../homelab/README.md)をsource of truthとする。Bootstrap・Syncthing・Home Assistant再デプロイ・検証を記載順に実行する。
 
 ---
 
