@@ -97,6 +97,19 @@ start_homelab_services() {
   sudo systemctl enable --now homelab-compose.service
 }
 
+setup_remote_login() {
+  systemctl cat gnome-remote-desktop.service >/dev/null || {
+    printf 'GNOME Remote Desktop is not installed; run homelab-apply first\n' >&2
+    exit 1
+  }
+
+  printf 'Set dedicated GNOME Remote Login credentials. Store the password in 1Password.\n'
+  sudo grdctl --system rdp set-credentials
+  sudo grdctl --system rdp enable
+  sudo systemctl enable --now gdm.service gnome-remote-desktop.service
+  sudo grdctl --system status
+}
+
 command_name="${1:-}"
 dotfiles_root="$(resolve_dotfiles_root)"
 
@@ -116,12 +129,16 @@ stop)
   require_homelab_host
   sudo systemctl disable --now homelab-compose.service
   ;;
+rdp-setup)
+  require_homelab_host
+  setup_remote_login
+  ;;
 doctor)
   require_homelab_host
   exec bash "$dotfiles_root/homelab/scripts/doctor.sh"
   ;;
 *)
-  printf 'usage: homelab {apply|start|stop|doctor}\n' >&2
+  printf 'usage: homelab {apply|start|stop|rdp-setup|doctor}\n' >&2
   exit 2
   ;;
 esac

@@ -67,7 +67,29 @@ sudo tailscale set \
 
 Tailscale admin consoleでexit nodeを承認する。旧homelabと名前が衝突する場合は旧deviceを停止・削除してから再実行する。
 
-## 3. Syncthing
+## 3. GNOME Remote Login
+
+`Desktop Sharing`ではなくsystem-levelの`Remote Login`を使う。`Desktop Sharing`は既存のGUI sessionを共有するためlocal loginが必要になる。`Remote Login`はGDMのlogin画面をRDPで提供するため、再起動直後もUbuntu側の承認なしで接続できる。
+
+`homelab-apply`が`gnome-remote-desktop`・TLS証明書・RDP backend・boot時のsystem serviceを宣言管理する。RDP用credentialだけはrepositoryへ保存せず、初回に対話形式で設定する。
+
+```bash
+cd ~/dotfiles
+nix run .#homelab-rdp-setup
+```
+
+Remote Login専用のusernameと強いpasswordを設定し、passwordを1Passwordへ保存する。このcredentialはRDP接続をGDMへ通すためのもの。GDM表示後はUbuntu user`r1ca18`の通常passwordでloginする。
+
+MacのWindows AppではPC nameを`homelab:3389`にする。Tailscale経由だけで接続し、routerのport forwardingは設定しない。UFWは`tailscale0`からの通信を許可済みで、home LANやInternetへ`3389/tcp`を追加公開しない。
+
+```bash
+sudo grdctl --system status
+systemctl status gnome-remote-desktop.service --no-pager
+```
+
+初回検証はSyncthingが`Up to Date`になってから行う。UbuntuのGUI sessionをlogoutするか再起動し、MacからRDP接続できることを確認する。
+
+## 4. Syncthing
 
 Linux側はRMBのdevice IDと次のfolder IDを宣言済み。
 
@@ -89,7 +111,7 @@ Mac側のSyncthing UIで新しいhomelab deviceを承認する。既存の旧hom
 
 30日分のstaggered versioningは新homelab側で有効になる。これはbackupの代替ではない。
 
-## 4. Home AssistantとESPHomeの再デプロイ
+## 5. Home AssistantとESPHomeの再デプロイ
 
 Mac側の`~/Develop/github.com/r1cA18/home-assistant`には旧homelabから同期した完全なruntime dataがある。Git管理外の`.storage`・database・secretもSyncthingで新PCへ渡るため、別の空configやarchiveを作らない。
 
@@ -130,7 +152,7 @@ nix run .#homelab-stop
 
 start・stopはsystem provisioningを再実行しないためofflineでも利用できる。
 
-## 5. ChatGPTと1Password
+## 6. ChatGPTと1Password
 
 Ansibleが公式`.deb`をinstallする。packageが追加する署名済みAPT repositoryから更新される。
 
@@ -148,13 +170,13 @@ curl -fsSL https://claude.ai/install.sh | bash
 claude --version
 ```
 
-## 6. Firewall
+## 7. Firewall
 
 すべてのserviceはTailscaleから利用できる。home LANの`192.168.0.0/24`にはHome Assistant・HomeKit・Syncthing・discoveryだけを公開し、SSHとESPHome dashboardは公開しない。Tailscale exit node向けのforwardingだけを明示的に許可する。
 
 home LANのsubnetを変更した場合は`ansible/playbook.yml`の`homelab_lan_networks`を更新して`homelab-apply`を再実行する。持ち出し先のprivate LAN全体を自動的に信頼しない。
 
-## 7. 検証
+## 8. 検証
 
 ```bash
 cd ~/dotfiles

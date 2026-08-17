@@ -8,6 +8,8 @@
     homelab_nix_cache_url: https://r1ca18.cachix.org
     homelab_nix_cache_public_key: >-
       r1ca18.cachix.org-1:1QuS/Gqqw3o1atOCkrgl+5hQoLlEvTiRN8OwQT6e6lc=
+    homelab_rdp_tls_dir: >-
+      /var/lib/gnome-remote-desktop/.local/share/gnome-remote-desktop
     home_assistant_root: >-
       {{ homelab_home }}/Develop/github.com/r1cA18/home-assistant
     homelab_install_desktop_apps: true
@@ -89,6 +91,7 @@
           - curl
           - dbus
           - git
+          - gnome-remote-desktop
           - gnupg
           - jq
           - libcanberra-gtk3-module
@@ -96,6 +99,7 @@
           - rsync
           - ufw
           - unattended-upgrades
+          - winpr-utils
           - xz-utils
         state: present
         update_cache: true
@@ -110,6 +114,103 @@
         - avahi-daemon
         - bluetooth
         - ssh
+
+    - name: Create the GNOME remote login TLS directory
+      ansible.builtin.file:
+        path: "{{ homelab_rdp_tls_dir }}"
+        state: directory
+        owner: gnome-remote-desktop
+        group: gnome-remote-desktop
+        mode: "0700"
+
+    - name: Check the GNOME remote login TLS key
+      ansible.builtin.stat:
+        path: "{{ homelab_rdp_tls_dir }}/tls.key"
+      register: homelab_rdp_tls_key
+
+    - name: Check the GNOME remote login TLS certificate
+      ansible.builtin.stat:
+        path: "{{ homelab_rdp_tls_dir }}/tls.crt"
+      register: homelab_rdp_tls_cert
+
+    - name: Remove an incomplete GNOME remote login TLS pair
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ homelab_rdp_tls_dir }}/tls.key"
+        - "{{ homelab_rdp_tls_dir }}/tls.crt"
+      when: homelab_rdp_tls_key.stat.exists != homelab_rdp_tls_cert.stat.exists
+
+    - name: Generate the GNOME remote login TLS pair
+      ansible.builtin.command:
+        argv:
+          - runuser
+          - --user
+          - gnome-remote-desktop
+          - --
+          - winpr-makecert
+          - -silent
+          - -rdp
+          - -path
+          - "{{ homelab_rdp_tls_dir }}"
+          - tls
+      args:
+        creates: "{{ homelab_rdp_tls_dir }}/tls.key"
+
+    - name: Secure the GNOME remote login TLS key
+      ansible.builtin.file:
+        path: "{{ homelab_rdp_tls_dir }}/tls.key"
+        owner: gnome-remote-desktop
+        group: gnome-remote-desktop
+        mode: "0600"
+
+    - name: Configure the GNOME remote login TLS key
+      ansible.builtin.command:
+        argv:
+          - grdctl
+          - --system
+          - rdp
+          - set-tls-key
+          - "{{ homelab_rdp_tls_dir }}/tls.key"
+      changed_when: false
+
+    - name: Configure the GNOME remote login TLS certificate
+      ansible.builtin.command:
+        argv:
+          - grdctl
+          - --system
+          - rdp
+          - set-tls-cert
+          - "{{ homelab_rdp_tls_dir }}/tls.crt"
+      changed_when: false
+
+    - name: Configure the GNOME remote login authentication method
+      ansible.builtin.command:
+        argv:
+          - grdctl
+          - --system
+          - rdp
+          - set-auth-methods
+          - credentials
+      changed_when: false
+
+    - name: Enable the GNOME remote login RDP backend
+      ansible.builtin.command:
+        argv:
+          - grdctl
+          - --system
+          - rdp
+          - enable
+      changed_when: false
+
+    - name: Enable GNOME remote login services at boot
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        enabled: true
+      loop:
+        - gdm.service
+        - gnome-remote-desktop.service
 
     - name: Disable sleep states for server operation
       ansible.builtin.systemd_service:

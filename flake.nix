@@ -280,6 +280,7 @@
           homelab-apply = mkHomelabApp "apply";
           homelab-start = mkHomelabApp "start";
           homelab-stop = mkHomelabApp "stop";
+          homelab-rdp-setup = mkHomelabApp "rdp-setup";
           homelab-doctor = mkHomelabApp "doctor";
         }
       );

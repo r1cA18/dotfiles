@@ -28,6 +28,7 @@ check 'Nix daemon' systemctl is-active nix-daemon
 check 'Docker daemon' systemctl is-active docker
 check 'Tailscale daemon' systemctl is-active tailscaled
 check 'SSH server' systemctl is-active ssh
+check 'GNOME remote login service' systemctl is-active gnome-remote-desktop
 check 'Bluetooth daemon' systemctl is-active bluetooth
 check 'UFW firewall' systemctl is-enabled ufw
 check 'IPv4 forwarding' test "$(sysctl -n net.ipv4.ip_forward 2>/dev/null)" = 1
