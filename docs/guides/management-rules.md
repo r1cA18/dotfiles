@@ -2,7 +2,7 @@
 
 ## 基本方針
 
-1. **宣言的に管理** - 手動インストールを避け、Nixで管理
+1. **宣言的に管理** - user設定はHome Manager、macOS systemはnix-darwin、Ubuntu systemはAnsibleで管理
 2. **1ファイル1責務** - 設定は機能ごとに分割
 3. **OS分岐は最小限** - 共通化できるものは共通化
 4. **ドキュメントを残す** - 変更時はdocs/も更新
@@ -11,12 +11,14 @@
 
 ### パッケージ追加
 
-| 種類                      | 編集ファイル                                   | 例            |
-| ------------------------- | ---------------------------------------------- | ------------- |
-| CLI（Nix）                | `packages.nix` の `commonPackages`             | ripgrep, fd   |
-| CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix`            | agent-browser |
-| GUI（macOS）              | `darwin/configuration.nix` の `homebrew.casks` | discord       |
-| macOS専用                 | `packages.nix` の `darwinPackages`             | texliveFull   |
+| 種類                      | 編集ファイル                                               | 例            |
+| ------------------------- | ---------------------------------------------------------- | ------------- |
+| CLI（Nix）                | `nix/home-manager/programs/packages.nix`の`commonPackages` | ripgrep, fd   |
+| CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix`                        | agent-browser |
+| GUI（macOS）              | `nix/darwin/configuration.nix`の`homebrew.casks`           | discord       |
+| macOS専用                 | `packages.nix`の`darwinPackages`                           | texliveFull   |
+| Linux専用                 | `packages.nix`の`linuxPackages`                            | Nerd Font     |
+| Ubuntu system / GUI       | `homelab/ansible/playbook.yml`                             | Docker        |
 
 ### エイリアス追加
 
@@ -45,22 +47,12 @@ myAliases = {
 
 ### Skills追加
 
-| スキル     | 追加方法                                     |
-| ---------- | -------------------------------------------- |
-| curl系     | `packages.nix` に activation script 追加     |
-| npx/bunx系 | `packages.nix` に activation script 追加     |
-| カスタム   | `skills/` に追加し `agent-skills.nix` で同期 |
+1. `agents/skills/<name>/SKILL.md`を追加する
+2. `nix/home-manager/programs/agent-skills.nix`の`skills.enable`へnameを追加する
+3. 外部CLIが必要なら`nixpkgs`または`nix/pkgs/`でpackage化する
+4. `dr`でClaudeとCodexへ同期する
 
-activation scriptのテンプレート：
-
-```nix
-home.activation.installMySkill = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  echo "Installing My Skill..."
-  export PATH="${pkgs.curl}/bin:${pkgs.git}/bin:$PATH"
-  # インストールコマンド
-  || true  # 失敗してもdr全体は止めない
-'';
-```
+runtime installerをactivationへ直接埋め込まない。再現可能なCLIはNix packageとして管理する。
 
 ## OS分岐パターン
 
@@ -79,15 +71,8 @@ in {
 
 ## コミットルール
 
-### フォーマット
-
-```
-<type>: <subject>
-
-<body>
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
-```
+commitは変更理由が分かるConventional Commit形式にする。実際に共同作業したauthor以外の
+`Co-Authored-By`は追加しない。
 
 ### type
 
@@ -102,11 +87,13 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 変更後は必ず：
 
 ```bash
-# ビルドテスト
+# 共通format
+nix fmt
+
+# macOS
 nh darwin build ~/dotfiles -H RMB
 
-# 適用
-dr
+# Ubuntu Home Managerとprovisioning checkはGitHub ActionsのLinux jobで検証
 
 # 新しいターミナルで確認
 h  # エイリアス確認

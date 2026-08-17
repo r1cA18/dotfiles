@@ -16,7 +16,8 @@ dotfiles/
 ├── agents/                   # Claude / Codex 共有agent資産
 │   ├── INSTRUCTIONS.md       # 共有instruction本体
 │   ├── rules/                # 共有rule
-│   └── hooks/                # 製品非依存のhook実装
+│   ├── hooks/                # 製品非依存のhook実装
+│   └── skills/               # Agent Skillsのsource of truth
 │
 ├── nix/                      # Nix設定（メイン）
 │   ├── darwin/               # macOS専用 (nix-darwin)
@@ -46,11 +47,6 @@ dotfiles/
 │       ├── guide-ubuntu.md   # Ubuntu専用
 │       └── cheatsheet.md     # コマンド一覧
 │
-├── skills/                   # Agent Skills（agent-skills-nix で管理）
-│   ├── agent-browser/        # 各スキルディレクトリ
-│   ├── video-editing/        # （SKILL.md を含む）
-│   └── ...
-│
 ├── nvim/                     # Neovim設定（~/.config/nvim へリンク）
 │   ├── init.lua              # エントリポイント
 │   └── lua/
@@ -69,7 +65,6 @@ dotfiles/
 │   └── README.md            # bootstrap・data同期・検証
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
-│   ├── settings.json        # 全体設定
 │   ├── mcp-servers.json     # Claude用MCP seed定義
 │   ├── rules/               # ドメイン別ルール（常時ロード）
 │   ├── hooks/               # 自動実行フック
@@ -94,7 +89,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `nvim/`                                    | `~/.config/nvim`                         | `neovim.nix` (mkOutOfStoreSymlink)                 |
 | `programs.ghostty.settings`                | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
 | `karabiner/karabiner.json`                 | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
-| `skills/`                                  | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
+| `agents/skills/`                           | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
 | `programs.claude-code.settings` (attrset)  | `~/.claude/settings.json`                | `claude-code.nix` (Nix生成)                        |
 | `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.claude/CLAUDE.md`                    | `agent-instructions.nix` で結合                    |
 | `claude/rules/`                            | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
@@ -108,7 +103,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 
 ## Agent 運用の基本方針
 
-- 共有したい知識は `skills/` と project docs に置く
+- 共有したい知識は `agents/skills/` と project docs に置く
 - 製品非依存の hook 実装は `agents/hooks/` に置き、登録は各製品側で管理する
 - Claude 固有の強制は `claude/hooks/`, `claude/rules/`, `claude/commands/`, `claude/agents/` に置く
 - Codex 固有の custom agent は `.codex/agents/` に置く
@@ -133,7 +128,7 @@ claude/hooks/      claude/rules/        agents/{INSTRUCTIONS,rules}  agents/skil
 | Hook      | `claude/hooks/*.sh`                        | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard    |
 | Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | code-conventions, workflow, nix-environment |
 | CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                      |
-| Skill     | `skills/*/SKILL.md`                        | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
+| Skill     | `agents/skills/*/SKILL.md`                 | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
 
 学習内容の蓄積先も同じ階層で選択する:
 
@@ -239,16 +234,16 @@ home.sessionPath = [
 
 ### カスタムスキルを追加
 
-**編集:** `skills/` に新しいディレクトリを作成し `SKILL.md` を配置
+**編集:** `agents/skills/` に新しいディレクトリを作成し `SKILL.md` を配置
 
 ```
-skills/my-new-skill/
+agents/skills/my-new-skill/
 └── SKILL.md
 ```
 
-自作スキルは `enableAll = ["custom"]` により自動で有効化される。
+追加したスキル名を `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に追加する。
 
-Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `skills/` を検討する。
+Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `agents/skills/` を検討する。
 
 ### 公式スキルを有効化
 
@@ -283,7 +278,7 @@ Nix が source of truth なので、`dr` のたびにこの attrset の値で上
 
 **編集:** `claude/` 以下の対応ディレクトリ
 
-Claude 固有の強制や UX はここで管理する。共有知識を増やしたいときは `skills/` や project docs を優先。
+Claude 固有の強制や UX はここで管理する。共有知識を増やしたいときは `agents/skills/` や project docs を優先。
 
 ### Claude Codeコマンドを追加
 

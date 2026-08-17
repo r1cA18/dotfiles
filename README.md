@@ -9,6 +9,10 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 | **macOS**          | nix-darwin + home-manager                  | `dr`                      |
 | **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#homelab-apply` |
 
+共通のCLI・shell・agent設定は`nix/home-manager/home.nix`から両OSへ配布する。
+macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定とservice運用は`homelab/`に閉じる。
+共有module内で差が必要な設定だけ`pkgs.stdenv.isDarwin`または`isLinux`で分岐する。
+
 ## クイックスタート
 
 ### 1. Nix インストール

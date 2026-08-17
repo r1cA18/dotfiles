@@ -17,7 +17,7 @@
 - 共有 instruction は `agents/INSTRUCTIONS.md` + `agents/rules/`
 - project-specific な運用はこの `CLAUDE.md` と `docs/agent-platforms.md` に置く
 - `Claude Code` 専用の hooks / plugin / runtime state と、`Codex` 専用の agents / config は分離して管理する
-- 再利用したい workflow は `skills/` に置き、片方の製品専用機能に閉じ込めない
+- 再利用したい workflow は `agents/skills/` に置き、片方の製品専用機能に閉じ込めない
 
 ## 実務ルール
 
@@ -27,7 +27,7 @@
 - ブラウザ操作は `agent-browser` 優先
 - テストや build がある変更は、変更前後で検証する
 - `Codex` では `.codex/agents/`、`Claude Code` では `claude/agents/` を使う
-- 共通化したい skill は `skills/` を source of truth にする
+- 共通化したい skill は `agents/skills/` を source of truth にする
 
 ## 概要
 

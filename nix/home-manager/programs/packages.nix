@@ -175,6 +175,7 @@ let
 
     # Fonts (macOS側でレンダリングするので必要)
     nerd-fonts.jetbrains-mono
+    plemoljp-nf
 
     # CLI-only macOS tools
     fastlane

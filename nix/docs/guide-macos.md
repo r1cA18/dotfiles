@@ -35,24 +35,25 @@ cd ~/dotfiles
 nix run nix-darwin -- switch --flake .#RMB
 ```
 
-これで以下が自動的にセットアップされます：
+これで以下が自動的にセットアップされる：
 
-- CLI ツール (Node.js, ripgrep, fd など)
-- Homebrew & GUI アプリ (Chrome, VSCode, Ghostty など)
-- macOS システム設定 (Dock, Finder, キーボード など)
+- CLI ツール (Node.js, ripgrep, fdなど)
+- HomebrewとGUIアプリ (Chrome, VSCode, Ghosttyなど)
+- macOS system設定 (Dock, Finder, keyboardなど)
 - Zsh + oh-my-zsh + Powerlevel10k
 - Git, Neovim の設定
 
 ### 4. フォント設定
 
-Ghostty や VSCode で Nerd Font を使うため、システムでフォントを認識させる：
+`nerd-fonts.jetbrains-mono`と`plemoljp-nf`はNixで導入される。
+GhosttyのmacOS設定は`PlemolJP35 Console NF`を使用するため、手動installは不要。
 
 ```bash
 # フォントキャッシュを更新
 fc-cache -fv
 ```
 
-ターミナルアプリのフォント設定で `JetBrainsMono Nerd Font` を選択。
+表示が更新されない場合だけ`fc-cache -fv`で確認する。
 
 ---
 
@@ -95,7 +96,7 @@ dg
 ### ファイル構成
 
 ```
-darwin/
+nix/darwin/
 └── configuration.nix   # macOS システム設定
     ├── homebrew        # GUI アプリ管理
     ├── system.defaults # Dock, Finder, キーボードなど
@@ -104,7 +105,7 @@ darwin/
 
 ### システム設定の変更
 
-`darwin/configuration.nix`:
+`nix/darwin/configuration.nix`:
 
 ```nix
 system.defaults = {
@@ -162,7 +163,7 @@ security.pam.services.sudo_local.touchIdAuth = true;
 
 ### Homebrew Casks
 
-`darwin/configuration.nix`:
+`nix/darwin/configuration.nix`:
 
 ```nix
 homebrew.casks = [
@@ -189,11 +190,11 @@ mas search "アプリ名"
 
 ### 管理の使い分け
 
-| 種類       | 管理場所                                   |
-| ---------- | ------------------------------------------ |
-| CLI ツール | `home-manager/programs/packages.nix` (Nix) |
-| GUI アプリ | `darwin/configuration.nix` (Homebrew)      |
-| App Store  | `darwin/configuration.nix` (masApps)       |
+| 種類       | 管理場所                                       |
+| ---------- | ---------------------------------------------- |
+| CLI ツール | `nix/home-manager/programs/packages.nix` (Nix) |
+| GUI アプリ | `nix/darwin/configuration.nix` (Homebrew)      |
+| App Store  | `nix/darwin/configuration.nix` (masApps)       |
 
 ---
 

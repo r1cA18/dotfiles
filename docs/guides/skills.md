@@ -116,10 +116,10 @@ skills.enable = [
 ## Plugin skill との関係
 
 Claude plugin が runtime で提供する skill は、そのままでは dotfiles の source of truth にならない。
-Claude / Codex の両方で使いたいものは `skills/` に共有 skill として置く。
+Claude / Codex の両方で使いたいものは`agents/skills/`に共有skillとして置く。
 
 - runtime plugin skill の実体: `~/.claude/plugins/...`
-- 共有したい skill の正本: `dotfiles/skills/...`
+- 共有したいskillの正本: `dotfiles/agents/skills/...`
 - plugin 固有の browser automation や UI 拡張は Claude 専用として扱う
 - 外部 OSS skill repo を使う場合は `flake.nix` + `agent-skills.nix` で source を追加して宣言的に管理する
 

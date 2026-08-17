@@ -9,10 +9,10 @@
 | ---------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
 | グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`  | Nix で結合して両方に配布する                                          |
 | project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント  | repo 直下で管理                                                       |
-| reusable skills              | `skills/`                                   | `~/.claude/skills` と `~/.codex/skills` に同期                        |
+| reusable skills              | `agents/skills/`                            | `~/.claude/skills` と `~/.codex/skills` に同期                        |
 | shared hook implementations  | `agents/hooks/`                             | 製品ごとのhook登録から呼び出す                                        |
 | Claude hooks                 | `claude/hooks/`                             | Claude 専用                                                           |
-| Claude commands              | `claude/commands/`                          | 可能なら `skills/` へ昇格                                             |
+| Claude commands              | `claude/commands/`                          | 可能なら `agents/skills/` へ昇格                                      |
 | Codex prompt wrappers        | `codex/prompts/`                            | deprecated なので reusable workflow は skill が正本                   |
 | Claude agents                | `claude/agents/`                            | Markdown frontmatter 形式                                             |
 | Codex agents                 | `.codex/agents/`                            | TOML 形式                                                             |
@@ -26,7 +26,7 @@
 - `agents/INSTRUCTIONS.md`
 - `agents/rules/`
 - `agents/hooks/` の製品非依存script
-- `skills/`
+- `agents/skills/`
 - project docs
 - MCP のうち plugin 非依存で宣言的に書ける server 定義
 
@@ -43,7 +43,7 @@
 
 ### 1. Skills First
 
-再利用したい workflow はまず `skills/` に置く。
+再利用したい workflow はまず `agents/skills/` に置く。
 `Claude` の command や plugin skill でしか使えない状態は避ける。
 Codex の custom prompt は deprecated なので、`codex/prompts/` は skill を呼び出す薄い wrapper に留める。
 
@@ -75,7 +75,7 @@ dotfiles では以下だけを管理する。
 - `enabledPlugins`
 - `extraKnownMarketplaces`
 
-plugin 本体に入っている useful skill は、継続利用したいなら `skills/` に移植して共通資産化する。
+plugin 本体に入っている useful skill は、継続利用したいなら `agents/skills/` に移植して共通資産化する。
 
 Codex plugin も runtime cache は `~/.codex/plugins/cache/` に置かれる。
 dotfiles では `nix/home-manager/programs/codex.nix` で以下を管理する。

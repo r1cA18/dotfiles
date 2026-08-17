@@ -48,7 +48,7 @@ git push
 
 ### CLI ツールを追加する
 
-`home-manager/programs/packages.nix` の `packages` に追加：
+`nix/home-manager/programs/packages.nix`の対応するpackage listに追加：
 
 ```nix
 home.packages = with pkgs; [
@@ -93,7 +93,7 @@ Web: [search.nixos.org](https://search.nixos.org/packages)
 
 ### Git
 
-`home-manager/programs/git.nix`:
+`nix/home-manager/programs/git.nix`:
 
 ```nix
 programs.git = {
@@ -108,7 +108,7 @@ programs.git = {
 
 ### Zsh エイリアス
 
-`home-manager/programs/zsh.nix`:
+`nix/home-manager/programs/zsh.nix`:
 
 ```nix
 # generalAliases など適切なカテゴリに追加
@@ -136,7 +136,7 @@ programs.zsh.oh-my-zsh = {
 
 ### 環境変数
 
-`home-manager/programs/packages.nix`:
+`nix/home-manager/programs/packages.nix`:
 
 ```nix
 home.sessionVariables = {
@@ -159,22 +159,16 @@ home.sessionPath = [
 ```
 ~/dotfiles/
 ├── flake.nix                 # エントリポイント
-├── darwin/
-│   └── configuration.nix     # macOS システム設定 (macOS only)
-├── home-manager/
-│   ├── home.nix              # ユーザー設定（メイン）
-│   └── programs/
-│       ├── packages.nix      # パッケージ、PATH、環境変数
-│       ├── git.nix           # Git 設定
-│       ├── zsh.nix           # Zsh 設定 (OS別エイリアス)
-│       ├── neovim.nix        # Neovim 設定
-│       ├── ghostty.nix       # Ghostty 設定 (OS別パス)
-│       └── karabiner.nix     # Karabiner (macOS only)
-└── docs/
-    ├── guide.md              # このガイド
-    ├── guide-macos.md        # macOS 専用
-    ├── guide-ubuntu.md       # Linux 専用
-    └── cheatsheet.md         # コマンド一覧
+├── nix/
+│   ├── darwin/
+│   │   └── configuration.nix # macOS system設定
+│   ├── home-manager/
+│   │   ├── home.nix          # 共通user設定
+│   │   ├── hosts/homelab.nix # Ubuntu host固有設定
+│   │   └── programs/         # 共通moduleとOS条件分岐
+│   └── docs/                 # Nix運用ガイド
+├── homelab/                  # Ubuntu system設定とservice操作
+└── docs/                     # 全体architectureと個別guide
 ```
 
 ### 編集頻度
@@ -209,7 +203,7 @@ home.sessionPath = [
 | Alias | macOS | Linux | 説明                 |
 | ----- | :---: | :---: | -------------------- |
 | `dr`  |  ✅   |  ✅   | 設定を適用 (rebuild) |
-| `db`  |  ✅   |   -   | ビルドのみ           |
+| `db`  |  ✅   |  ✅   | ビルドのみ           |
 | `dp`  |  ✅   |  ✅   | ロールバック / 履歴  |
 | `du`  |  ✅   |  ✅   | 依存を更新           |
 | `ds`  |  ✅   |  ✅   | パッケージを検索     |

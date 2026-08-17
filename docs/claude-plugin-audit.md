@@ -4,7 +4,7 @@
 
 ## 方針
 
-- `Codex` と共有したいものは `skills/` か project docs に移す
+- `Codex`と共有したいものは`agents/skills/`かproject docsに移す
 - Claude plugin 固有の runtime 拡張はそのまま Claude 専用に残す
 - plugin の install 状態は source of truth にしない
 
@@ -27,8 +27,8 @@
 
 | plugin / source                             | asset                   | コメント                                            |
 | ------------------------------------------- | ----------------------- | --------------------------------------------------- |
-| `pr-review-toolkit@claude-plugins-official` | review workflow         | `skills/post-review/` で代替                        |
-| `code-review@claude-code-plugins`           | review workflow         | `skills/post-review/` で代替                        |
+| `pr-review-toolkit@claude-plugins-official` | review workflow         | `agents/skills/post-review/`で代替                  |
+| `code-review@claude-code-plugins`           | review workflow         | `agents/skills/post-review/`で代替                  |
 | `document-skills@anthropic-agent-skills`    | `pdf`, `xlsx`           | `agent-skills.nix` で shared skill として有効化済み |
 | `skill-creator@claude-plugins-official`     | skill creation guidance | Codex 側の system skill と役割が重複                |
 

@@ -3,6 +3,11 @@
 ryoppippi の dotfiles を参考に自分の Nix 構成を近代化するための
 調査結果と方針の記録。旧ブランチ "codex/nix-modernize" から main に吸収した。
 
+> [!NOTE]
+> これは2026-06-02時点の比較調査を保存したhistorical note。
+> 現在の構成や操作方法は`docs/architecture.md`と`homelab/README.md`を正本とする。
+> 下記の「自分（現状）」は調査時点のsnapshotであり、現在値へ逐次更新しない。
+
 > 出典: Claude Code セッション `260be7c3`（2026-06-02）の比較調査。
 > 進捗 (2026-07-04 時点):
 >
