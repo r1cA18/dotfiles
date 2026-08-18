@@ -107,6 +107,7 @@ setup_remote_login() {
   sudo grdctl --system rdp set-credentials
   sudo grdctl --system rdp enable
   sudo systemctl enable --now gdm.service gnome-remote-desktop.service
+  sudo systemctl restart gnome-remote-desktop.service
   sudo grdctl --system status
 }
 

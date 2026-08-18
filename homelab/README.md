@@ -82,6 +82,8 @@ Remote Login専用のusernameと強いpasswordを設定し、passwordを1Passwor
 
 MacのWindows AppではPC nameを`homelab:3389`にする。Tailscale経由だけで接続し、routerのport forwardingは設定しない。UFWは`tailscale0`からの通信を許可済みで、home LANやInternetへ`3389/tcp`を追加公開しない。
 
+macOS版Windows Appで認証後にblack screenになる場合はconnectionをRDP fileへexportし、`use redirection server name:i:1`へ変更してからimportする。GNOME Remote Loginがlogin sessionへhandoverするためのserver redirectionをclientに許可する設定になる。
+
 ```bash
 sudo grdctl --system status
 systemctl status gnome-remote-desktop.service --no-pager
@@ -106,6 +108,13 @@ syncthing device-id
 Mac側のSyncthing UIで新しいhomelab deviceを承認する。既存の旧homelab device IDは新PCと異なるため削除する。
 
 続いて`vault`と`Develop`のfolder shareを承認する。両方が`Up to Date`になるまでHome Assistantを起動しない。
+
+`homelab-apply`は大規模な`Develop` treeを監視できるようLinuxのinotify上限を設定する。Syncthingに`failed to set up inotify handler`が表示された場合は、最新のdotfilesで`homelab-apply`を再実行してからuser serviceを再起動する。
+
+```bash
+nix run .#homelab-apply
+systemctl --user restart syncthing
+```
 
 `vault`と`Develop`は除外なしの双方向同期にする。`Develop`は`.git`と生成物も含む。同期中に両端で同じrepositoryを操作しない。branch切替・rebase・大量生成の前は反対側の操作が止まっていることを確認する。
 

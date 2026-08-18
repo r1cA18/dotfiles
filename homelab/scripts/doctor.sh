@@ -33,6 +33,10 @@ check 'Bluetooth daemon' systemctl is-active bluetooth
 check 'UFW firewall' systemctl is-enabled ufw
 check 'IPv4 forwarding' test "$(sysctl -n net.ipv4.ip_forward 2>/dev/null)" = 1
 check 'IPv6 forwarding' test "$(sysctl -n net.ipv6.conf.all.forwarding 2>/dev/null)" = 1
+check 'Inotify watch capacity' test \
+  "$(sysctl -n fs.inotify.max_user_watches 2>/dev/null)" -ge 524288
+check 'Inotify instance capacity' test \
+  "$(sysctl -n fs.inotify.max_user_instances 2>/dev/null)" -ge 1024
 check 'Google Chrome desktop app' command -v google-chrome
 check 'ChatGPT desktop app' command -v chatgpt
 check '1Password desktop app' command -v 1password

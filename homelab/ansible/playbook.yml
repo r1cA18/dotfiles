@@ -258,6 +258,17 @@
           net.ipv6.conf.all.forwarding = 1
       notify: Apply sysctl settings
 
+    - name: Increase inotify capacity for large Syncthing trees
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-homelab-inotify.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          fs.inotify.max_user_watches = 524288
+          fs.inotify.max_user_instances = 1024
+      notify: Apply sysctl settings
+
     - name: Create the APT keyring directory
       ansible.builtin.file:
         path: /etc/apt/keyrings
