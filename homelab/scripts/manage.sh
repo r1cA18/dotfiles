@@ -118,6 +118,7 @@ apply)
   require_homelab_host
   run_playbook
   home-manager switch --flake "$dotfiles_root#r1ca18@homelab"
+  systemctl --user restart codex-app-server.service
   configure_login_shell
   printf 'homelab applied; log out and back in to activate shell and group changes\n'
   ;;

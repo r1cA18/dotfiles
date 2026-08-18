@@ -1,0 +1,10 @@
+# Managed by Ansible. The attachment glob is limited to the Nix Codex payload;
+# the launcher wrapper and unrelated executables remain under their normal
+# AppArmor policy.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile codex-app-server "/nix/store/*-codex-*/bin/.codex-wrapped" flags=(unconfined) {
+  userns,
+  include if exists <local/codex-app-server>
+}

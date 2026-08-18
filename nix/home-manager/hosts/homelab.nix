@@ -1,6 +1,23 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   imports = [ ../home.nix ];
+
+  # Keep Codex available to SSH-driven ChatGPT clients even when no graphical
+  # session is logged in. homelab/ansible/playbook.yml enables linger for this
+  # user, so default.target and this service also run after logout and at boot.
+  systemd.user.services.codex-app-server = {
+    Unit = {
+      Description = "Codex app server";
+      ConditionPathExists = [ "/etc/apparmor.d/codex-app-server" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.codex}/bin/codex app-server --listen unix://";
+      WorkingDirectory = config.home.homeDirectory;
+      Restart = "always";
+      RestartSec = 5;
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
 
   # MacBook (RMB). The new homelab gets its own Syncthing identity on first
   # start. Since this host already knows RMB, only RMB needs to accept the new

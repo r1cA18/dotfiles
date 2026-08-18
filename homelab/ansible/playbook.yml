@@ -84,6 +84,7 @@
       ansible.builtin.apt:
         name:
           - acl
+          - apparmor
           - avahi-daemon
           - bluetooth
           - bluez
@@ -226,6 +227,15 @@
       ansible.builtin.command: "loginctl enable-linger {{ homelab_user }}"
       args:
         creates: "/var/lib/systemd/linger/{{ homelab_user }}"
+
+    - name: Allow the Nix-managed Codex sandbox to create user namespaces
+      ansible.builtin.template:
+        src: codex-app-server.apparmor.j2
+        dest: /etc/apparmor.d/codex-app-server
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload Codex AppArmor profile
 
     - name: Add the homelab user to hardware access groups
       ansible.builtin.user:
@@ -512,6 +522,14 @@
     - name: Reload systemd
       ansible.builtin.systemd_service:
         daemon_reload: true
+
+    - name: Reload Codex AppArmor profile
+      ansible.builtin.command:
+        argv:
+          - apparmor_parser
+          - --replace
+          - /etc/apparmor.d/codex-app-server
+      changed_when: true
 
     - name: Restart homelab services
       ansible.builtin.systemd_service:
