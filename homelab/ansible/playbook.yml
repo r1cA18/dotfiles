@@ -12,6 +12,62 @@
       /var/lib/gnome-remote-desktop/.local/share/gnome-remote-desktop
     home_assistant_root: >-
       {{ homelab_home }}/Develop/github.com/r1cA18/home-assistant
+    vault_agi_root: >-
+      {{ homelab_home }}/Develop/github.com/r1cA18/vault-agi
+    olympus_root: >-
+      {{ homelab_home }}/Develop/github.com/r1cA18/olympus
+    homelab_bun: "{{ homelab_home }}/.nix-profile/bin/bun"
+    homelab_service_policy_dir: /etc/homelab/services
+    homelab_bun_services:
+      - name: vault-agi-gateway
+        description: Vault AGI gateway for Discord Times transport
+        working_directory: "{{ vault_agi_root }}/gateway"
+        entrypoint: "{{ vault_agi_root }}/gateway/src/index.ts"
+        environment_file: "{{ vault_agi_root }}/.env"
+        policy_file: "{{ homelab_service_policy_dir }}/vault-agi-gateway.env"
+        policy:
+          TAILSCALE_ONLY: "true"
+        conditions:
+          - "ConditionPathIsDirectory={{ vault_agi_root }}/gateway/data"
+      - name: vault-agi-master
+        description: Vault AGI Times writer
+        working_directory: "{{ vault_agi_root }}/master"
+        entrypoint: "{{ vault_agi_root }}/master/src/index.ts"
+        environment_file: "{{ vault_agi_root }}/.env"
+        policy_file: "{{ homelab_service_policy_dir }}/vault-agi-master.env"
+        dependencies:
+          - vault-agi-gateway
+        policy:
+          ENABLE_SCHEDULER: "false"
+          ENABLE_SELF_REPAIR: "false"
+          LINEAR_API_KEY: ""
+          MEM0_URL: http://127.0.0.1:9
+          NOTION_API_TOKEN: ""
+          NOTION_DATABASE_ID: ""
+          VIBE_KANBAN_URL: http://127.0.0.1:9
+        conditions:
+          - "ConditionPathIsDirectory={{ homelab_home }}/vault"
+      - name: vault-agi-discord
+        description: Discord Times ingestion transport
+        working_directory: "{{ vault_agi_root }}/discord"
+        entrypoint: "{{ vault_agi_root }}/discord/src/index.ts"
+        environment_file: "{{ vault_agi_root }}/.env"
+        policy_file: "{{ homelab_service_policy_dir }}/vault-agi-discord.env"
+        dependencies:
+          - vault-agi-gateway
+        policy:
+          ALLOWED_CHANNEL_IDS: __transport_only__
+          ALLOWED_USER_IDS: __transport_only__
+          TASK_ALLOWED_BOT_USER_IDS: __transport_only__
+          TASK_CHANNEL_IDS: __transport_only__
+      - name: olympus-gateway
+        description: Olympus PWA REST API and WebPush gateway
+        working_directory: "{{ olympus_root }}"
+        entrypoint: "{{ olympus_root }}/apps/gateway/src/index.ts"
+        environment_file: "{{ olympus_root }}/.env"
+        conditions:
+          - "ConditionPathIsDirectory={{ olympus_root }}/apps/web/dist"
+          - "ConditionPathExists={{ olympus_root }}/data/olympus.db"
     homelab_install_desktop_apps: true
     homelab_lan_networks:
       - 192.168.0.0/24
@@ -29,17 +85,18 @@
     - name: Require root execution for local provisioning
       ansible.builtin.assert:
         that:
-          - ansible_user_uid == 0
+          - ansible_facts["user_uid"] == 0
         fail_msg: "Run this playbook through `nix run .#homelab-apply`."
 
     - name: Require a supported Ubuntu release
       ansible.builtin.assert:
         that:
-          - ansible_distribution == "Ubuntu"
-          - ansible_distribution_version == "26.04"
+          - ansible_facts["distribution"] == "Ubuntu"
+          - ansible_facts["distribution_version"] == "26.04"
         fail_msg: >-
           This profile targets Ubuntu Desktop 26.04 LTS.
-          Detected {{ ansible_distribution }} {{ ansible_distribution_version }}.
+          Detected {{ ansible_facts["distribution"] }}
+          {{ ansible_facts["distribution_version"] }}.
 
     - name: Read the Debian architecture
       ansible.builtin.command: dpkg --print-architecture
@@ -298,7 +355,7 @@
     - name: Add the Tailscale signing key
       ansible.builtin.get_url:
         url: >-
-          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.noarmor.gpg
+          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_facts["distribution_release"] }}.noarmor.gpg
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
         owner: root
         group: root
@@ -308,7 +365,7 @@
     - name: Add the Tailscale package repository
       ansible.builtin.get_url:
         url: >-
-          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.tailscale-keyring.list
+          https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_facts["distribution_release"] }}.tailscale-keyring.list
         dest: /etc/apt/sources.list.d/tailscale.list
         owner: root
         group: root
@@ -490,6 +547,92 @@
         - Reload systemd
         - Restart homelab services
 
+    - name: Deploy the Home Assistant Syncthing permission service
+      ansible.builtin.template:
+        src: home-assistant-sync-permissions.service.j2
+        dest: /etc/systemd/system/home-assistant-sync-permissions.service
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Deploy the Home Assistant Syncthing permission timer
+      ansible.builtin.template:
+        src: home-assistant-sync-permissions.timer.j2
+        dest: /etc/systemd/system/home-assistant-sync-permissions.timer
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Enable the Home Assistant Syncthing permission timer
+      ansible.builtin.systemd_service:
+        name: home-assistant-sync-permissions.timer
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Reconcile Home Assistant Syncthing permissions now
+      ansible.builtin.systemd_service:
+        name: home-assistant-sync-permissions.service
+        state: started
+
+    - name: Create the managed service policy directory
+      ansible.builtin.file:
+        path: "{{ homelab_service_policy_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Check synchronized application environment files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ vault_agi_root }}/.env"
+        - "{{ olympus_root }}/.env"
+      register: homelab_application_env_files
+
+    - name: Restrict synchronized application environment files
+      ansible.builtin.file:
+        path: "{{ item.stat.path }}"
+        state: file
+        owner: "{{ homelab_user }}"
+        group: "{{ homelab_user }}"
+        mode: "0600"
+      loop: "{{ homelab_application_env_files.results }}"
+      when: item.stat.exists
+      no_log: true
+
+    - name: Deploy non-secret service policy overlays
+      ansible.builtin.template:
+        src: homelab-service-policy.env.j2
+        dest: "{{ homelab_service.policy_file }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: >-
+        {{ homelab_bun_services | selectattr('policy_file', 'defined') | list }}
+      loop_control:
+        loop_var: homelab_service
+        label: "{{ homelab_service.name }}"
+      notify:
+        - Reload systemd
+        - Restart managed Bun services
+
+    - name: Deploy managed Bun system services
+      ansible.builtin.template:
+        src: homelab-bun.service.j2
+        dest: "/etc/systemd/system/{{ homelab_service.name }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ homelab_bun_services }}"
+      loop_control:
+        loop_var: homelab_service
+        label: "{{ homelab_service.name }}"
+      notify:
+        - Reload systemd
+        - Restart managed Bun services
+
     - name: Read the Tailscale backend state
       ansible.builtin.command: tailscale status --json
       register: homelab_tailscale_status
@@ -547,3 +690,12 @@
         name: homelab-compose.service
         state: restarted
       when: homelab_compose_was_running
+
+    - name: Restart managed Bun services
+      ansible.builtin.systemd_service:
+        name: "{{ item.name }}.service"
+        state: restarted
+      loop: "{{ homelab_bun_services }}"
+      when: >-
+        ansible_facts.services.get(item.name + '.service', {}).get('state') ==
+        'running'

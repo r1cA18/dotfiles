@@ -1,0 +1,53 @@
+[Unit]
+Description={{ homelab_service.description }}
+Wants=network-online.target
+After=network-online.target {{ homelab_service.dependencies | default([]) | map('regex_replace', '$', '.service') | join(' ') }}
+Requires={{ homelab_service.dependencies | default([]) | map('regex_replace', '$', '.service') | join(' ') }}
+StartLimitIntervalSec=60
+StartLimitBurst=10
+ConditionPathExists={{ homelab_service.environment_file }}
+ConditionPathExists={{ homelab_service.entrypoint }}
+{% for condition in homelab_service.conditions | default([]) %}
+{{ condition }}
+{% endfor %}
+
+[Service]
+Type=simple
+User={{ homelab_user }}
+Group={{ homelab_user }}
+WorkingDirectory={{ homelab_service.working_directory }}
+Environment=HOME={{ homelab_home }}
+Environment=PATH={{ homelab_home }}/.nix-profile/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile={{ homelab_service.environment_file }}
+{% if homelab_service.policy_file is defined %}
+EnvironmentFile={{ homelab_service.policy_file }}
+{% endif %}
+ExecStart={{ homelab_bun }} run {{ homelab_service.entrypoint }}
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier={{ homelab_service.name }}
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=full
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -5,18 +5,92 @@
   # Keep Codex available to SSH-driven ChatGPT clients even when no graphical
   # session is logged in. homelab/ansible/playbook.yml enables linger for this
   # user, so default.target and this service also run after logout and at boot.
-  systemd.user.services.codex-app-server = {
-    Unit = {
-      Description = "Codex app server";
-      ConditionPathExists = [ "/etc/apparmor.d/codex-app-server" ];
+  systemd.user = {
+    services = {
+      codex-app-server = {
+        Unit = {
+          Description = "Codex app server";
+          ConditionPathExists = [ "/etc/apparmor.d/codex-app-server" ];
+        };
+        Service = {
+          ExecStart = "${pkgs.codex}/bin/codex app-server --listen unix://";
+          WorkingDirectory = config.home.homeDirectory;
+          Restart = "always";
+          RestartSec = 5;
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+
+      olympus-times-triage = {
+        Unit = {
+          Description = "Debounced Olympus triage for new Times entries";
+          After = [
+            "network-online.target"
+            "codex-app-server.service"
+          ];
+          Wants = [ "network-online.target" ];
+        };
+        Service = {
+          Type = "oneshot";
+          Environment = [ "CODEX_HOME=%h/.codex" ];
+          ExecStart = "${pkgs.bash}/bin/bash /home/r1ca18/vault/40_AI/automation/olympus-times-triage.sh";
+          TimeoutStartSec = "4h";
+          Nice = 10;
+          IOSchedulingClass = "idle";
+        };
+      };
+
+      olympus-deadline-scheduler = {
+        Unit = {
+          Description = "Allocate unscheduled Olympus inbox/todo deadline tasks";
+          After = [
+            "network-online.target"
+            "codex-app-server.service"
+          ];
+          Wants = [ "network-online.target" ];
+        };
+        Service = {
+          Type = "oneshot";
+          Environment = [ "CODEX_HOME=%h/.codex" ];
+          ExecStart = "${pkgs.bash}/bin/bash /home/r1ca18/vault/40_AI/automation/olympus-deadline-scheduler.sh";
+          TimeoutStartSec = "10min";
+          Nice = 10;
+          IOSchedulingClass = "idle";
+        };
+      };
     };
-    Service = {
-      ExecStart = "${pkgs.codex}/bin/codex app-server --listen unix://";
-      WorkingDirectory = config.home.homeDirectory;
-      Restart = "always";
-      RestartSec = 5;
+
+    timers = {
+      olympus-times-triage = {
+        Unit = {
+          Description = "Check for new Times entries every 15 minutes";
+          ConditionPathExists = "%h/.local/state/olympus-times-triage/enabled";
+        };
+        Timer = {
+          OnBootSec = "15min";
+          OnUnitActiveSec = "15min";
+          AccuracySec = "1min";
+          Persistent = false;
+          Unit = "olympus-times-triage.service";
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
+
+      olympus-deadline-scheduler = {
+        Unit = {
+          Description = "Check hourly for unscheduled Olympus deadline tasks";
+          ConditionPathExists = "%h/.local/state/olympus-deadline-scheduler/enabled";
+        };
+        Timer = {
+          OnBootSec = "20min";
+          OnUnitActiveSec = "1h";
+          AccuracySec = "5min";
+          Persistent = false;
+          Unit = "olympus-deadline-scheduler.service";
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
     };
-    Install.WantedBy = [ "default.target" ];
   };
 
   # MacBook (RMB). The new homelab gets its own Syncthing identity on first

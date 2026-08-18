@@ -350,6 +350,7 @@ in
       # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
       # claudeChannel を managed-channel に書き出し、du スクリプトへ状態を渡す。
       setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        export PATH="${pkgs.curl}/bin:$PATH"
         channel="${claudeChannel}"
         bin="$HOME/.local/bin/claude"
         mkdir -p "$HOME/.claude"

@@ -3,12 +3,17 @@
   inputs,
   lib,
   username,
+  hostname,
   pkgs,
   ...
 }:
 let
+  isDarwin = pkgs.stdenv.isDarwin;
+  isHomelabLinux = pkgs.stdenv.isLinux && hostname == "homelab";
   homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
+  olympusLinuxRoot = "/home/r1ca18/Develop/github.com/r1cA18/olympus";
+  olympusMcpEntry = "${olympusLinuxRoot}/apps/mcp/src/index.ts";
 
   tomlFormat = pkgs.formats.toml { };
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
@@ -93,6 +98,29 @@ let
     marketplaces.claude-plugin-codex = {
       source_type = "local";
       source = "${inputs.claude-plugin-codex}";
+    };
+
+    mcp_servers = lib.optionalAttrs (isDarwin || isHomelabLinux) {
+      olympus =
+        if isDarwin then
+          {
+            command = "/usr/bin/ssh";
+            args = [
+              "-T"
+              "homelab"
+              "/home/r1ca18/.nix-profile/bin/bun"
+              "run"
+              olympusMcpEntry
+            ];
+          }
+        else
+          {
+            command = "${pkgs.bun}/bin/bun";
+            args = [
+              "run"
+              olympusMcpEntry
+            ];
+          };
     };
 
     # No profiles.default: top-level fields above are the default.

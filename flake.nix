@@ -255,6 +255,11 @@
             name = "homelab";
             runtimeInputs = [
               pkgs.ansible
+              pkgs.coreutils
+              pkgs.curl
+              pkgs.gawk
+              pkgs.gnugrep
+              pkgs.systemd
               home-manager.packages.${system}.default
             ];
             text = builtins.readFile ./homelab/scripts/manage.sh;
@@ -282,6 +287,7 @@
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
           homelab-apply = mkHomelabApp "apply";
+          homelab-restore = mkHomelabApp "restore";
           homelab-start = mkHomelabApp "start";
           homelab-stop = mkHomelabApp "stop";
           homelab-rdp-setup = mkHomelabApp "rdp-setup";

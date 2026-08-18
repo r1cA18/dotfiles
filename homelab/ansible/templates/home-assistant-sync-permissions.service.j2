@@ -1,0 +1,23 @@
+[Unit]
+Description=Keep Home Assistant runtime data readable by Syncthing
+After=homelab-compose.service
+ConditionPathIsDirectory={{ home_assistant_root }}/config/.storage
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/bin/find {{ home_assistant_root }}/config/.storage -type d -exec /usr/bin/setfacl -m u:{{ homelab_user }}:rx {} +
+ExecStart=/usr/bin/find {{ home_assistant_root }}/config/.storage -type f -exec /usr/bin/setfacl -m u:{{ homelab_user }}:r-- {} +
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths={{ home_assistant_root }}/config/.storage
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_FOWNER
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+SystemCallArchitectures=native

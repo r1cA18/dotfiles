@@ -4,13 +4,13 @@ Ubuntu Desktopをhome server・常駐agent host・持ち出し可能なdemo mach
 
 ## 管理境界
 
-| 層               | 管理対象                                         | Source of truth                                                 |
-| ---------------- | ------------------------------------------------ | --------------------------------------------------------------- |
-| Ubuntu system    | SSH・Docker・Tailscale・firewall・power・GUI app | `ansible/playbook.yml`                                          |
-| User environment | CLI・shell・agent・Syncthing                     | `nix/home-manager/hosts/homelab.nix`                            |
-| Service          | Home Assistant・ESPHome                          | `~/Develop/github.com/r1cA18/home-assistant/docker-compose.yml` |
-| Runtime data     | HA registry・database・secret・ESPHome secret    | 上記repository内のGit除外file                                   |
-| Secret           | Interactive secret・将来のservice token          | 1Password                                                       |
+| 層               | 管理対象                                         | Source of truth                      |
+| ---------------- | ------------------------------------------------ | ------------------------------------ |
+| Ubuntu system    | SSH・Docker・Tailscale・firewall・power・GUI app | `ansible/playbook.yml`               |
+| User environment | CLI・shell・agent・Syncthing                     | `nix/home-manager/hosts/homelab.nix` |
+| Service          | HA・ESPHome・Times transport・Olympus            | Ansible systemd unit + 各repository  |
+| Runtime data     | HA・vault-agi・Olympus SQLite・各種secret        | 各repository内のGit除外file          |
+| Secret           | Interactive secret・将来のservice token          | 1Password                            |
 
 Runtime dataとsecretはGitへ入れず、`Develop`のSyncthing同期で新PCへ移す。Home Assistant側repositoryの`docker-compose.yml`がservice構成のsource of truthになる。初回移行はruntime dataと同じHome Assistant`2026.6.2`と、最後にbuild確認したESPHome`2026.5.3`へ固定済み。回帰確認後に意図的にupgradeする。
 
@@ -134,14 +134,20 @@ test -f config/secrets.yaml
 test -f esphome/secrets.yaml
 ```
 
-Home Assistantを有効化する。
+全workloadを検証・buildして有効化する。現在のdirty working treeをそのまま使い、
+Develop配下では`git pull`・`reset`・`checkout`・`clean`を実行しない。
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-start
+nix run .#homelab-restore
 ```
 
-`homelab-start`は必須runtime dataとCompose構文を検証してからsystemd serviceを有効化する。Home AssistantとESPHomeが一緒に復元される。既存構成の`host` network・BlueZ D-Bus・capability・device設定をそのまま保つ。
+`homelab-restore`は必須runtime dataとCompose構文を検証し、vault-agi依存関係とOlympusの
+typecheck・test・buildを完了してからsystemd serviceを順番に有効化する。Home Assistantと
+ESPHomeは既存構成の`host` network・BlueZ D-Bus・capability・device設定をそのまま保つ。
+Home Assistant Containerはsupported構成どおりrootで動かす。owner-onlyで再作成される
+`.storage` fileは`home-assistant-sync-permissions.timer`が`r1ca18`だけにread ACLを付け、
+Syncthingのhash errorを防ぐ。
 
 ```bash
 cd ~/Develop/github.com/r1cA18/home-assistant
@@ -152,14 +158,55 @@ ls -l /dev/serial/by-id
 
 `http://homelab.local:8123`でUI・automation・HomeKit・Bluetooth・ESPHome deviceを確認する。HomeKit bridgeのpairing identityも`.storage`から引き継がれる。
 
-持ち出し前などにserviceを明示的に停止・無効化する場合は次を使う。
+復旧対象は以下だけに限定する。
+
+| Unit                               | Role                      |
+| ---------------------------------- | ------------------------- |
+| `homelab-compose.service`          | Home Assistant + ESPHome  |
+| `vault-agi-gateway.service`        | Times transport gateway   |
+| `vault-agi-master.service`         | Daily note Times writer   |
+| `vault-agi-discord.service`        | Discord Times ingestion   |
+| `olympus-gateway.service`          | PWA・REST API・WebPush    |
+| `olympus-times-triage.timer`       | 新規Timesの15分check      |
+| `olympus-deadline-scheduler.timer` | deadline taskの1時間check |
+
+Olympus DBはrepository内の`~/Develop/github.com/r1cA18/olympus/data/olympus.db`へ置く。
+`data/*.db*`はGit管理外で、notification履歴とWebPush購読も含むため3fileをまとめて移行する。
+
+Olympus gatewayは`127.0.0.1:3100`だけで待受ける。HTTPS公開はTailscale Serveだけを使う。
+
+```bash
+tailscale serve --bg http://127.0.0.1:3100
+tailscale serve status
+```
+
+Funnelは有効化しない。既存Serve設定がある場合、restoreは上書きせず停止する。
+
+Times triageは初回だけ現在のTimes行数をbaselineとして保存してからtimerを開始する。
+個人crontabは使わない。vault-agiのNotion・Linear・mem0・scheduler・task channelは
+systemdのLinux policy overlayで無効化し、Times transportだけを起動する。
+Syncthingは実行bitを同期しないため、automation scriptはNix管理のBashで明示的に実行する。
+
+起動対象外は以下。
+
+- discord-utility-bot
+- discord-utility-openclaw
+- mem0 / Qdrant
+- その他の実験用Compose
+- vlm-archive-arena
+- syoki
+- SuperBook
+- open-design
+
+持ち出し前などにmanaged workloadを明示的に停止・無効化する場合は次を使う。
 
 ```bash
 cd ~/dotfiles
 nix run .#homelab-stop
 ```
 
-start・stopはsystem provisioningを再実行しないためofflineでも利用できる。
+初回復旧後の再起動は`homelab-start`を使う。start・stopはdependency installやsystem
+provisioningを再実行しないためofflineでも利用できる。
 
 ## 6. Google Chrome・ChatGPT・1Password
 
