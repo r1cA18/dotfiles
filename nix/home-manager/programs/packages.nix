@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   ...
 }:
@@ -161,6 +162,7 @@ let
     tmux
     ffmpeg
     agent-browser
+    inputs.herdr.packages.${pkgs.system}.default
     agentSkillPath
     difit
     _1password-cli
@@ -204,7 +206,6 @@ in
   home = {
     packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
     sessionPath = [
-      "$HOME/.antigravity/antigravity/bin"
       "$HOME/.local/bin"
     ];
     sessionVariables = {

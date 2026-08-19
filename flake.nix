@@ -24,6 +24,10 @@
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Herdr terminal multiplexer
+    herdr.url = "github:herdrdev/herdr/v0.7.5";
+    herdr.inputs.nixpkgs.follows = "nixpkgs";
+
     # Anthropic official skills
     anthropic-skills.url = "github:anthropics/skills";
     anthropic-skills.flake = false;

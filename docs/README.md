@@ -15,6 +15,7 @@ macOS systemはnix-darwinで管理し、Ubuntu systemはAnsibleで管理する�
 
 - [management-rules.md](guides/management-rules.md) - **管理ルール（必読）**
 - [nix-npm-packages.md](guides/nix-npm-packages.md) - Node系CLIをNixで固定管理
+- [agent-workspace-tools.md](guides/agent-workspace-tools.md) - AI agent作業環境のツール方針
 - [alias-auto-help.md](guides/alias-auto-help.md) - エイリアス自動ヘルプシステム（h/hv）
 - [guide-macos.md](../nix/docs/guide-macos.md) - macOS初回構築と運用
 - [guide-ubuntu.md](../nix/docs/guide-ubuntu.md) - Ubuntu初回構築と運用

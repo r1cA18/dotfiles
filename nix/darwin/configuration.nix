@@ -59,6 +59,7 @@
       "alt-tab"
       "amical"
       "arc"
+      "nikitabobko/tap/aerospace"
       "audacity"
       "autodesk-fusion"
       "balenaetcher"
