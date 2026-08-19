@@ -27,7 +27,7 @@ keybindは実際の利用で必要性を確認してから追加する。
 
 ### Antigravity CLI
 
-Google公式installerで`~/.local/bin/agy`へ導入する。自己更新するnative binaryのためNix storeには置かない。`~/.local/bin`はHome ManagerでPATHに含める。
+Google公式installerで`~/.local/bin/agy`へ導入する。自己更新するnative binaryのためNix storeには置かない。`~/.local/bin`はHome ManagerでPATHに含め、Home Managerのactivation (`setupAntigravity`) により `dr` 時に自動インストール、`du` (`update-antigravity`) で最新へ更新する。
 
 ### Herdr
 

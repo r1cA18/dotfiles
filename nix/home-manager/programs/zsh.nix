@@ -34,8 +34,8 @@ let
       desc = "Go to dotfiles flake root";
     };
     du = {
-      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code";
-      desc = "Update flake + GitHub apps + Claude Code";
+      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-antigravity";
+      desc = "Update flake + GitHub apps + Claude Code + Antigravity";
     };
     ds = {
       cmd = "nix search nixpkgs";

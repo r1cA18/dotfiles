@@ -18,6 +18,7 @@
     ./programs/karabiner.nix
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
+    ./programs/antigravity.nix
     ./programs/claude-code.nix
     ./programs/codex.nix
     ./programs/zed.nix

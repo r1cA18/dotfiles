@@ -36,6 +36,7 @@ dotfiles/
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
+│   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
