@@ -15,7 +15,7 @@ in
       font-size = 20;
       font-thicken = true;
       adjust-cell-height = 2;
-      background-opacity = 0.8;
+      background-opacity = 1.0;
       background-blur = false;
       window-inherit-working-directory = true;
       shell-integration = "detect";
