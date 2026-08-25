@@ -6,7 +6,7 @@
 }:
 let
   signingKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEDYx2wE/80gbRnZBXJgHKTacQTIFrvrpcBfy6PKoZ9x";
-  userEmail = "r1cA18@proton.me";
+  userEmail = "github@id.r1ca18.dev";
   allowedSignersPath = "${config.xdg.configHome}/git/allowed_signers";
 
   baseSettings = {
