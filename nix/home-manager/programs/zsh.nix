@@ -87,11 +87,11 @@ let
       desc = "Go to Develop (use devg for picker)";
     };
     drive = {
-      cmd = "cd ~/Library/CloudStorage/GoogleDrive-ryo20061018@gmail.com/My\\ Drive/";
+      cmd = "cd ~/Library/CloudStorage/GoogleDrive-*/My\\ Drive/";
       desc = "Go to Google Drive";
     };
     storage = {
-      cmd = "cd ~/Library/CloudStorage/GoogleDrive-ryo20061018@gmail.com/My\\ Drive/Storage/";
+      cmd = "cd ~/Library/CloudStorage/GoogleDrive-*/My\\ Drive/Storage/";
       desc = "Go to Storage";
     };
     vault = {
@@ -131,12 +131,12 @@ let
   claudeAliases = {
     # base + account variants
     cl = {
-      cmd = "claude";
-      desc = "Start Claude Code";
+      cmd = "clp run";
+      desc = "Start Claude Code with account picker";
     };
-    clsub = {
-      cmd = "CLAUDE_CONFIG_DIR=$HOME/.claude-sub claude";
-      desc = "Start Claude with sub account";
+    clg = {
+      cmd = "clp gpt";
+      desc = "Start GPT backend with account picker";
     };
     clw = {
       cmd = "ANTHROPIC_API_KEY=\${CLAUDE_CSTYLE_API_KEY} claude";
@@ -144,20 +144,32 @@ let
     };
     # session actions
     clc = {
-      cmd = "claude --continue";
+      cmd = "clp run default --continue";
       desc = "Continue last Claude session";
     };
     clcd = {
-      cmd = "claude --continue --dangerously-skip-permissions";
+      cmd = "clp run default --continue --dangerously-skip-permissions";
       desc = "Continue Claude session without prompts";
     };
     clr = {
-      cmd = "claude --resume";
+      cmd = "clp run default --resume";
       desc = "Resume Claude session from picker";
     };
+    clgc = {
+      cmd = "clp gpt default --continue";
+      desc = "Continue last GPT-backed Claude session";
+    };
+    clgr = {
+      cmd = "clp gpt default --resume";
+      desc = "Resume GPT-backed Claude session from picker";
+    };
     cld = {
-      cmd = "claude --dangerously-skip-permissions";
+      cmd = "clp run default --dangerously-skip-permissions";
       desc = "Start Claude without prompts";
+    };
+    clgd = {
+      cmd = "clp gpt default --dangerously-skip-permissions";
+      desc = "Start GPT-backed Claude without prompts";
     };
     clu = {
       cmd = "claude update";
@@ -170,68 +182,79 @@ let
   };
 
   # Codex abbreviations.
-  # `cx` uses the top-level `model` / `model_reasoning_effort` from
-  # ~/.codex/config.toml (gpt-5.5 medium). `--profile heavy` / `--profile spark`
-  # override per-invocation; `cxs` switches to the sub-account.
+  # `cx` opens the account picker. Named model layers are loaded from the
+  # selected CODEX_HOME as heavy.config.toml / spark.config.toml.
   codexAliases = {
     # base + profile variants
     cx = {
-      cmd = "codex";
-      desc = "Start Codex (default model)";
+      cmd = "cxp run";
+      desc = "Start Codex with account picker";
     };
     cxh = {
-      cmd = "codex --profile heavy";
+      cmd = "cxp run default --profile heavy";
       desc = "Start Codex with heavy profile (gpt-5.5 high)";
     };
     cxsp = {
-      cmd = "codex --profile spark";
+      cmd = "cxp run default --profile spark";
       desc = "Start Codex with spark profile";
-    };
-    # account variants
-    cxs = {
-      cmd = "CODEX_HOME=$HOME/.codex-sub codex";
-      desc = "Start Codex with sub account";
-    };
-    cxsh = {
-      cmd = "CODEX_HOME=$HOME/.codex-sub codex --profile heavy";
-      desc = "Start Codex with sub account + heavy profile";
     };
     # session actions
     cxc = {
-      cmd = "codex resume --last";
+      cmd = "cxp run default resume --last";
       desc = "Continue last Codex session";
     };
     cxcd = {
-      cmd = "codex resume --last --dangerously-bypass-approvals-and-sandbox";
+      cmd = "cxp run default resume --last --dangerously-bypass-approvals-and-sandbox";
       desc = "Continue Codex without prompts";
     };
     cxr = {
-      cmd = "codex resume";
+      cmd = "cxp run default resume";
       desc = "Resume Codex session from picker";
     };
     cxf = {
-      cmd = "codex fork --last";
+      cmd = "cxp run default fork --last";
       desc = "Fork last Codex session";
     };
     cxd = {
-      cmd = "codex --dangerously-bypass-approvals-and-sandbox";
+      cmd = "cxp run default --dangerously-bypass-approvals-and-sandbox";
       desc = "Start Codex without prompts";
     };
     cxa = {
-      cmd = "codex --full-auto";
+      cmd = "cxp run default --full-auto";
       desc = "Run Codex full-auto";
     };
     cxe = {
-      cmd = "codex exec";
+      cmd = "cxp run default exec";
       desc = "Run Codex non-interactively";
     };
     cxrev = {
-      cmd = "codex review";
+      cmd = "cxp run default review";
       desc = "Run code review";
     };
     cxap = {
-      cmd = "codex apply";
+      cmd = "cxp run default apply";
       desc = "Apply latest Codex diff";
+    };
+  };
+
+  # Executables do not become abbreviations. Keep them visible in h without
+  # adding shell aliases that could shadow the real commands.
+  canonicalCommands = {
+    clp = {
+      cmd = "clp <command>";
+      desc = "Manage Claude account profiles";
+    };
+    cxp = {
+      cmd = "cxp <command>";
+      desc = "Manage Codex account profiles";
+    };
+    clgpt = {
+      cmd = "clgpt [args]";
+      desc = "Run Claude Code through the GPT proxy";
+    };
+    clproxy = {
+      cmd = "clproxy <command>";
+      desc = "Manage the Claude Code proxy";
     };
   };
 
@@ -267,6 +290,10 @@ let
       title = "Codex";
       defs = codexAliases;
     }
+    {
+      title = "Agent Commands";
+      defs = canonicalCommands;
+    }
   ];
 
   abbrDefs =
@@ -300,6 +327,9 @@ let
     map (mkHelpSection "descriptions") helpSections
   );
   helpTextCommands = lib.concatStringsSep "\n\n" (map (mkHelpSection "commands") helpSections);
+  managedAbbrPairs = lib.concatMapStringsSep " " (name: "${lib.escapeShellArg name} 1") (
+    builtins.attrNames abbrDefs
+  );
 in
 {
   home.file.".p10k.zsh".source = ./p10k.zsh;
@@ -340,6 +370,41 @@ in
 
             ${mkAbbrInit abbrDefs}
 
+            _agent_profile_completion() {
+              local manager="$1"
+              local -a commands profiles
+              commands=(
+                'list:List account profiles'
+                'add:Add an account profile'
+                'login:Sign in to an account profile'
+                'status:Show authentication status'
+                'path:Print the profile data directory'
+                'run:Start with an account profile'
+                'complete:Print completion candidates'
+              )
+              if [[ "$manager" == "clp" ]]; then
+                commands+=( 'gpt:Start the GPT backend with an account profile' )
+              fi
+
+              if (( CURRENT == 2 )); then
+                _describe 'command' commands
+                return
+              fi
+
+              if (( CURRENT == 3 )) && [[ "$words[2]" == (run|gpt|login|status|path) ]]; then
+                profiles=("''${(@f)$("$manager" complete 2>/dev/null)}")
+                _describe 'account profile' profiles
+                return
+              fi
+
+              _normal
+            }
+
+            _clp() { _agent_profile_completion clp; }
+            _cxp() { _agent_profile_completion cxp; }
+            compdef _clp clp
+            compdef _cxp cxp
+
             [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
             [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env
 
@@ -349,6 +414,10 @@ in
 
               local query="$*"
               local content
+              local runtime_content=""
+              local raw_name name expansion
+              local -A managed_abbrs
+              managed_abbrs=( ${managedAbbrPairs} )
 
               if [[ "$mode" == "commands" ]]; then
                 content=$(cat <<'EOF'
@@ -360,6 +429,18 @@ in
       ${helpTextDescriptions}
       EOF
       )
+              fi
+
+              while IFS= read -r raw_name; do
+                name="''${(Q)raw_name}"
+                [[ -n "''${managed_abbrs[$name]-}" ]] && continue
+                expansion="$(abbr expand "$name" 2>/dev/null)" || continue
+                runtime_content+="$name = $expansion"$'\n'
+              done < <(abbr list-abbreviations 2>/dev/null)
+
+              if [[ -n "$runtime_content" ]]; then
+                content+=$'\n\n[Runtime abbreviations]\n'
+                content+="''${runtime_content%$'\n'}"
               fi
 
               if [[ -n "$query" ]]; then

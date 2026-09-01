@@ -36,6 +36,7 @@ dotfiles/
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
+│   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
@@ -99,8 +100,15 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `claude/agents/`                           | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
 | `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
 | `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.codex/AGENTS.md`                     | `agent-instructions.nix` で結合                    |
+| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.gemini/GEMINI.md`                    | `agent-instructions.nix` で結合                    |
 | `codex/hooks.json`                         | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `codex/prompts/`                           | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
+
+Claude account profileは`claude-code.nix`が生成する`clp`で管理する。
+Codex account profileは`codex.nix`が生成する`cxp`で管理する。
+新規runtime stateは各製品の`$XDG_STATE_HOME`配下へ置き、
+共有設定だけをprimary profileからlinkする。
+詳細は[Agent account profile管理](guides/agent-profiles.md)を参照。
 
 ## Agent 運用の基本方針
 
@@ -115,6 +123,9 @@ home-managerが以下のシンボリックリンクを自動管理：
 
 詳細: [docs/agent-platforms.md](./agent-platforms.md)
 
+GPT backend版Claude Codeの起動・Proxy管理・profile管理は
+[docs/guides/claude-code-gpt.md](guides/claude-code-gpt.md)を参照。
+
 ## Claude Code 指示の強度階層
 
 Claude への指示は強度順に以下の仕組みで管理する:
@@ -124,12 +135,12 @@ Hook (自動強制)  > Rule (常時ロード)  > CLAUDE.md (人格)       > Skil
 claude/hooks/      claude/rules/        agents/{INSTRUCTIONS,rules}  agents/skills/*/SKILL.md
 ```
 
-| 階層      | 配置先                                     | 役割                               | 例                                          |
-| --------- | ------------------------------------------ | ---------------------------------- | ------------------------------------------- |
-| Hook      | `claude/hooks/*.sh`                        | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard    |
-| Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | code-conventions, workflow, nix-environment |
-| CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                      |
-| Skill     | `agents/skills/*/SKILL.md`                 | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing            |
+| 階層      | 配置先                                     | 役割                               | 例                                       |
+| --------- | ------------------------------------------ | ---------------------------------- | ---------------------------------------- |
+| Hook      | `claude/hooks/*.sh`                        | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard |
+| Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | tool-preferences, workflow               |
+| CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                   |
+| Skill     | `agents/skills/*/SKILL.md`                 | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing         |
 
 学習内容の蓄積先も同じ階層で選択する:
 

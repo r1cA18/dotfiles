@@ -5,21 +5,23 @@
 
 ## Source Of Truth
 
-| 項目                         | Source of truth                             | 補足                                                                  |
-| ---------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
-| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`  | Nix で結合して両方に配布する                                          |
-| project-specific instruction | `AGENTS.md`, `CLAUDE.md`, このドキュメント  | repo 直下で管理                                                       |
-| reusable skills              | `agents/skills/`                            | `~/.claude/skills` と `~/.codex/skills` に同期                        |
-| shared hook implementations  | `agents/hooks/`                             | 製品ごとのhook登録から呼び出す                                        |
-| Claude hooks                 | `claude/hooks/`                             | Claude 専用                                                           |
-| Claude commands              | `claude/commands/`                          | 可能なら `agents/skills/` へ昇格                                      |
-| Codex prompt wrappers        | `codex/prompts/`                            | deprecated なので reusable workflow は skill が正本                   |
-| Claude agents                | `claude/agents/`                            | Markdown frontmatter 形式                                             |
-| Codex agents                 | `.codex/agents/`                            | TOML 形式                                                             |
-| Codex user config            | `nix/home-manager/programs/codex.nix`       | `~/.codex/config.toml` を writable copy 生成                          |
-| Claude settings              | `nix/home-manager/programs/claude-code.nix` | `programs.claude-code.settings` から `~/.claude/settings.json` を生成 |
-| Claude user MCP seed         | `claude/mcp-servers.json`                   | `~/.claude.json` へ merge する前提                                    |
-| Claude Code binary           | native install                              | dotfiles では bootstrap しない                                        |
+| 項目                         | Source of truth                                   | 補足                                                                  |
+| ---------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
+| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`        | Nixで結合してClaude・Codex・Geminiへ配布する                          |
+| project-specific instruction | `AGENTS.md`とこのドキュメント                     | `CLAUDE.md`は`AGENTS.md`をimport                                      |
+| reusable skills              | `agents/skills/`                                  | `~/.claude/skills` と `~/.codex/skills` に同期                        |
+| shared hook implementations  | `agents/hooks/`                                   | 製品ごとのhook登録から呼び出す                                        |
+| Claude hooks                 | `claude/hooks/`                                   | Claude 専用                                                           |
+| Claude commands              | `claude/commands/`                                | 可能なら `agents/skills/` へ昇格                                      |
+| Codex prompt wrappers        | `codex/prompts/`                                  | deprecated なので reusable workflow は skill が正本                   |
+| Claude agents                | `claude/agents/`                                  | Markdown frontmatter 形式                                             |
+| Codex agents                 | `.codex/agents/`                                  | TOML 形式                                                             |
+| Codex user config            | `nix/home-manager/programs/codex.nix`             | `~/.codex/config.toml` を writable copy 生成                          |
+| Claude settings              | `nix/home-manager/programs/claude-code.nix`       | `programs.claude-code.settings` から `~/.claude/settings.json` を生成 |
+| GPT backend wrapper          | `nix/home-manager/programs/claude-code-proxy.nix` | `clgpt`・`clproxy`・user serviceを生成                                |
+| Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                           |
+| Claude user MCP seed         | `claude/mcp-servers.json`                         | `~/.claude.json` へ merge する前提                                    |
+| Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                    |
 
 ## 共有できるもの
 
@@ -38,6 +40,12 @@
 - `Codex` custom prompts の UI 呼び出し部分
 - `Codex` custom agents の TOML 実装
 - runtime state を含む `~/.claude.json`
+- Antigravityのprovider・credential・session state
+
+Claude account profileは`clp`で管理する。Codex account profileは`cxp`で管理する。
+どちらもemailから解決し、公開dotfilesにはemailを保存しない。
+共有設定だけをprimary profileからlinkし、credential・session・plugin cacheは分離する。
+詳細は[Agent account profile管理](guides/agent-profiles.md)を参照。
 
 ## 現在の方針
 
@@ -89,6 +97,20 @@ GitHub 等から入れる個人用 Codex plugin は、できるだけ flake inpu
 そのため、Codex plugin は project ごとに切り替えず global 管理する。
 runtime cache 自体は生成物なので dotfiles には入れない。
 
+## GPT backend版Claude Code
+
+純正`claude`はAnthropic接続のまま維持する。`clgpt`だけがprocess-local環境変数で
+`claude-code-proxy`へ接続する。Proxyのuser serviceはon-demandで起動しlogin時には
+常駐させない。
+
+`antigravity-for-claude-code`はClaude Code pluginとしてofficial `agy`へdelegateする。
+`clgpt`から使う場合はGPTがmain conductorになりAntigravity/Geminiがsub-agentになる。
+
+Antigravityは既存Google account sessionを使う。Gemini API keyとVertex credentialは
+dotfilesへ追加しない。`~/.gemini/antigravity-cli/settings.json`も変更しない。
+
+詳細は[GPT backend版Claude Code](guides/claude-code-gpt.md)を参照。
+
 ## MCP の扱い
 
 ### Codex
@@ -100,7 +122,8 @@ runtime cache 自体は生成物なので dotfiles には入れない。
 
 `Claude Code` の user-level MCP は runtime file の `~/.claude.json` に入るため、
 dotfiles では `claude/mcp-servers.json` を source of truth にして、必要な server 定義だけ merge する。
-この merge は `nix/home-manager/programs/claude-code.nix` の activation で自動実行する。
+この merge は `nix/home-manager/programs/claude-code.nix` の activation でprimary profileにだけ実行する。
+追加profileへの同期と宣言から削除したserverの除去は未対応なので、runtime file全体を管理済みとは扱わない。
 
 ## CLI 依存 skill の扱い
 
@@ -118,21 +141,3 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 - `gemini`
 
 `skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。
-
-## 移行 backlog
-
-### 完了
-
-- shared instruction の `~/.claude/rules` 依存を除去
-- project docs に運用方針を移動
-- `frontend-design` を official skill として共有化
-- Codex custom agents のベース追加
-- Claude MCP seed の自動同期を追加
-- plugin 棚卸しを文書化
-- agent skills を global 管理へ統一し、project skill packs を廃止
-- `claude-plugin-codex` を Codex 側の global bridge として宣言管理する
-
-### 次にやること
-
-- `Claude` command のうち残っている UI 専用 command を整理
-- `claude/rules/` のうち共有すべき内容を project docs にさらに寄せる

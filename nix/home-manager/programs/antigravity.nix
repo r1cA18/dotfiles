@@ -4,6 +4,13 @@
   ...
 }:
 let
+  sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
+  antigravityTimeout = pkgs.writeShellApplication {
+    name = "timeout";
+    text = ''
+      exec ${pkgs.coreutils}/bin/timeout "$@"
+    '';
+  };
   updateAntigravity = pkgs.writeShellApplication {
     name = "update-antigravity";
     runtimeInputs = with pkgs; [
@@ -23,7 +30,17 @@ let
 in
 {
   home = {
-    packages = [ updateAntigravity ];
+    packages = [
+      antigravityTimeout
+      updateAntigravity
+    ];
+
+    # agy and Gemini CLI read the same global instruction entry point. Runtime
+    # state and provider settings under .gemini remain unmanaged.
+    file.".gemini/GEMINI.md" = {
+      source = sharedAgentInstructions;
+      force = true;
+    };
 
     activation = {
       # Antigravity CLI (agy) native 版の自動導入。

@@ -17,6 +17,7 @@ let
 
   tomlFormat = pkgs.formats.toml { };
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
+  mkAgentProfileManager = import ../../lib/agent-profile-manager.nix { inherit lib; };
 
   # home, dotfiles, vault は homeDir 由来で両OS共通。
   # Develop 配下の個別プロジェクトは macOS にしか無いので Darwin 限定。
@@ -50,10 +51,14 @@ let
   ];
 
   codexSettings = {
-    # Top-level model is the default for `codex` with no --profile (= the cx abbr).
-    # Profiles below override per-invocation: cxh = heavy, cxsp = spark.
+    # Top-level model is the default. Named config layers are generated as
+    # $CODEX_HOME/<name>.config.toml below.
     model = "gpt-5.5";
     model_reasoning_effort = "medium";
+
+    # Account profiles rely on CODEX_HOME isolation. Force file storage so
+    # credentials do not collapse into one shared OS keychain entry.
+    cli_auth_credentials_store = "file";
 
     # Keep normal commands automatic inside the workspace. Commands that need
     # broader access request escalation and are reviewed by the policy engine.
@@ -123,21 +128,40 @@ let
           };
     };
 
-    # No profiles.default: top-level fields above are the default.
-    # `codex --profile heavy` → gpt-5.5 high, `codex --profile spark` → spark.
-    profiles = {
-      heavy = {
-        model = "gpt-5.5";
-        model_reasoning_effort = "high";
-      };
-      spark = {
-        model = "gpt-5.3-codex-spark";
-        model_reasoning_effort = "medium";
-      };
+  };
+
+  codexConfigProfiles = {
+    heavy = {
+      model = "gpt-5.5";
+      model_reasoning_effort = "high";
+    };
+    spark = {
+      model = "gpt-5.3-codex-spark";
+      model_reasoning_effort = "medium";
     };
   };
 
   codexConfigFile = tomlFormat.generate "codex-config.toml" codexSettings;
+  codexConfigProfileFiles = lib.mapAttrs (
+    name: settings: tomlFormat.generate "codex-${name}-config.toml" settings
+  ) codexConfigProfiles;
+
+  codexProfileSharedPaths = [
+    "AGENTS.md"
+    "config.toml"
+    "hooks.json"
+    "prompts"
+    "skills"
+  ]
+  ++ map (name: "${name}.config.toml") (builtins.attrNames codexConfigProfiles);
+  codexProfileCommon = mkAgentProfileManager {
+    productName = "Codex";
+    profileStatePath = "codex/profiles";
+    primaryConfigPath = ".codex";
+    primaryMetadataPath = ".codex/auth.json";
+    profileMetadataName = "auth.json";
+    sharedPaths = codexProfileSharedPaths;
+  };
 
   # Individual file symlinks for .codex/prompts/. All prompts (including the
   # repo-owned sc-*.md personas) live in codex/prompts/ and are deployed here.
@@ -150,6 +174,155 @@ let
       force = true;
     }
   ) (builtins.readDir ../../../codex/prompts);
+
+  codexProfile = pkgs.writeShellApplication {
+    name = "cxp";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.fzf
+      pkgs.jq
+    ];
+    text = ''
+      ${codexProfileCommon}
+
+      profile_command="cxp"
+      codex_bin="$(command -v codex || true)"
+
+      require_codex() {
+        if [[ -z "$codex_bin" || ! -x "$codex_bin" ]]; then
+          echo "Codex CLI was not found in PATH." >&2
+          exit 1
+        fi
+      }
+
+      profile_email() {
+        local auth_file="$1"
+        local token payload padding
+
+        [[ -f "$auth_file" ]] || return 0
+        token="$(jq -r '.tokens.id_token // empty' "$auth_file" 2>/dev/null || true)"
+        [[ -n "$token" ]] || return 0
+        payload="''${token#*.}"
+        payload="''${payload%%.*}"
+
+        padding=$(( (4 - ''${#payload} % 4) % 4 ))
+        case "$padding" in
+          1) payload="''${payload}=" ;;
+          2) payload="''${payload}==" ;;
+          3) payload="''${payload}===" ;;
+        esac
+
+        printf '%s' "$payload" \
+          | tr '_-' '/+' \
+          | base64 --decode 2>/dev/null \
+          | jq -r '.email // empty' 2>/dev/null \
+          || true
+      }
+
+      run_for_profile() {
+        local profile="$1"
+        shift
+
+        local config_dir
+        config_dir="$(resolve_profile "$profile")"
+        ensure_shared_config "$config_dir"
+
+        if [[ -n "$config_dir" ]]; then
+          export CODEX_HOME="$config_dir"
+        else
+          unset CODEX_HOME
+        fi
+        exec "$codex_bin" "$@"
+      }
+
+      add_profile() {
+        local email="$1"
+        local config_dir actual_email
+
+        validate_profile_email "$email"
+        if resolve_profile "$email" >/dev/null 2>&1; then
+          echo "Codex profile already exists: $email" >&2
+          return 1
+        fi
+
+        config_dir="$profile_root/$email"
+        install -d -m 700 "$config_dir"
+        ensure_shared_config "$config_dir"
+
+        CODEX_HOME="$config_dir" "$codex_bin" login
+        actual_email="$(profile_email "$config_dir/auth.json")"
+        if [[ -n "$actual_email" && "$actual_email" != "$email" ]]; then
+          echo "Signed in as $actual_email but the profile path is named $email." >&2
+          return 1
+        fi
+      }
+
+      usage() {
+        cat <<'EOF'
+      Usage: cxp <command> [arguments]
+
+      Commands:
+        list                  List profiles and their signed-in email addresses
+        complete              Print profile candidates for shell completion
+        add <email>           Create a profile and sign in
+        login [profile]       Sign in again for a profile selected by email or fzf
+        status [profile]      Show authentication status
+        path [profile]        Print the profile CODEX_HOME
+        run [profile] [args]  Start Codex with a profile selected by email or fzf
+      EOF
+      }
+
+      require_codex
+      command="''${1:-}"
+      if [[ $# -gt 0 ]]; then
+        shift
+      fi
+
+      case "$command" in
+        list)
+          list_profiles
+          ;;
+        complete)
+          completion_profiles
+          ;;
+        add)
+          [[ $# -eq 1 ]] || { usage >&2; exit 2; }
+          add_profile "$1"
+          ;;
+        login)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          run_for_profile "$profile" login
+          ;;
+        status)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          run_for_profile "$profile" login status
+          ;;
+        path)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          config_dir="$(resolve_profile "$profile")"
+          printf '%s\n' "''${config_dir:-$HOME/.codex}"
+          ;;
+        run)
+          profile="$(select_profile "''${1:-}")"
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+          run_for_profile "$profile" "$@"
+          ;;
+        help|-h|--help|"")
+          usage
+          ;;
+        *)
+          echo "Unknown command: $command" >&2
+          usage >&2
+          exit 2
+          ;;
+      esac
+    '';
+  };
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.
@@ -162,6 +335,8 @@ in
   # Codex can write at runtime; next dr resets dotfiles defaults.
 
   home = {
+    packages = [ codexProfile ];
+
     file = {
       # Built from agents/INSTRUCTIONS.md + agents/rules/*.md.
       ".codex/AGENTS.md".source = sharedAgentInstructions;
@@ -174,31 +349,14 @@ in
         force = true;
       };
     }
-    // promptFiles
-    // {
-
-      # Sub-account: mirror primary config via symlinks (matches ~/.claude-sub pattern).
-      # auth.json (OAuth tokens) stays separate; everything else is shared.
-      ".codex-sub/config.toml".source =
-        config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/config.toml";
-      ".codex-sub/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/AGENTS.md";
-      ".codex-sub/skills" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/skills";
-        force = true;
-      };
-      ".codex-sub/prompts" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/.codex/prompts";
-        force = true;
-      };
-    };
+    // promptFiles;
 
     activation = {
       cleanBrokenCodexPromptSymlinks = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-        for target in "$HOME/.codex/prompts" "$HOME/.codex-sub/prompts"; do
-          if [ -L "$target" ] && [ ! -e "$target" ]; then
-            rm -f "$target"
-          fi
-        done
+        target="$HOME/.codex/prompts"
+        if [ -L "$target" ] && [ ! -e "$target" ]; then
+          rm -f "$target"
+        fi
       '';
 
       codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -207,6 +365,15 @@ in
         # then install fresh writable copy of the Nix-generated toml.
         rm -f "$HOME/.codex/config.toml"
         install -m 644 "${codexConfigFile}" "$HOME/.codex/config.toml"
+
+        # Codex 0.134.0+ loads named config layers from
+        # $CODEX_HOME/<name>.config.toml.
+        ${lib.concatStringsSep "\n        " (
+          lib.mapAttrsToList (name: file: ''
+            rm -f "$HOME/.codex/${name}.config.toml"
+            install -m 644 "${file}" "$HOME/.codex/${name}.config.toml"
+          '') codexConfigProfileFiles
+        )}
       '';
 
       codexPlugins = lib.hm.dag.entryAfter [ "codexConfig" ] ''

@@ -64,6 +64,7 @@
       enable = [
         # custom (global)
         "agent-browser"
+        "find-skills"
         "pdf"
         "xlsx"
         "post-review"

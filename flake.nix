@@ -20,6 +20,10 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    # Claude Code -> ChatGPT/Codex protocol proxy
+    claude-code-proxy.url = "github:raine/claude-code-proxy/v0.1.35";
+    claude-code-proxy.inputs.nixpkgs.follows = "nixpkgs";
+
     # nix-index-database (for comma)
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";

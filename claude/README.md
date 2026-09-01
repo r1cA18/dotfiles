@@ -2,7 +2,7 @@
 
 `~/.claude/`の設定をNixとrepository fileで宣言的に管理する。
 user-level runtime stateの一部は`~/.claude.json`に別保存される。
-Claude Code本体はnative install前提で、Nixはversion channelと設定を管理する。
+Claude Code本体はnative installer版を使う。Home Managerは未導入時のbootstrapとversion channelと設定を管理する。
 
 ## 構造
 
@@ -40,29 +40,13 @@ Claude Code本体はnative install前提で、Nixはversion channelと設定を�
 
 ## settings.json
 
-`settings.json`はrepository内のJSON fileではない。Home Manager moduleが次を含むJSONを生成し、Nix storeへのsymlinkとして配置する。
+`settings.json`はrepository内のJSON fileではない。Home Manager moduleが生成し、Nix storeへのsymlinkとして配置する。現行値は`nix/home-manager/programs/claude-code.nix`を参照する。
 
-```json
-{
-  "model": "claude-opus-4-6",
-  "hooks": {},
-  "enabledPlugins": {},
-  "language": "日本語, 敬語非使用",
-  "permissions": {}
-}
-```
-
-Claude Codeが`settings.json`を書き換えてregular fileにした場合も、次回の`dr`でNix宣言へ戻す。恒久変更は`nix/home-manager/programs/claude-code.nix`へ入れる。
+Claude Codeが`settings.json`を書き換えてregular fileにした場合も、次回の`dr`でNix宣言へ戻す。恒久変更は同moduleへ入れる。
 
 ## Binary更新
 
-Linuxでは公式installerで`~/.local/bin/claude`へ入れる。
-
-```bash
-curl -fsSL https://claude.ai/install.sh | bash
-```
-
-background auto-updateは無効化してある。`du`が`~/.claude/managed-channel`を読み、`update-claude-code`経由で明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
+初回の`dr`は公式installerで`~/.local/bin/claude`をbootstrapする。background auto-updateは無効化してある。`du`が`~/.claude/managed-channel`を読み、`update-claude-code`経由で明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
 
 ## MCP管理
 
@@ -74,7 +58,7 @@ python3 ~/dotfiles/claude/scripts/sync-mcp-servers.py \
   ~/dotfiles/claude/mcp-servers.json
 ```
 
-このscriptは`mcpServers`だけをupsertし、他のruntime stateは残す。`dr`でも同じ同期を実行する。
+このscriptはprimary profileの`mcpServers`だけをupsertし、他のruntime stateは残す。追加profileへの同期と宣言から削除したserverの除去には未対応。
 
 ## Pluginとskill
 
@@ -87,6 +71,8 @@ python3 ~/dotfiles/claude/scripts/sync-mcp-servers.py \
 ## Commandとagentの追加
 
 新しいslash commandは`claude/commands/<name>.md`へ置く。新しいcustom agentは`claude/agents/<name>.md`へ置く。どちらもout-of-store symlinkなので`dr`せず反映される。
+
+account profileの追加と切り替えは[Agent account profile管理](../docs/guides/agent-profiles.md)を参照する。
 
 ## 注意
 

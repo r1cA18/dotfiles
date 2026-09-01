@@ -29,3 +29,11 @@
 - Run relevant tests before and after risky changes
 - Verify builds and user-facing behavior before declaring completion
 - Continue until the requested outcome is complete or genuinely blocked
+
+## Code And Git
+
+- Do not use emoji in code comments commit messages or Markdown
+- Keep debug output plain and functional
+- Use English Conventional Commits when the user requests a commit
+- Use `feature/` `fix/` or `docs/` prefixes for new branches
+- Avoid direct pushes to `main` except for explicitly approved small changes

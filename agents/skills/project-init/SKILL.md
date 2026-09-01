@@ -52,10 +52,10 @@ Initialize the current repository with the dotfiles project workflow: Nix flake,
      - `.direnv`
      - `result`
 
-5. Create or update `CLAUDE.md` and `AGENTS.md`:
+5. Create or update project instructions:
    - For existing projects, ground commands and conventions in real files.
-   - `CLAUDE.md`: include project overview, key commands, architecture notes, project-specific conventions, and a pointer to global conventions.
-   - `AGENTS.md`: cross-agent version under 50 lines with description, commands, and key conventions.
+   - Use `AGENTS.md` as the cross-agent source of truth. Keep it under 50 lines with the project overview, commands, architecture notes, and key conventions.
+   - Use `CLAUDE.md` only for `@AGENTS.md` and genuinely Claude-specific additions. Do not duplicate shared instructions.
    - Do not overwrite meaningful existing instructions; merge surgically.
 
 6. Verify:

@@ -25,7 +25,7 @@ commonAliases = {
 
 ### 方針
 
-**1箇所で管理、自動生成**
+Nix管理aliasは1箇所で管理し、自動生成する。
 
 ```nix
 # Before: エイリアスだけ
@@ -110,13 +110,30 @@ $ hv
 
 ## カテゴリ構成
 
-| カテゴリ    | 内容                                      |
-| ----------- | ----------------------------------------- |
-| General     | 汎用（ll, nv, dot, ..）                   |
-| Nix         | Nix関連（dr, du, ds, dg, nd, db, dp）     |
-| Directory   | ディレクトリ移動（dev, drive, downloads） |
-| Claude Code | Claude Code関連（clc, clr, cld, cls）     |
-| Codex       | Codex関連（cx, cxc, cxr, cxrev）          |
+| カテゴリ       | 内容                                      |
+| -------------- | ----------------------------------------- |
+| General        | 汎用（ll, nv, dot, ..）                   |
+| Nix            | Nix関連（dr, du, ds, dg, nd, db, dp）     |
+| Directory      | ディレクトリ移動（dev, drive, downloads） |
+| Claude Code    | Claude Code関連（clc, clr, cld, cls）     |
+| Codex          | Codex関連（cx, cxc, cxr, cxrev）          |
+| Agent Commands | `clp`・`cxp`・`clgpt`・`clproxy`          |
+
+`Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。
+shell aliasやabbrには変換しないため、実体のcommandをshadowしない。
+
+## Runtime abbreviation
+
+`abbr add`で追加したruntime abbreviationはNix evaluation時には存在しない。
+`h`と`hv`は実行時に`abbr list-abbreviations`と`abbr expand`を読み、
+Nix管理abbrとの重複を除いて次のsectionへ追加する。
+
+```text
+[Runtime abbreviations]
+foo = some command
+```
+
+runtime abbreviationにはdescriptionがないため、`h`と`hv`の両方で展開先を表示する。
 
 ## エイリアス追加方法
 
@@ -135,9 +152,9 @@ $ hv
 
 ## まとめ
 
-| 項目           | 内容                                                    |
-| -------------- | ------------------------------------------------------- |
-| 管理ファイル   | `nix/home-manager/programs/zsh.nix`                     |
-| ヘルプコマンド | `h`（説明）, `hv`（コマンド）, `h <query>`（絞り込み）  |
-| 追加方法       | `{cmd, desc}`形式で定義に追加                           |
-| 自動生成       | Nix関数で静的テキストを組み立て、shell functionから表示 |
+| 項目           | 内容                                                   |
+| -------------- | ------------------------------------------------------ |
+| 管理ファイル   | `nix/home-manager/programs/zsh.nix`                    |
+| ヘルプコマンド | `h`（説明）, `hv`（コマンド）, `h <query>`（絞り込み） |
+| 追加方法       | `{cmd, desc}`形式で定義に追加                          |
+| 自動生成       | Nix管理分は静的生成しruntime abbrは実行時に追加        |

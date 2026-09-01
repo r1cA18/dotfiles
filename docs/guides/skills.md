@@ -31,7 +31,12 @@ skill の中には追加の CLI を前提にするものがある。
 command -v agent-browser
 ```
 
-`skills` CLI は必要なときに `bunx skills` を使う。
+`skills` CLIは検索時だけ`bunx skills`経由で使う。`find-skills` skillも同じ検索処理を案内する。
+
+`skills add -g`は使わない。このcommandは`~/.agents/skills`へ別のglobal管理領域を作り、Nix管理のskillと重複する。永続追加は次のどちらかに統一する。
+
+- custom skillは`agents/skills/`へ追加する
+- external skillは`flake.nix`と`agent-skills.nix`へ追加する
 
 ## スキルの種類と置き場所
 

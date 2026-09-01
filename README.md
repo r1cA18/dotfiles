@@ -109,7 +109,7 @@ dotfiles/
 - `agent-browser`
 - `ast-grep`
 
-`Claude Code` 本体は native install 前提。dotfiles では `~/.claude/` 配下の設定と MCP seed だけを管理する。
+`Claude Code`本体はnative installer版を使う。Home Managerは未導入時のbootstrapとversion channelと`~/.claude/`配下の宣言設定を管理する。runtime stateはprofileごとに分離する。
 
 ### Skills
 

@@ -10,6 +10,7 @@ let
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
+  mkAgentProfileManager = import ../../lib/agent-profile-manager.nix { inherit lib; };
   notificationCommand =
     sound:
     if pkgs.stdenv.isDarwin then
@@ -33,6 +34,165 @@ let
   agentFiles = lib.mapAttrs' (
     name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}")
   ) (builtins.readDir ../../../claude/agents);
+
+  # Only declarative configuration is shared between profiles. Credentials,
+  # sessions, history, local settings, and plugin runtime state stay isolated.
+  claudeProfileSharedPaths = [
+    "CLAUDE.md"
+    "agents"
+    "commands"
+    "hooks"
+    "rules"
+    "settings.json"
+    "skills"
+  ];
+  claudeProfileCommon = mkAgentProfileManager {
+    productName = "Claude";
+    profileStatePath = "claude-code/profiles";
+    primaryConfigPath = ".claude";
+    primaryMetadataPath = ".claude.json";
+    profileMetadataName = ".claude.json";
+    sharedPaths = claudeProfileSharedPaths;
+  };
+  claudeProfile = pkgs.writeShellApplication {
+    name = "clp";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.fzf
+      pkgs.jq
+    ];
+    text = ''
+      ${claudeProfileCommon}
+
+      profile_command="clp"
+      claude_bin="$HOME/.local/bin/claude"
+
+      require_claude() {
+        if [[ ! -x "$claude_bin" ]]; then
+          echo "Claude Code was not found at $claude_bin" >&2
+          exit 1
+        fi
+      }
+
+      profile_email() {
+        local state_file="$1"
+        [[ -f "$state_file" ]] || return 0
+        jq -r '.oauthAccount.emailAddress // empty' "$state_file" 2>/dev/null || true
+      }
+
+      run_for_profile() {
+        local profile="$1"
+        local command="$2"
+        shift 2
+
+        local config_dir
+        config_dir="$(resolve_profile "$profile")"
+        ensure_shared_config "$config_dir"
+
+        if [[ -n "$config_dir" ]]; then
+          export CLAUDE_CONFIG_DIR="$config_dir"
+        else
+          unset CLAUDE_CONFIG_DIR
+        fi
+        exec "$command" "$@"
+      }
+
+      add_profile() {
+        local email="$1"
+        local config_dir actual_email
+
+        validate_profile_email "$email"
+        if resolve_profile "$email" >/dev/null 2>&1; then
+          echo "Claude profile already exists: $email" >&2
+          return 1
+        fi
+
+        config_dir="$profile_root/$email"
+        install -d -m 700 "$config_dir"
+        ensure_shared_config "$config_dir"
+
+        CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login
+        actual_email="$(profile_email "$config_dir/.claude.json")"
+        if [[ -n "$actual_email" && "$actual_email" != "$email" ]]; then
+          echo "Signed in as $actual_email but the profile path is named $email." >&2
+          return 1
+        fi
+      }
+
+      usage() {
+        cat <<'EOF'
+      Usage: clp <command> [arguments]
+
+      Commands:
+        list                  List profiles and their signed-in email addresses
+        complete              Print profile candidates for shell completion
+        add <email>           Create a profile and sign in
+        login [profile]       Sign in again for a profile selected by email or fzf
+        status [profile]      Show authentication status
+        path [profile]        Print the profile config directory
+        run [profile] [args]  Start Claude Code with a profile selected by email or fzf
+        gpt [profile] [args]  Start the GPT backend with a profile selected by email or fzf
+      EOF
+      }
+
+      require_claude
+      command="''${1:-}"
+      if [[ $# -gt 0 ]]; then
+        shift
+      fi
+
+      case "$command" in
+        list)
+          list_profiles
+          ;;
+        complete)
+          completion_profiles
+          ;;
+        add)
+          [[ $# -eq 1 ]] || { usage >&2; exit 2; }
+          add_profile "$1"
+          ;;
+        login)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          run_for_profile "$profile" "$claude_bin" auth login
+          ;;
+        status)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          run_for_profile "$profile" "$claude_bin" auth status
+          ;;
+        path)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          config_dir="$(resolve_profile "$profile")"
+          printf '%s\n' "''${config_dir:-$HOME/.claude}"
+          ;;
+        run)
+          profile="$(select_profile "''${1:-}")"
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+          run_for_profile "$profile" "$claude_bin" "$@"
+          ;;
+        gpt)
+          profile="$(select_profile "''${1:-}")"
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+          run_for_profile "$profile" clgpt "$@"
+          ;;
+        help|-h|--help|"")
+          usage
+          ;;
+        *)
+          echo "Unknown command: $command" >&2
+          usage >&2
+          exit 2
+          ;;
+      esac
+    '';
+  };
 in
 {
   programs.claude-code = {
@@ -84,7 +244,6 @@ in
         deny = [
           "Read(~/.ssh/**)"
           "Edit(~/.ssh/**)"
-          "Write(~/.ssh/**)"
           "Read(~/.gnupg/**)"
           "Read(~/.aws/**)"
           "Read(~/.azure/**)"
@@ -107,16 +266,10 @@ in
           "Read(.env.*)"
           "Edit(*.env)"
           "Edit(.env.*)"
-          "Write(*.env)"
-          "Write(.env.*)"
           "Edit(*.key)"
-          "Write(*.key)"
           "Edit(*.pem)"
-          "Write(*.pem)"
           "Edit(**/secrets/**)"
-          "Write(**/secrets/**)"
           "Edit(**/credentials/**)"
-          "Write(**/credentials/**)"
         ];
         defaultMode = "auto";
       };
@@ -261,6 +414,7 @@ in
       };
 
       enabledPlugins = {
+        "antigravity@antigravity-for-claude-code" = true;
         "codex@openai-codex" = true;
       };
 
@@ -285,6 +439,10 @@ in
           source = "github";
           repo = "greensock/gsap-skills";
         };
+        antigravity-for-claude-code.source = {
+          source = "github";
+          repo = "yuting0624/antigravity-for-claude-code";
+        };
       };
 
       language = "日本語, 敬語非使用";
@@ -300,13 +458,14 @@ in
       remoteControlAtStartup = true;
       theme = "light";
       editorMode = "vim";
-      model = "claude-opus-4-6";
     };
   };
 
   # Shared instructions are generated from agents/INSTRUCTIONS.md and
   # agents/rules/*.md. Claude-specific assets remain editable symlinks.
   home = {
+    packages = [ claudeProfile ];
+
     file = {
       ".claude/CLAUDE.md".source = sharedAgentInstructions;
       ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";

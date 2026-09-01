@@ -20,6 +20,7 @@
     ./programs/agent-skills.nix
     ./programs/antigravity.nix
     ./programs/claude-code.nix
+    ./programs/claude-code-proxy.nix
     ./programs/codex.nix
     ./programs/zed.nix
     ./programs/nix-index.nix
