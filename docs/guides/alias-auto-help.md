@@ -48,7 +48,10 @@ generalAliases = {
 };
 
 nixCommonAliases = {
-  du = {cmd = "nix flake update --flake ~/dotfiles"; desc = "Update flake";};
+  update-all = {
+    cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-antigravity";
+    desc = "Update flake + GitHub apps + Claude Code + Antigravity";
+  };
 };
 
 nixDarwinAliases = {
@@ -91,7 +94,7 @@ $ h
 
 [Nix]
   dr - Apply Darwin config
-  du - Update flake
+  update-all - Update flake + GitHub apps + Claude Code + Antigravity
   ...
 
 [Claude Code]
@@ -110,14 +113,14 @@ $ hv
 
 ## カテゴリ構成
 
-| カテゴリ       | 内容                                      |
-| -------------- | ----------------------------------------- |
-| General        | 汎用（ll, nv, dot, ..）                   |
-| Nix            | Nix関連（dr, du, ds, dg, nd, db, dp）     |
-| Directory      | ディレクトリ移動（dev, drive, downloads） |
-| Claude Code    | Claude Code関連（clc, clr, cld, cls）     |
-| Codex          | Codex関連（cx, cxc, cxr, cxrev）          |
-| Agent Commands | `clp`・`cxp`・`clgpt`・`clproxy`          |
+| カテゴリ       | 内容                                          |
+| -------------- | --------------------------------------------- |
+| General        | 汎用（ll, nv, dot, ..）                       |
+| Nix            | Nix関連（dr, update-all, ds, dg, nd, db, dp） |
+| Directory      | ディレクトリ移動（dev, drive, downloads）     |
+| Claude Code    | Claude Code関連（clc, clr, cld, cls）         |
+| Codex          | Codex関連（cx, cxc, cxr, cxrev）              |
+| Agent Commands | `clp`・`cxp`・`clgpt`・`clproxy`              |
 
 `Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。
 shell aliasやabbrには変換しないため、実体のcommandをshadowしない。

@@ -220,7 +220,7 @@ chatgpt
 
 1PasswordのSSH Agentを有効にする。常駐serviceにsecretが必要になった時点で1Password Service Accountを追加する。現在はsecretを必要とするCompose serviceがないためtokenを配置しない。
 
-Claude Codeも使う場合はnative installerで一度だけ導入する。以後は`du`が明示的に更新する。
+Claude Codeも使う場合はnative installerで一度だけ導入する。以後は`update-all`が明示的に更新する。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash

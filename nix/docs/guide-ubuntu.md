@@ -103,7 +103,7 @@ Linux版はpreview。Computer Useは未対応。Wayland native modeはexperiment
 
 ### 8. Claude Code セットアップ
 
-`programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`du`から明示的に更新する。
+`programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`update-all`から明示的に更新する。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -132,20 +132,20 @@ claude --version
 
 ### よく使うエイリアス
 
-| Alias | 説明                                                               |
-| ----- | ------------------------------------------------------------------ |
-| `dr`  | `nh home switch ~/dotfiles -c r1ca18@homelab` - user設定だけを適用 |
-| `db`  | `nh home build ~/dotfiles -c r1ca18@homelab` - ビルドのみ          |
-| `dp`  | `home-manager generations` - 世代一覧                              |
-| `du`  | 依存を更新 (flake.lock)                                            |
-| `ds`  | パッケージ検索                                                     |
-| `dg`  | 古い世代と store path を削除                                       |
+| Alias        | 説明                                                               |
+| ------------ | ------------------------------------------------------------------ |
+| `dr`         | `nh home switch ~/dotfiles -c r1ca18@homelab` - user設定だけを適用 |
+| `db`         | `nh home build ~/dotfiles -c r1ca18@homelab` - ビルドのみ          |
+| `dp`         | `home-manager generations` - 世代一覧                              |
+| `update-all` | flakeと関連ツールを更新                                            |
+| `ds`         | パッケージ検索                                                     |
+| `dg`         | 古い世代と store path を削除                                       |
 
 ### 定期メンテナンス
 
 ```bash
 # 週1回: 依存を最新化
-du && dr
+update-all && dr
 git add flake.lock && git commit -m "chore: update flake.lock"
 
 # 月1回: ディスク容量を確保

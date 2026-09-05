@@ -44,7 +44,7 @@ in
 
     activation = {
       # Antigravity CLI (agy) native 版の自動導入。
-      # 更新は du の update-antigravity (または agy update) が担う。
+      # 更新は update-all の update-antigravity (または agy update) が担う。
       setupAntigravity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         bin="$HOME/.local/bin/agy"
         if [ ! -x "$bin" ]; then

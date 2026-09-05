@@ -57,7 +57,7 @@ let
 
   # GitHub release アプリ (Recordly 等) の version/hash を最新へ更新する。
   # 対象は nix/pkgs/github-apps.json レジストリで管理。ファイル書換のみで
-  # commit/rebuild はしない (du が呼ぶ -> git diff 確認 -> dr)。
+  # commit/rebuild はしない (update-all が呼ぶ -> git diff 確認 -> dr)。
   updateGithubApps = pkgs.writeShellApplication {
     name = "update-github-apps";
     runtimeInputs = with pkgs; [
@@ -116,7 +116,7 @@ let
     '';
   };
 
-  # Claude Code (native) を managed-channel に従い更新する。du が呼ぶ。
+  # Claude Code (native) を managed-channel に従い更新する。update-all が呼ぶ。
   # claude-code.nix の activation が ~/.claude/managed-channel を書き出す。
   updateClaudeCode = pkgs.writeShellApplication {
     name = "update-claude-code";

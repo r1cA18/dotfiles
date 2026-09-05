@@ -6,13 +6,13 @@
 
 ### 共通 (macOS & Linux)
 
-| Alias | Command                                  | Description                          |
-| ----- | ---------------------------------------- | ------------------------------------ |
-| `nx`  | `cd ~/dotfiles`                          | flake ルートへ移動                   |
-| `du`  | `nix flake update ...`                   | 依存パッケージを最新に               |
-| `ds`  | `nix search nixpkgs`                     | パッケージを検索                     |
-| `dg`  | `nh clean all --keep-since 14d --keep 5` | 古い generation と store path を削除 |
-| `nd`  | `nix develop`                            | 開発環境に入る                       |
+| Alias        | Command                                  | Description                          |
+| ------------ | ---------------------------------------- | ------------------------------------ |
+| `nx`         | `cd ~/dotfiles`                          | flake ルートへ移動                   |
+| `update-all` | `nix flake update ...`                   | flakeと関連ツールを最新に            |
+| `ds`         | `nix search nixpkgs`                     | パッケージを検索                     |
+| `dg`         | `nh clean all --keep-since 14d --keep 5` | 古い generation と store path を削除 |
+| `nd`         | `nix develop`                            | 開発環境に入る                       |
 
 ### macOS 専用 (nix-darwin)
 
@@ -44,7 +44,7 @@ dr
 ds ripgrep
 
 # 依存を最新にする（週1くらい）
-du && dr
+update-all && dr
 
 # ディスク容量を確保（月1くらい）
 dg
@@ -66,7 +66,7 @@ nix run ~/dotfiles#homelab-apply
 ds nodejs
 
 # 依存を最新にする
-du && dr
+update-all && dr
 
 # 世代を確認
 dp

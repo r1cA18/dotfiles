@@ -46,7 +46,7 @@ Claude Codeが`settings.json`を書き換えてregular fileにした場合も、
 
 ## Binary更新
 
-初回の`dr`は公式installerで`~/.local/bin/claude`をbootstrapする。background auto-updateは無効化してある。`du`が`~/.claude/managed-channel`を読み、`update-claude-code`経由で明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
+初回の`dr`は公式installerで`~/.local/bin/claude`をbootstrapする。background auto-updateは無効化してある。`update-all`が`~/.claude/managed-channel`を読み、`update-claude-code`経由で明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
 
 ## MCP管理
 

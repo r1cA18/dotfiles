@@ -200,19 +200,19 @@ home.sessionPath = [
 
 > 詳細は [cheatsheet.md](./cheatsheet.md) を参照
 
-| Alias | macOS | Linux | 説明                 |
-| ----- | :---: | :---: | -------------------- |
-| `dr`  |  ✅   |  ✅   | 設定を適用 (rebuild) |
-| `db`  |  ✅   |  ✅   | ビルドのみ           |
-| `dp`  |  ✅   |  ✅   | ロールバック / 履歴  |
-| `du`  |  ✅   |  ✅   | 依存を更新           |
-| `ds`  |  ✅   |  ✅   | パッケージを検索     |
-| `dg`  |  ✅   |  ✅   | 古い世代を削除       |
+| Alias        | macOS | Linux | 説明                    |
+| ------------ | :---: | :---: | ----------------------- |
+| `dr`         |  ✅   |  ✅   | 設定を適用 (rebuild)    |
+| `db`         |  ✅   |  ✅   | ビルドのみ              |
+| `dp`         |  ✅   |  ✅   | ロールバック / 履歴     |
+| `update-all` |  ✅   |  ✅   | flakeと関連ツールを更新 |
+| `ds`         |  ✅   |  ✅   | パッケージを検索        |
+| `dg`         |  ✅   |  ✅   | 古い世代を削除          |
 
 ### 定期的な更新
 
 ```bash
-du       # 依存を更新
+update-all # flakeと関連ツールを更新
 dr       # リビルド
 git add flake.lock
 git commit -m "chore: update flake.lock"

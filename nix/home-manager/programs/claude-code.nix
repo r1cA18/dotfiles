@@ -18,7 +18,7 @@ let
     else
       "canberra-gtk-play --id=message 2>/dev/null || true";
 
-  # Claude Code (native installer) の追従チャネル。"latest" で du のたびに
+  # Claude Code (native installer) の追従チャネル。"latest" で update-all のたびに
   # 最新へ追従、版番号 (例 "2.1.150") でその版に固定/ロールバック。
   claudeChannel = "latest";
 
@@ -258,7 +258,7 @@ in
       env = {
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
-        # bg 自動更新を切り、更新経路を du (update-claude-code) に一元化する。
+        # bg 自動更新を切り、更新経路を update-all (update-claude-code) に一元化する。
         DISABLE_AUTOUPDATER = "1";
       };
 
@@ -558,9 +558,9 @@ in
           "${dotfilesDir}/claude/mcp-servers.json" || true
       '';
 
-      # Claude Code native 版の導入/固定。更新 (latest 追従) は du の
+      # Claude Code native 版の導入/固定。更新 (latest 追従) は update-all の
       # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
-      # claudeChannel を managed-channel に書き出し、du スクリプトへ状態を渡す。
+      # claudeChannel を managed-channel に書き出し、update-all の更新処理へ状態を渡す。
       setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         export PATH="${pkgs.curl}/bin:$PATH"
         channel="${claudeChannel}"

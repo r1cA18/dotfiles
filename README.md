@@ -53,7 +53,7 @@ nix run ~/dotfiles#homelab-apply  # Linuxのsystem設定とHome Managerを一括
 h      # エイリアス一覧（説明付き）
 hv nix # エイリアス一覧を絞り込み
 dr     # macOS全体またはLinuxのHome Managerをリビルド
-du     # flake更新
+update-all # flake・GitHub apps・Claude Code・Antigravityを更新
 ```
 
 ### Claude Code
