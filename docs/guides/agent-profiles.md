@@ -28,27 +28,39 @@ clp add user@example.com
 clp login user@example.com
 clp status user@example.com
 clp path user@example.com
+clp doctor
+clp archive user@example.com
 
 cxp list
 cxp add user@example.com
 cxp login user@example.com
 cxp status user@example.com
 cxp path user@example.com
+cxp doctor
+cxp archive user@example.com
 ```
 
 `run`・`login`・`status`・`path`でemailを省略するとfzf pickerが開く。
+
+`run`は追加profileのdirectory名と実際のlogin emailを起動前に照合する。
+一致しない場合はaccountを誤使用しないよう起動を停止する。
+`doctor`はidentity・metadata・shared link・permissionの不整合を読み取り専用で検査する。
+`archive`はdefault以外のprofileを削除せずrecoverable trashへ移動する。
 
 ## 保存場所
 
 ```text
 Claude primary       ~/.claude + ~/.claude.json
 Claude追加profile    ${XDG_STATE_HOME:-~/.local/state}/claude-code/profiles/<email>
+Claude archive       ${XDG_STATE_HOME:-~/.local/state}/claude-code/trash/<email>-<timestamp>
 
 Codex primary        ~/.codex
 Codex追加profile     ${XDG_STATE_HOME:-~/.local/state}/codex/profiles/<email>
+Codex archive        ${XDG_STATE_HOME:-~/.local/state}/codex/trash/<email>-<timestamp>
 ```
 
 追加accountはemailをdirectory名にしてstate directoryへ追加する。
+`add`中にloginやidentity確認が失敗したprofileもtrashへ退避する。
 
 ## 管理境界
 

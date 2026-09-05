@@ -219,13 +219,17 @@ let
           || true
       }
 
-      run_for_profile() {
+      exec_for_profile() {
         local profile="$1"
-        shift
+        local guard_identity="$2"
+        shift 2
 
         local config_dir
         config_dir="$(resolve_profile "$profile")"
         ensure_shared_config "$config_dir"
+        if [[ "$guard_identity" == "true" ]]; then
+          verify_profile_identity "$config_dir"
+        fi
 
         if [[ -n "$config_dir" ]]; then
           export CODEX_HOME="$config_dir"
@@ -235,9 +239,23 @@ let
         exec "$codex_bin" "$@"
       }
 
+      login_profile() {
+        local profile="$1"
+        local config_dir
+
+        config_dir="$(resolve_profile "$profile")"
+        ensure_shared_config "$config_dir"
+        if [[ -n "$config_dir" ]]; then
+          CODEX_HOME="$config_dir" "$codex_bin" login
+        else
+          "$codex_bin" login
+        fi
+        verify_profile_identity "$config_dir" true
+      }
+
       add_profile() {
         local email="$1"
-        local config_dir actual_email
+        local config_dir exit_code
 
         validate_profile_email "$email"
         if resolve_profile "$email" >/dev/null 2>&1; then
@@ -246,13 +264,19 @@ let
         fi
 
         config_dir="$profile_root/$email"
+        install -d -m 700 "$profile_root"
         install -d -m 700 "$config_dir"
         ensure_shared_config "$config_dir"
 
-        CODEX_HOME="$config_dir" "$codex_bin" login
-        actual_email="$(profile_email "$config_dir/auth.json")"
-        if [[ -n "$actual_email" && "$actual_email" != "$email" ]]; then
-          echo "Signed in as $actual_email but the profile path is named $email." >&2
+        if CODEX_HOME="$config_dir" "$codex_bin" login; then
+          :
+        else
+          exit_code=$?
+          trash_profile_dir "$config_dir" "login failed"
+          return "$exit_code"
+        fi
+        if ! verify_profile_identity "$config_dir" true; then
+          trash_profile_dir "$config_dir" "identity verification failed"
           return 1
         fi
       }
@@ -268,6 +292,8 @@ let
         login [profile]       Sign in again for a profile selected by email or fzf
         status [profile]      Show authentication status
         path [profile]        Print the profile CODEX_HOME
+        doctor                Check profile identity, links, metadata, and permissions
+        archive [profile]     Move a non-default profile to recoverable trash
         run [profile] [args]  Start Codex with a profile selected by email or fzf
       EOF
       }
@@ -292,12 +318,12 @@ let
         login)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
           profile="$(select_profile "''${1:-}")"
-          run_for_profile "$profile" login
+          login_profile "$profile"
           ;;
         status)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
           profile="$(select_profile "''${1:-}")"
-          run_for_profile "$profile" login status
+          exec_for_profile "$profile" false login status
           ;;
         path)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
@@ -305,12 +331,21 @@ let
           config_dir="$(resolve_profile "$profile")"
           printf '%s\n' "''${config_dir:-$HOME/.codex}"
           ;;
+        doctor)
+          [[ $# -eq 0 ]] || { usage >&2; exit 2; }
+          doctor_profiles
+          ;;
+        archive)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          archive_profile "$profile"
+          ;;
         run)
           profile="$(select_profile "''${1:-}")"
           if [[ $# -gt 0 ]]; then
             shift
           fi
-          run_for_profile "$profile" "$@"
+          exec_for_profile "$profile" true "$@"
           ;;
         help|-h|--help|"")
           usage

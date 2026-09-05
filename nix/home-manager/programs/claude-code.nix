@@ -54,6 +54,15 @@ let
     profileMetadataName = ".claude.json";
     sharedPaths = claudeProfileSharedPaths;
   };
+  claudeStatusline = pkgs.writeShellApplication {
+    name = "claude-statusline";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.git
+      pkgs.jq
+    ];
+    text = builtins.readFile ../../../claude/scripts/statusline.sh;
+  };
   claudeProfile = pkgs.writeShellApplication {
     name = "clp";
     runtimeInputs = [
@@ -80,14 +89,18 @@ let
         jq -r '.oauthAccount.emailAddress // empty' "$state_file" 2>/dev/null || true
       }
 
-      run_for_profile() {
+      exec_for_profile() {
         local profile="$1"
-        local command="$2"
-        shift 2
+        local guard_identity="$2"
+        local command="$3"
+        shift 3
 
         local config_dir
         config_dir="$(resolve_profile "$profile")"
         ensure_shared_config "$config_dir"
+        if [[ "$guard_identity" == "true" ]]; then
+          verify_profile_identity "$config_dir"
+        fi
 
         if [[ -n "$config_dir" ]]; then
           export CLAUDE_CONFIG_DIR="$config_dir"
@@ -97,9 +110,23 @@ let
         exec "$command" "$@"
       }
 
+      login_profile() {
+        local profile="$1"
+        local config_dir
+
+        config_dir="$(resolve_profile "$profile")"
+        ensure_shared_config "$config_dir"
+        if [[ -n "$config_dir" ]]; then
+          CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login
+        else
+          "$claude_bin" auth login
+        fi
+        verify_profile_identity "$config_dir" true
+      }
+
       add_profile() {
         local email="$1"
-        local config_dir actual_email
+        local config_dir exit_code
 
         validate_profile_email "$email"
         if resolve_profile "$email" >/dev/null 2>&1; then
@@ -108,13 +135,19 @@ let
         fi
 
         config_dir="$profile_root/$email"
+        install -d -m 700 "$profile_root"
         install -d -m 700 "$config_dir"
         ensure_shared_config "$config_dir"
 
-        CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login
-        actual_email="$(profile_email "$config_dir/.claude.json")"
-        if [[ -n "$actual_email" && "$actual_email" != "$email" ]]; then
-          echo "Signed in as $actual_email but the profile path is named $email." >&2
+        if CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login; then
+          :
+        else
+          exit_code=$?
+          trash_profile_dir "$config_dir" "login failed"
+          return "$exit_code"
+        fi
+        if ! verify_profile_identity "$config_dir" true; then
+          trash_profile_dir "$config_dir" "identity verification failed"
           return 1
         fi
       }
@@ -130,6 +163,8 @@ let
         login [profile]       Sign in again for a profile selected by email or fzf
         status [profile]      Show authentication status
         path [profile]        Print the profile config directory
+        doctor                Check profile identity, links, metadata, and permissions
+        archive [profile]     Move a non-default profile to recoverable trash
         run [profile] [args]  Start Claude Code with a profile selected by email or fzf
         gpt [profile] [args]  Start the GPT backend with a profile selected by email or fzf
       EOF
@@ -155,12 +190,12 @@ let
         login)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
           profile="$(select_profile "''${1:-}")"
-          run_for_profile "$profile" "$claude_bin" auth login
+          login_profile "$profile"
           ;;
         status)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
           profile="$(select_profile "''${1:-}")"
-          run_for_profile "$profile" "$claude_bin" auth status
+          exec_for_profile "$profile" false "$claude_bin" auth status
           ;;
         path)
           [[ $# -le 1 ]] || { usage >&2; exit 2; }
@@ -168,19 +203,28 @@ let
           config_dir="$(resolve_profile "$profile")"
           printf '%s\n' "''${config_dir:-$HOME/.claude}"
           ;;
+        doctor)
+          [[ $# -eq 0 ]] || { usage >&2; exit 2; }
+          doctor_profiles
+          ;;
+        archive)
+          [[ $# -le 1 ]] || { usage >&2; exit 2; }
+          profile="$(select_profile "''${1:-}")"
+          archive_profile "$profile"
+          ;;
         run)
           profile="$(select_profile "''${1:-}")"
           if [[ $# -gt 0 ]]; then
             shift
           fi
-          run_for_profile "$profile" "$claude_bin" "$@"
+          exec_for_profile "$profile" true "$claude_bin" "$@"
           ;;
         gpt)
           profile="$(select_profile "''${1:-}")"
           if [[ $# -gt 0 ]]; then
             shift
           fi
-          run_for_profile "$profile" clgpt "$@"
+          exec_for_profile "$profile" true clgpt "$@"
           ;;
         help|-h|--help|"")
           usage
@@ -216,6 +260,12 @@ in
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
         # bg 自動更新を切り、更新経路を du (update-claude-code) に一元化する。
         DISABLE_AUTOUPDATER = "1";
+      };
+
+      statusLine = {
+        type = "command";
+        command = lib.getExe claudeStatusline;
+        padding = 0;
       };
 
       permissions = {
@@ -464,7 +514,10 @@ in
   # Shared instructions are generated from agents/INSTRUCTIONS.md and
   # agents/rules/*.md. Claude-specific assets remain editable symlinks.
   home = {
-    packages = [ claudeProfile ];
+    packages = [
+      claudeProfile
+      claudeStatusline
+    ];
 
     file = {
       ".claude/CLAUDE.md".source = sharedAgentInstructions;
