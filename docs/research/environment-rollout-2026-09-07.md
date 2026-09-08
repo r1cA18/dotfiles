@@ -116,6 +116,21 @@ GitHub ActionsでのLinux実行と実productのonboardingは未検証。Home Man
 
 Home Managerの全体適用とGitHub Actions上の実行と実productのonboardingは未実施。
 
+## 2026-09-08の適用確認
+
+上記の未適用という記録は当時の状態。実装commit `8791604`をMacへ`dr`相当の`nh darwin switch`で適用し成功した。
+
+- SSH全体の`Bash(ssh *)`をClaudeのallowへ移動しdenyから削除
+- SSH秘密鍵fileへの直接Read/Edit制限は維持
+- Codexの`features.multi_agent = false`と単独実行instructionの配布を確認
+- 新しいlogin shellで`workspace`のPATHと`ws`展開と`h`・`hp`・`hv`・`wsg`・`devg`の定義を確認
+- Mac system buildとformatting・pre-commit checksが成功
+- `bash scripts/test.sh all`はunit 48 pass・18 skip・0 failとintegration 40 pass・0 fail
+- fixture tokenの生成方式変更後にprofile 14 testsを再実行して成功
+- staged差分のgitleaks検査で検出なし
+
+unitのNix依存skipはintegrationで検証する。suite間で重複があるため件数を合算しない。全skill資産の網羅検証と実際のNix生成help catalogの対話E2Eは未整備。Linux実機とGitHub Actions上の結果と実product onboardingも未確認。SSH許可の確認は設定上の確認でありJetsonへの接続試験ではない。
+
 ## 関連文書
 
 - [workspace運用](../guides/multi-repo-workspaces.md)

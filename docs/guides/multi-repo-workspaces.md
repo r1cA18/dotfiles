@@ -255,7 +255,7 @@ agent-std-workflowはproductと工程の分離を提供する一方、基本形�
 
 `search`は全repoのfunctionと登録済みwikiを検索し、`query`はfunctionだけを検索する。plain textの正確な検索は引き続き`./ws rg`を使う。TF-IDFの順位は語彙上の手掛かりであり、コードの意味理解やowner判定を保証しない。対応言語・検索漏れ・実projectでの速度は導入後にも確認する。
 
-横断知識の正本は`docs/knowledge/`へ置く。例えば認証contractのnoteを作成した後にwikiへ登録する。
+横断知識の正本はworkspace内の`./docs/knowledge/`へ置く。例えば認証contractのnoteを作成した後にwikiへ登録する。
 
 ```bash
 indexion wiki pages add --id=authentication --title='Authentication contract' \

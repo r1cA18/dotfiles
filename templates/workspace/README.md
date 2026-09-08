@@ -57,7 +57,7 @@ Optional tools:
 - `./ws index` and `./ws search 'query'` require indexion; the Nix shell provides the pinned version
 - `./ws snapshot` records clean child revisions; `./ws verify` checks them without changing checkouts
 
-Keep decisions in `docs/knowledge/` and progress in `docs/tasks/`.
+Keep decisions in `./docs/knowledge/` and progress in `./docs/tasks/`, relative to the workspace root.
 Commit parent instructions and repository changes in their respective Git repositories.
 
 ## Existing ghq checkouts
