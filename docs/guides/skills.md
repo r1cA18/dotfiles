@@ -52,7 +52,7 @@ mkdir agents/skills/my-skill
 dr  # リビルドで自動反映
 ```
 
-### 公式スキル（anthropic/skills）
+### 外部スキル
 
 `agent-skills.nix` の `enable` リストにスキル名を追加して `dr` でリビルド。
 
@@ -65,7 +65,17 @@ skills.enable = [
 ];
 ```
 
-利用可能な公式スキル一覧: `ls $(nix eval --raw inputs.anthropic-skills)/skills/`
+利用候補は[Anthropicの公開skill一覧](https://github.com/anthropics/skills/tree/main/skills)から確認する。
+repo全体のlicenseだけでなく各skill内の`LICENSE.txt`も読む。
+
+OpenAI由来の共有skillは`openai-skills` inputから必要なものだけを選ぶ。
+`openai/skills`は非推奨catalogであり、現在の配布例は`openai/plugins`へ移っている。
+今回選んだCLI・reference workflowは旧catalogのcommitを固定し、
+Codex pluginのapp/MCP依存を共有領域へ持ち込まない。
+
+sourceの追加だけでは有効化しない。`skills.enable`または`skills.explicit`で選択する。
+同名skillがあるsourceは`filter.nameRegex`でdiscoveryを絞り、
+systemの`skill-creator`や`openai-docs`を上書きしない。
 
 ## 主なグローバルskill
 
@@ -77,15 +87,18 @@ skills.enable = [
 
 ### 開発
 
-| スキル              | 用途                                        |
-| ------------------- | ------------------------------------------- |
-| `ios-device-build`  | iOSアプリを実機にビルド・インストール・起動 |
-| `swift-dev-toolkit` | Swift/iOS/macOS開発ツールキット             |
-| `skill-builder`     | スキルの作成・改善                          |
-| `skill-auditor`     | スキルの品質監査                            |
-| `post-review`       | 実装後レビューと修正のループ                |
-| `idea-to-ship`      | 調査から実装・検証・pushまでのworkflow      |
-| `project-init`      | flake・direnv・agent docsの初期化           |
+| スキル                    | 用途                                        |
+| ------------------------- | ------------------------------------------- |
+| `ios-device-build`        | iOSアプリを実機にビルド・インストール・起動 |
+| `swift-dev-toolkit`       | Swift/iOS/macOS開発ツールキット             |
+| `skill-builder`           | スキルの作成・改善                          |
+| `skill-auditor`           | スキルの品質監査                            |
+| `post-review`             | 実装後レビューと修正のループ                |
+| `idea-to-ship`            | 調査から実装・検証・pushまでのworkflow      |
+| `project-init`            | flake・direnv・agent docsの初期化           |
+| `gh-fix-ci`               | GitHub ActionsのPR失敗調査と修正            |
+| `security-best-practices` | 明示的なPython・JS/TS・Goのsecurity review  |
+| `property-based-testing`  | parser・変換・正規化等の性質を検証するtest  |
 
 ### UI / デザイン
 
@@ -118,11 +131,15 @@ skills.enable = [
 
 ### 知識管理
 
-| スキル                  | 用途                                  |
-| ----------------------- | ------------------------------------- |
-| `knowledge-extract`     | セッションの学びをVaultに保存         |
-| `session-documentation` | セッション内容をdocs/にドキュメント化 |
-| `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存      |
+| スキル                  | 用途                                                  |
+| ----------------------- | ----------------------------------------------------- |
+| `knowledge-extract`     | セッションの学びをVaultに保存                         |
+| `session-documentation` | セッション内容をdocs/にドキュメント化                 |
+| `session-handoff`       | 別session・account・agentから未完了作業を回収して続行 |
+| `indexion-workspace`    | 複数repoのworkspaceで共通指示とcontextを扱う          |
+| `forms-archive`         | Microsoft FormsをPDF/MHTMLで保存                      |
+
+引き継ぎ方法とnative resume/importの違いは[session引き継ぎガイド](agent-session-handoff.md)を参照。
 
 ## Plugin skill との関係
 
@@ -157,3 +174,22 @@ slash-command 風に呼びたい場合だけ `codex/prompts/*.md` に薄い wrap
 ```
 
 正確な有効一覧は`nix/home-manager/programs/agent-skills.nix`の`skills.enable`と`skills.explicit`をsource of truthにする。
+
+## 2026-09追加の基礎skill
+
+| Skill                     | 用途と非対象                                                   | Runtime                                   |
+| ------------------------- | -------------------------------------------------------------- | ----------------------------------------- |
+| `gh-fix-ci`               | PRのGitHub Actions失敗。一般reviewや外部CIは非対象             | Nixの`gh`と既存のGitHub認証               |
+| `security-best-practices` | 明示的なsecurity依頼。通常のbug修正では自動適用しない          | repo読取。追加のAPIやMCPは不要            |
+| `property-based-testing`  | roundtrip・idempotence・invariant等。UI E2Eやbenchmarkは非対象 | 対象projectが使うPBT libraryとtest runner |
+
+全てClaude/Codex両targetへglobal配布する。GitHubへのcomment投稿・push・workflow再実行は、
+skill導入とは別にその作業の依頼範囲で判断する。PBT libraryはglobal installせず対象projectで管理する。
+
+`gh-fix-ci`は[local adapter](../../agents/skills/upstream-adapters/gh-fix-ci.md)を配布時に適用する。
+旧Python helperへの依存と固定の承認段階を除き、現在の`gh`のJSON出力を直接使う。
+`property-based-testing`はprovider固有の`effort` metadataだけを除き、出典とlicense情報を追記する。
+upstreamのLICENSEやreferencesはbundleまたは参照先のNix store sourceに保持する。
+
+採用候補・見送り理由・固定revision・検証範囲は
+[基礎skill選定記録](../research/shared-foundation-skills-2026-09.md)を参照。

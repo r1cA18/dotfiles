@@ -54,3 +54,13 @@ in
   difit = pkgs.callPackage ./difit { };
   inherit mdv;
 }
+//
+  pkgs.lib.optionalAttrs
+    (builtins.elem pkgs.stdenv.hostPlatform.system [
+      "aarch64-darwin"
+      "x86_64-linux"
+    ])
+    rec {
+      indexion = pkgs.callPackage ./indexion { };
+      workspace = pkgs.callPackage ./workspace { inherit indexion; };
+    }

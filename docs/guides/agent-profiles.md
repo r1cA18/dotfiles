@@ -47,6 +47,11 @@ cxp archive user@example.com
 `doctor`はidentity・metadata・shared link・permissionの不整合を読み取り専用で検査する。
 `archive`はdefault以外のprofileを削除せずrecoverable trashへ移動する。
 
+`help`・`list`・`complete`・`path`・`doctor`・`archive`はnative CLIが未導入でも使える。
+`add`・`login`・`status`・`run`は`~/.local/bin`のnative CLIを必要とする。
+CLIがない場合は`update-codex`または`update-claude-code`で導入してから再実行する。
+`login default`は現在の`CODEX_HOME`や`CLAUDE_CONFIG_DIR`を引き継がずprimaryへloginする。
+
 ## 保存場所
 
 ```text
@@ -113,3 +118,27 @@ exec zsh
 
 `dr`でprimary側の宣言設定を再生成する。
 credential・conversation・plugin runtimeは変更しない。
+
+Linuxで`clp`や`cxp`自体が見つからない場合は、native CLIの不足と区別する。
+`command -v clp cxp`と`ls ~/.nix-profile/bin/clp ~/.nix-profile/bin/cxp`で確認し、
+Home Managerへprofile managerを含む設定が適用済みか調べる。
+`~/.nix-profile/bin`に存在する場合は新しいlogin shellでPATHを確認する。
+存在しない場合はLinux側checkoutの差分を確認してから`dr`を適用する。
+Macでの変更だけではLinuxのNix生成commandは更新されない。
+
+## 回帰検証
+
+```bash
+DOTFILES_TEST_NIX=1 bun test tests/agent-profiles.test.ts
+```
+
+testは実行hostに対応するHome Manager設定から`clp`と`cxp`をNixでbuildする。
+生成packageを直接実行するためBashとGNU toolsもNixの依存関係から供給される。
+native CLIだけをmockに置き換え、一時directory内の架空accountで管理操作・作成・起動・
+default再loginの分離を検証する。実accountのcredentialは使わない。
+対象hostはApple Silicon Macとx86_64 Linuxとなる。
+
+初期testはLinux向けshellをMacで実行し、Linux依存binaryが未取得の間だけMacのPATHへ
+fallbackして成功していた。LinuxのcoreutilsがNix storeへ取得された後に実行形式の不一致が
+現れたため、host用packageのbuildと直接実行へ強化した。今回の実行検証はMacで行い、
+Linuxについては宣言評価のみとなる。Linux実機の不具合解消は別途確認が必要となる。

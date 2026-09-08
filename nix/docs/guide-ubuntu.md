@@ -101,14 +101,19 @@ chatgpt
 
 Linux版はpreview。Computer Useは未対応。Wayland native modeはexperimentalなので通常はXWaylandを使う。
 
-### 8. Claude Code セットアップ
+### 8. Agent CLIセットアップ
 
 `programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`update-all`から明示的に更新する。
 
+Codexも同様に公式installerで`~/.local/bin/codex`へ入れる。Home Managerは未導入時に両方をbootstrapするため、通常は`dr`だけでよい。手動導入する場合は次を実行する。
+
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
+curl -fsSL https://chatgpt.com/codex/install.sh | bash
 which claude    # ~/.local/bin/claude を指していることを確認
 claude --version
+which codex     # ~/.local/bin/codex を指していることを確認
+codex --version
 ```
 
 > **Warning**: 過去に `bun install -g @anthropic-ai/claude-code` を走らせていたマシンでは `~/.bun/bin/claude` の残骸が PATH 優先で拾われ、`claude native binary not installed` で起動失敗する。残骸を消してから公式インストーラを走らせる:

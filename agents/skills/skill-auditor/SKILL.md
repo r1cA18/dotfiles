@@ -1,20 +1,14 @@
 ---
 name: skill-auditor
-description: |
-  Audit and evaluate skill quality in ~/dotfiles/agents/skills/.
-  Scores skills on a 7-dimension rubric (structure, frontmatter, instructions, references, actionability, deduplication, SDK readiness).
-  Detects anti-patterns: duplicates, inline bloat, missing JA triggers, vague descriptions.
-  Two modes: portfolio audit (all skills) and single skill audit.
-  Triggers: "audit skill", "evaluate skill", "skill quality", "skill review", "score skills"
-  日本語: 「スキルを評価して」「スキル監査」「全スキルをチェック」「スキルのスコアを出して」「スキルレビュー」
+description: Audit individual skills or the dotfiles skill portfolio when evaluating quality, overlapping responsibilities, discovery accuracy, and portability across agents.
 ---
 
 # Skill Auditor
 
 ~/dotfiles/agents/skills/ 配下のスキル品質を定量評価し、改善提案を出す。
 
-**作成は公式プラグイン** (`skill-creator@claude-plugins-official`, `document-skills@anthropic-agent-skills`) を使う。
-このスキルは **監査に特化** している。
+このスキルは監査に特化する。作成や修正が必要な場合は対象環境で利用可能な
+`skill-creator`または共有`skill-builder`を参照する。未導入pluginを前提にしない。
 
 ## モード選択
 
@@ -47,7 +41,7 @@ description: |
 
 | Skill                      | Str | Fmt | Ins | Ref | Act | Dup | SDK | Total | Grade      | Top Issue       |
 | -------------------------- | --- | --- | --- | --- | --- | --- | --- | ----- | ---------- | --------------- |
-| swift-dev-toolkit          | 5   | 5   | 5   | 5   | 5   | 5   | 4   | 33.0  | Excellent  | ...             |
+| example-skill             | 5   | 5   | 5   | 5   | 5   | 5   | 4   | 34.5  | Excellent  | ...             |
 | ...                        |     |     |     |     |     |     |     |       |            |                 |
 
 ## Duplicate Detection
@@ -55,7 +49,7 @@ description: |
 
 ## Anti-Patterns Found
 - [AP-1] skill-a / skill-b: Near-Duplicate
-- [AP-3] remotion-best-practices: Missing JA Triggers
+- [AP-3] skill-c: Discovery Mismatch（日本語の該当依頼で呼び出されない実測あり）
 - ...
 
 ## Improvement Priority (highest impact first)
@@ -66,6 +60,7 @@ description: |
 ### 採点の原則
 
 - **客観的証拠** に基づいて採点する。「多分良い」ではなく「〜が存在する/しない」で判定
+- 未読の本文や未実施のtrigger検証は未評価と記録する。静的な重複候補と実測した誤起動を区別する
 - **スキルタイプを考慮**: Simple スキルに Structure 5 は不要。[references/patterns.md](references/patterns.md) でタイプを判定し、そのタイプに見合った基準で採点
 - **重み計算を間違えない**: Weighted Score = Raw Score x Weight。Instructions (1.5) と Actionability (1.5) は他より影響が大きい
 
@@ -88,9 +83,9 @@ rubric.md の「Single Skill Audit 出力フォーマット」に従う。
 
 ### 改善案の書き方
 
-- **具体的に**: 「frontmatter を改善する」ではなく「description に以下の JA triggers を追加: 「〜して」「〜を実行」」
-- **期待効果を数値化**: 「(expected: +2 points on Frontmatter)」
-- **優先度順**: 最もスコアが上がる改善から順に
+- **具体的に**: 「frontmatterを改善する」ではなく「PDF閲覧とPDF生成のどちらを扱うかをdescriptionに明記する」
+- 期待効果を利用者への影響で説明する。未実測のtrigger改善を数値化しない
+- 壊れた参照・権限境界・実行不能な手順を優先しscore上昇だけを目標にしない
 
 ## Trigger Smoke Test（オプション）
 
@@ -111,4 +106,4 @@ bash ~/dotfiles/agents/skills/skill-auditor/scripts/trigger_smoke_test.sh \
 
 - 採点は目安。スキルの「価値」はスコアだけでは測れない
 - 外部プラグイン由来のスキル（remotion、vercel-react 等）は dotfiles 規約に完全に合致しなくてよい
-- 本格的な eval（A/B比較、benchmark）が必要な場合は公式プラグイン `skill-creator@claude-plugins-official` を使う
+- 本格的なevalでは対象agentで利用可能な評価手段を使う。Claude専用smoke testの結果をCodexの結果として扱わない

@@ -97,7 +97,8 @@ check 'Tailscale Funnel disabled' bash -c '
 
 check 'Codex app server enabled' systemctl --user is-enabled codex-app-server.service
 check 'Codex app server active' systemctl --user is-active codex-app-server.service
-check 'Olympus MCP registered' "$HOME/.nix-profile/bin/codex" mcp get olympus
+check 'Olympus MCP registered' env CODEX_HOME="$HOME/.codex" \
+  "$HOME/.local/bin/codex" mcp get olympus
 for timer in olympus-times-triage.timer olympus-deadline-scheduler.timer; do
   check "$timer enabled" systemctl --user is-enabled "$timer"
   check "$timer active" systemctl --user is-active "$timer"

@@ -31,11 +31,11 @@ let
   nixCommonAliases = {
     nx = {
       cmd = "cd ~/dotfiles";
-      desc = "Go to dotfiles flake root";
+      desc = "Go to dotfiles (compatibility name; prefer dot)";
     };
     update-all = {
-      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-antigravity";
-      desc = "Update flake + GitHub apps + Claude Code + Antigravity";
+      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity";
+      desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity";
     };
     ds = {
       cmd = "nix search nixpkgs";
@@ -55,12 +55,17 @@ let
     dr = {
       cmd = "nh darwin switch ~/dotfiles -H ${hostname}";
       desc = "Apply Darwin config";
+      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n適用前の状態へ戻す場合: dot-rollback";
     };
     db = {
       cmd = "nh darwin build ~/dotfiles -H ${hostname}";
       desc = "Build Darwin config";
     };
     dp = {
+      cmd = "darwin-rebuild switch --rollback";
+      desc = "Rollback Darwin config (compatibility name; prefer dot-rollback)";
+    };
+    dot-rollback = {
       cmd = "darwin-rebuild switch --rollback";
       desc = "Rollback Darwin config";
     };
@@ -70,12 +75,17 @@ let
     dr = {
       cmd = "nh home switch ~/dotfiles -c ${linuxConfigName}";
       desc = "Apply Home Manager config";
+      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n世代を確認する場合: dot-generations";
     };
     db = {
       cmd = "nh home build ~/dotfiles -c ${linuxConfigName}";
       desc = "Build Home Manager config";
     };
     dp = {
+      cmd = "home-manager generations";
+      desc = "List Home Manager generations (compatibility name; prefer dot-generations)";
+    };
+    dot-generations = {
       cmd = "home-manager generations";
       desc = "List Home Manager generations";
     };
@@ -237,16 +247,65 @@ let
     };
   };
 
+  workspaceAliases = {
+    ws = {
+      cmd = "workspace";
+      desc = "Manage workspaces (init / clone / add / sync / status)";
+      help = ''
+        GitとBunで利用できます。配布先でNixは必須ではありません。
+
+        作成とrepo追加:
+          ws init ~/Workspaces/product
+          cd ~/Workspaces/product
+          ./ws add <repo-URL> web
+          ./ws status
+          ./ws codex
+
+        共有workspaceの取得:
+          ws clone <workspace-URL> ~/Workspaces/product
+        wsがない環境:
+          git clone <workspace-URL> product
+          cd product
+          ./ws sync
+
+        親repoはrepos.jsonと共通指示を管理します。
+        子repoのcommit・pullは各repoで行ってください。
+        syncは不足repoを取得します。既存repoのpullは行いません。
+        workspaceへの移動: wsg
+      '';
+    };
+  };
+
   # Executables do not become abbreviations. Keep them visible in h without
   # adding shell aliases that could shadow the real commands.
   canonicalCommands = {
     clp = {
       cmd = "clp <command>";
       desc = "Manage Claude account profiles";
+      help = ''
+        accountごとに認証とsessionを分けます。
+          clp list
+          clp add you@example.com
+          clp login you@example.com
+          clp run you@example.com
+          clp doctor
+        cl でaccount pickerを開きます。
+        workspaceから起動する場合: ./ws claude
+      '';
     };
     cxp = {
       cmd = "cxp <command>";
       desc = "Manage Codex account profiles";
+      help = ''
+        accountごとに認証とsessionを分けます。
+          cxp list
+          cxp add you@example.com
+          cxp login you@example.com
+          cxp run you@example.com
+          cxp doctor
+        cx でaccount pickerを開きます。
+        workspaceから起動する場合: ./ws codex
+      '';
     };
     clgpt = {
       cmd = "clgpt [args]";
@@ -269,6 +328,31 @@ let
     };
   };
 
+  shellTools = {
+    h = {
+      cmd = "h [pattern]";
+      desc = "Browse personal tool help (filter with an argument)";
+      help = "h: 対話terminalで検索とpreviewを開きます。\nh workspace: 説明一覧を絞り込みます。\nh | less: 一覧を出力します。\nhp workspace: workspaceを検索した状態でpickerを開きます。\nhv ws: コマンドの展開先を確認します。\n\n選択したコマンドは実行されません。";
+    };
+    hp = {
+      cmd = "hp [query]";
+      desc = "Search help with fzf and preview usage examples";
+    };
+    hv = {
+      cmd = "hv [pattern]";
+      desc = "List command expansions";
+    };
+    devg = {
+      cmd = "devg";
+      desc = "Pick a development repository and change directory";
+    };
+    wsg = {
+      cmd = "wsg [root]";
+      desc = "Pick a workspace and change directory";
+      help = "既定の探索先は ~/Workspaces です。\n  wsg\n  wsg /path/to/workspaces\n\nrepos.jsonがあるworkspaceを選択できます。\n子repo・.git・node_modulesの内部は探索しません。\nEscで移動を取り消します。";
+    };
+  };
+
   helpSections = [
     {
       title = "General";
@@ -280,7 +364,9 @@ let
     }
     {
       title = "Directory";
-      defs = if isDarwin then dirDarwinAliases else dirLinuxAliases;
+      defs = (if isDarwin then dirDarwinAliases else dirLinuxAliases) // {
+        inherit (shellTools) devg wsg;
+      };
     }
     {
       title = "Claude Code";
@@ -291,8 +377,19 @@ let
       defs = codexAliases;
     }
     {
+      title = "Workspace";
+      defs = workspaceAliases;
+    }
+    {
       title = "Agent Commands";
       defs = canonicalCommands;
+    }
+    {
+      title = "Help";
+      defs = removeAttrs shellTools [
+        "devg"
+        "wsg"
+      ];
     }
   ];
 
@@ -302,7 +399,8 @@ let
     // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
     // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
     // claudeAliases
-    // codexAliases;
+    // codexAliases
+    // workspaceAliases;
 
   managedShellAliases = aliasOnlyDefs // abbrDefs;
 
@@ -330,6 +428,19 @@ let
   managedAbbrPairs = lib.concatMapStringsSep " " (name: "${lib.escapeShellArg name} 1") (
     builtins.attrNames abbrDefs
   );
+  helpEntries = lib.concatMapStringsSep "\n" (
+    section:
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        name: value:
+        lib.escapeShellArg (
+          "${name}\t${section.title}\t${value.desc}\t"
+          + "${name} — ${value.desc}\n\n${value.cmd}"
+          + lib.optionalString (value ? help) "\n\n${value.help}"
+        )
+      ) section.defs
+    )
+  ) helpSections;
 in
 {
   home.file.".p10k.zsh".source = ./p10k.zsh;
@@ -366,111 +477,55 @@ in
     shellAliases = lib.mapAttrs (_: value: value.cmd) managedShellAliases;
 
     initContent = ''
-            [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+      [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-            ${mkAbbrInit abbrDefs}
+      ${mkAbbrInit abbrDefs}
 
-            _agent_profile_completion() {
-              local manager="$1"
-              local -a commands profiles
-              commands=(
-                'list:List account profiles'
-                'add:Add an account profile'
-                'login:Sign in to an account profile'
-                'status:Show authentication status'
-                'path:Print the profile data directory'
-                'run:Start with an account profile'
-                'complete:Print completion candidates'
-              )
-              if [[ "$manager" == "clp" ]]; then
-                commands+=( 'gpt:Start the GPT backend with an account profile' )
-              fi
+      _agent_profile_completion() {
+        local manager="$1"
+        local -a commands profiles
+        commands=(
+          'list:List account profiles'
+          'add:Add an account profile'
+          'login:Sign in to an account profile'
+          'status:Show authentication status'
+          'doctor:Diagnose the profile environment'
+          'archive:Archive an account profile'
+          'path:Print the profile data directory'
+          'run:Start with an account profile'
+          'complete:Print completion candidates'
+        )
+        if [[ "$manager" == "clp" ]]; then
+          commands+=( 'gpt:Start the GPT backend with an account profile' )
+        fi
 
-              if (( CURRENT == 2 )); then
-                _describe 'command' commands
-                return
-              fi
+        if (( CURRENT == 2 )); then
+          _describe 'command' commands
+          return
+        fi
 
-              if (( CURRENT == 3 )) && [[ "$words[2]" == (run|gpt|login|status|path) ]]; then
-                profiles=("''${(@f)$("$manager" complete 2>/dev/null)}")
-                _describe 'account profile' profiles
-                return
-              fi
+        if (( CURRENT == 3 )) && [[ "$words[2]" == (run|gpt|login|status|path|archive) ]]; then
+          profiles=("''${(@f)$("$manager" complete 2>/dev/null)}")
+          _describe 'account profile' profiles
+          return
+        fi
 
-              _normal
-            }
+        _normal
+      }
 
-            _clp() { _agent_profile_completion clp; }
-            _cxp() { _agent_profile_completion cxp; }
-            compdef _clp clp
-            compdef _cxp cxp
+      _clp() { _agent_profile_completion clp; }
+      _cxp() { _agent_profile_completion cxp; }
+      compdef _clp clp
+      compdef _cxp cxp
 
-            [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
-            [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env
+      [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
+      [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env
 
-            _dotfiles_help() {
-              local mode="$1"
-              shift || true
-
-              local query="$*"
-              local content
-              local runtime_content=""
-              local raw_name name expansion
-              local -A managed_abbrs
-              managed_abbrs=( ${managedAbbrPairs} )
-
-              if [[ "$mode" == "commands" ]]; then
-                content=$(cat <<'EOF'
-      ${helpTextCommands}
-      EOF
-      )
-              else
-                content=$(cat <<'EOF'
-      ${helpTextDescriptions}
-      EOF
-      )
-              fi
-
-              while IFS= read -r raw_name; do
-                name="''${(Q)raw_name}"
-                [[ -n "''${managed_abbrs[$name]-}" ]] && continue
-                expansion="$(abbr expand "$name" 2>/dev/null)" || continue
-                runtime_content+="$name = $expansion"$'\n'
-              done < <(abbr list-abbreviations 2>/dev/null)
-
-              if [[ -n "$runtime_content" ]]; then
-                content+=$'\n\n[Runtime abbreviations]\n'
-                content+="''${runtime_content%$'\n'}"
-              fi
-
-              if [[ -n "$query" ]]; then
-                print -r -- "$content" | rg -i --color=never -- "$query"
-              else
-                print -r -- "$content"
-              fi
-            }
-
-            h() {
-              _dotfiles_help descriptions "$@"
-            }
-
-            hv() {
-              _dotfiles_help commands "$@"
-            }
-
-            devg() {
-              local ghq_root repo
-
-              ghq_root="$(ghq root 2>/dev/null || printf '%s\n' "$HOME/Develop")"
-              repo="$(
-                (
-                  ghq list -p
-                  find "$ghq_root/local" -maxdepth 1 -mindepth 1 -type d
-                ) 2>/dev/null | awk '!seen[$0]++' | fzf --reverse --height 40%
-              )"
-
-              [[ -n "$repo" ]] && cd "$repo"
-            }
+      typeset -g _dotfiles_help_descriptions=${lib.escapeShellArg helpTextDescriptions}
+      typeset -g _dotfiles_help_commands=${lib.escapeShellArg helpTextCommands}
+      typeset -ga _dotfiles_help_entries=( ${helpEntries} )
+      typeset -gA _dotfiles_managed_abbrs=( ${managedAbbrPairs} )
+      ${builtins.readFile ./zsh-tools.zsh}
 
     '';
   };

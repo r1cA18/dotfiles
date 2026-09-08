@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(ssh jetson@172.17.1.144:*)"]
+  }
+}

@@ -8,6 +8,7 @@
 | 項目                         | Source of truth                                   | 補足                                                                  |
 | ---------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
 | グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`        | Nixで結合してClaude・Codex・Geminiへ配布する                          |
+| Codex追加instruction         | `codex/rules/`                                    | 共通instructionの後へCodexの単独実行ルールを結合する                  |
 | project-specific instruction | `AGENTS.md`とこのドキュメント                     | `CLAUDE.md`は`AGENTS.md`をimport                                      |
 | reusable skills              | `agents/skills/`                                  | `~/.claude/skills` と `~/.codex/skills` に同期                        |
 | shared hook implementations  | `agents/hooks/`                                   | 製品ごとのhook登録から呼び出す                                        |
@@ -22,6 +23,8 @@
 | Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                           |
 | Claude user MCP seed         | `claude/mcp-servers.json`                         | `~/.claude.json` へ merge する前提                                    |
 | Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                    |
+| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
+| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
 
 ## 共有できるもの
 
@@ -74,6 +77,16 @@ Codex の custom prompt は deprecated なので、`codex/prompts/` は skill �
 - session state
 
 必要な宣言的設定だけ repo 内に切り出して、runtime state へ merge する。
+
+### 4. Orchestrationは役割と製品設定を分離
+
+`agents/rules/orchestration.md`を共有し、独立して進められる仕事だけを委譲する。担当file・完了条件・根拠を明示し、親agentが統合と最終検証を担当する。小さい変更や密接に依存する判断を機械的に分割しない。
+
+Codexは当面サブエージェントを使用しない。`codex/rules/orchestration.md`を共通instructionの後へ結合し、共有の委譲方針より優先する。探索・実装・reviewも主agentで行い、他CLIやbridge経由の委譲で迂回しない。再開には所有者による明示的な方針変更が必要。通常のtool・test・buildは利用できる。以前のLuna・Solへのmodel振り分け指示は削除し、主sessionのmodel設定は変更していない。
+
+Claude専用の選択方針は`claude/rules/workflow.md`へ置く。Antigravity/Geminiには共有方針だけを配布し、GPTやAnthropicのmodel名を注入しない。共通fileの一覧と順序は`nix/lib/agent-instructions.nix`で管理し、Codex追加fileは`codex.nix`の`extraFiles`で指定する。
+
+生成instructionの検証は[テスト運用](guides/testing.md)を参照。宣言の更新とHome Managerへの適用と新sessionでの読み込み確認は別工程とする。
 
 ## Plugin の扱い
 
@@ -137,7 +150,9 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 現時点でこの方針で管理している代表例:
 
 - `agent-browser`
-- `codex`
 - `gemini`
+
+Claude Code・Codex・Antigravityの自己更新型CLIは例外として公式native installerを使う。
+Home Managerはbootstrap・PATH・宣言設定を管理し、binary更新は`update-all`に一元化する。
 
 `skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。

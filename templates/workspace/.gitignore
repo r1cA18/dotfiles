@@ -1,0 +1,8 @@
+/repos/
+/.direnv/
+/.indexion/cache/
+/.indexion/digest/
+/.indexion/wiki/vectors.db*
+/.indexion/wiki/search-sections.json
+/.env
+/.env.*

@@ -220,11 +220,13 @@ chatgpt
 
 1PasswordのSSH Agentを有効にする。常駐serviceにsecretが必要になった時点で1Password Service Accountを追加する。現在はsecretを必要とするCompose serviceがないためtokenを配置しない。
 
-Claude Codeも使う場合はnative installerで一度だけ導入する。以後は`update-all`が明示的に更新する。
+Claude CodeとCodexの対話CLIはnative installerで導入する。Home Manager適用時に未導入ならbootstrapされ、以後は`update-all`が明示的に更新する。Codex app serverだけはAppArmor profileとの結合があるためNix版を使う。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
+curl -fsSL https://chatgpt.com/codex/install.sh | bash
 claude --version
+codex --version
 ```
 
 ## 7. Firewall

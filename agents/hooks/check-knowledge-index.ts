@@ -5,8 +5,9 @@
 //   (default)          Claude Code PostToolUse: stdin の hook JSON から
 //                      tool_input.file_path を読み、20_Knowledge 配下の
 //                      ノート編集時のみ検査する
-//   --all              stdin を無視して全件検査 (Codex Stop hook / 手動 / CI)
-//   --if-cwd <dir>     --all と併用。cwd が <dir> 配下でなければ何もしない
+//   --all              stdin を無視して全件検査 (手動 / CI)
+//   --stop             Stop JSON を読み、最初の停止時だけ全件検査する
+//   --if-cwd <dir>     --all / --stop と併用。対象 cwd 以外では何もしない
 //
 // 未掲載ノートがあれば stderr に一覧を出して exit 2 (エージェントに
 // フィードバックされる)。それ以外は exit 0。
@@ -26,32 +27,34 @@ const knowledgeDir = join(vaultDir, "20_Knowledge");
 
 const args = process.argv.slice(2);
 const allMode = args.includes("--all");
+const stopMode = args.includes("--stop");
 const ifCwdIdx = args.indexOf("--if-cwd");
 const ifCwd = ifCwdIdx >= 0 ? args[ifCwdIdx + 1] : null;
 
-if (allMode) {
-  if (ifCwd && !isWithin(process.cwd(), ifCwd)) {
-    process.exit(0);
-  }
-} else {
-  // hook mode: 対象ファイルが 20_Knowledge 配下のノートのときだけ検査する
-  let input = "";
+if ((ifCwdIdx >= 0 && (!ifCwd || ifCwd.startsWith("--"))) || (allMode && stopMode)) {
+  console.error("Usage: check-knowledge-index.ts [--all | --stop] [--if-cwd <dir>]");
+  process.exit(1);
+}
+
+if (!allMode) {
+  let input;
   try {
-    input = readFileSync(0, "utf8");
+    input = JSON.parse(readFileSync(0, "utf8"));
   } catch {
     process.exit(0);
   }
-  let filePath = "";
-  try {
-    const json = JSON.parse(input);
-    filePath = json?.tool_input?.file_path ?? json?.tool_response?.filePath ?? "";
-  } catch {
-    process.exit(0);
+  if (stopMode) {
+    if (input?.hook_event_name !== "Stop" || input.stop_hook_active === true) process.exit(0);
+    const cwd = typeof input.cwd === "string" ? input.cwd : process.cwd();
+    if (ifCwd && !isWithin(cwd, ifCwd)) process.exit(0);
+  } else {
+    const filePath = input?.tool_input?.file_path ?? input?.tool_response?.filePath;
+    if (typeof filePath !== "string" || !filePath.endsWith(".md")) process.exit(0);
+    const cwd = typeof input?.cwd === "string" ? input.cwd : process.cwd();
+    if (!isWithin(resolve(cwd, filePath), knowledgeDir)) process.exit(0);
   }
-  if (!filePath) process.exit(0);
-  const resolved = resolve(filePath);
-  if (!isWithin(resolved, knowledgeDir)) process.exit(0);
-  if (resolved.endsWith("_index.md")) process.exit(0);
+} else if (ifCwd && !isWithin(process.cwd(), ifCwd)) {
+  process.exit(0);
 }
 
 // macOS のファイル名は NFD、index 本文は NFC のことがあるので両方 NFC に揃える
@@ -61,10 +64,15 @@ try {
 } catch {
   process.exit(0); // vault が無い環境では何もしない
 }
+const linkedNotes = new Set(
+  Array.from(index.matchAll(/\[\[([^\]\n]+)\]\]/g), ([, link]) =>
+    link.split(/[|#]/, 1)[0].replace(/^20_Knowledge\//, "").replace(/\.md$/, ""),
+  ),
+);
 const missing = readdirSync(knowledgeDir)
   .filter((f) => f.endsWith(".md") && f !== "_index.md")
   .map((f) => f.replace(/\.md$/, "").normalize("NFC"))
-  .filter((name) => !index.includes(`[[${name}]]`));
+  .filter((name) => !linkedNotes.has(name));
 
 if (missing.length > 0) {
   console.error(

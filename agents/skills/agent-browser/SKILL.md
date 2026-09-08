@@ -1,6 +1,7 @@
 ---
 name: agent-browser
-description: Browser UI automation only. Use for visual inspection, screenshots, clicking, typing, scrolling, forms, logged-in sessions, and dynamic UI interaction. Do not use for Web search or reading static page content; use the built-in Web, WebSearch, or WebFetch tools instead. Prefer this over claude-in-chrome MCP tools when browser UI automation is required. Triggers: "check the UI", "click", "fill the form", "take a screenshot", "use my logged-in browser". 日本語トリガー:「UIを確認して」「クリックして」「フォーム入力して」「スクショ撮って」「ログインして操作して」
+description: >-
+  Browser UI automation only. Use for visual inspection, screenshots, clicking, typing, scrolling, forms, logged-in sessions, and dynamic UI interaction. Do not use for Web search or reading static page content; use the built-in Web, WebSearch, or WebFetch tools instead. Prefer this over claude-in-chrome MCP tools when browser UI automation is required. Triggers: "check the UI", "click", "fill the form", "take a screenshot", "use my logged-in browser". 日本語トリガー:「UIを確認して」「クリックして」「フォーム入力して」「スクショ撮って」「ログインして操作して」
 ---
 
 # Browser Automation with agent-browser

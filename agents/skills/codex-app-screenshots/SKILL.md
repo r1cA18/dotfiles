@@ -1,31 +1,32 @@
 ---
 name: codex-app-screenshots
 description: >
-  Use when generating App Store marketing screenshots via ChatGPT Web UI.
-  Opens ChatGPT in Chrome, uploads reference images + app screenshots,
-  sends a prompt, waits for image generation, and downloads the results.
-  Reads the project context to generate appropriate app descriptions and
-  screen headlines for each mockup. Supports iPhone and iPad screenshots
-  in portrait or landscape orientation.
-  Triggers on: app store screenshots, store screenshots, marketing screenshots,
-  generate app screenshots, app store mockup, mockup generation,
-  iPad screenshots, iPhone screenshots.
-  JA: アプリストアスクリーンショット生成, ストア画像生成, モックアップ生成,
-  App Storeスクリーンショット, ストアスクショ, iPadスクショ
+  Generate App Store marketing mockups when the user chooses the ChatGPT Web UI workflow.
+  Upload reference images and app screenshots through an available authenticated browser,
+  generate mockups, and download the results. Supports iPhone and iPad layouts.
+  Use the requested image tool or screenshot editor for other screenshot workflows.
 ---
 
 # App Store Screenshots Generator (ChatGPT Web UI)
 
-ChatGPT 4o のネイティブ画像生成を使って App Store スクリーンショットモックアップを作る。
+ChatGPT Web UIの利用可能な画像生成機能でApp Storeスクリーンショットのmockupを作る。
 iPhone / iPad の両デバイスに対応し、縦向き・横向きを選択可能。
 
 **フロー**: デバイス選択 → プロジェクト理解 → プロンプト構築 → Chrome で ChatGPT 操作 → 生成 → ダウンロード
 
 ## Why ChatGPT Web UI
 
-API 経由の画像生成では iPhone モックアップ内に実際のアプリ UI を正確に配置する
-品質が出ない。ChatGPT Web UI の 4o ネイティブ画像生成は参考画像を few-shot example
-として受け取り、スタイルを再現できる。
+ユーザーがWeb UIでの生成を選んだ場合に使う。APIや他の画像生成toolとの品質差は未測定。
+生成結果のUI・文字・寸法を検証する。別の生成手段が指定された場合はその選択に従う。
+
+## Browser capability
+
+- 利用中agentで使用可能なbrowser skillの操作規則を先に読む
+- 通常は`agent-browser`を使い既存Chrome sessionが必要な場合は利用可能なChrome操作toolを選ぶ
+- tab操作・クリック・画像upload・downloadが可能か確認する
+- 特定製品のMCP tool名が他製品にも存在するとは考えない
+- 必要な操作が提供されない場合は不足している操作だけを説明する
+- 本文のclipboard操作はmacOS用の代替例として扱いbrowser toolがuploadを提供する場合はそちらを使う
 
 ## Assets
 
@@ -40,11 +41,11 @@ API 経由の画像生成では iPhone モックアップ内に実際のアプ�
 | `prompt-template.md` | プロンプトテンプレート (固定制約 + 動的パート) |
 | `scripts/resize-screenshots.sh` | 生成画像を各デバイスサイズにリサイズ |
 
-## Step 0: デバイス選択 (AskUserQuestion) & 向き自動判定
+## Step 0: デバイス選択と向き自動判定
 
 ### 0a. デバイスを聞く
 
-プロンプト構築の前に、AskUserQuestion ツールを使ってユーザーに対象デバイスを確認する。
+対象デバイスは依頼やproject設定から確認する。未確定で出力に影響する場合だけ、利用中agentの質問機能か通常の会話で確認する。
 
 **質問: 対象デバイス**
 - iPhone
@@ -125,10 +126,7 @@ magick identify -format "%w %h" "$IMAGE_PATH"
 
 ### 2a. ChatGPT を開く
 
-```
-mcp__claude-in-chrome__tabs_create_mcp  -- 新しいタブを作成
-mcp__claude-in-chrome__navigate         -- https://chatgpt.com にナビゲート
-```
+選んだbrowser toolで新しいtabを作成し`https://chatgpt.com`へ移動する。
 
 - ログイン済みであることを確認（サイドバーに会話一覧が表示されるか）
 - 新しいチャットが開いていることを確認
@@ -154,16 +152,13 @@ osascript -e 'set the clipboard to (read (POSIX file "PATH") as <<class PNGf>>)'
 
 ### 2c. プロンプトを送信
 
-```bash
-# 構築済みプロンプトをクリップボードにコピー
-echo "PROMPT_TEXT" | pbcopy
-```
+browser toolの文字入力機能へプロンプトを文字列として渡す。macOSのclipboardを使う場合は保存したprompt fileを`pbcopy < prompt.txt`で読み込み、本文をshell commandへ展開しない。
 
-入力欄をクリック → `Cmd+V` でペースト → 送信ボタンをクリック
+直接入力した場合は追加のpasteを行わない。clipboard方式の場合だけ入力欄をクリックして`Cmd+V`で貼り付ける。どちらも本文と添付画像を確認してから送信する。
 
 ### 2d. 生成を待つ
 
-生成には 2-5 分かかる (5画面で約3-4分)。
+生成時間は選択したmodelと混雑状況によって変わる。
 
 30秒間隔でスクリーンショットを取得してポーリング:
 - 「Thinking...」「思考中」表示: まだ生成中
@@ -191,15 +186,7 @@ echo "PROMPT_TEXT" | pbcopy
 | fastlane を使用 (`fastlane/` が存在) | `fastlane/screenshots/ja/` |
 | 上記いずれもなし | `docs/appstore-screenshots/` を新規作成 |
 
-```bash
-# 出力先ディレクトリを作成
-mkdir -p "$OUTPUT_DIR"
-
-# ~/Downloads から移動 & リネーム
-mv ~/Downloads/ChatGPT*.png "$OUTPUT_DIR/"
-cd "$OUTPUT_DIR"
-ls -1 ChatGPT*.png | sort | awk '{printf "mv \"%s\" \"slide-%02d.png\"\n", $0, NR}' | sh
-```
+今回のdownloadで得たfileだけを列挙して出力先へ配置する。`~/Downloads`全体へのglobやfile名からshell commandを組み立てる操作は使わない。出力先に同名fileがある場合は別名を選び、生成前からあった画像を上書きしない。
 
 ## Step 3: リサイズ (任意)
 
@@ -239,12 +226,12 @@ $PROJECT_ROOT/docs/appstore-screenshots/   (or detected path)
 
 | ステップ | 自動化 | 方法 |
 |----------|--------|------|
-| ChatGPT を開く | OK | `navigate` MCP tool |
-| 画像アップロード | OK | `osascript` clipboard + `Cmd+V` |
-| プロンプト送信 | OK | `pbcopy` + `Cmd+V` + click send |
-| 生成待ち | OK | 30秒間隔 screenshot polling |
-| ダウンロード | OK | 共有ボタン → 全画像 → ダウンロード |
-| リサイズ | OK | ImageMagick script |
+| ChatGPT を開く | browser依存 | 利用可能なtab操作 |
+| 画像アップロード | browser/OS依存 | 対応するupload機能またはmacOSのclipboard |
+| プロンプト送信 | browser依存 | 対応する文字入力またはclipboardからのpaste |
+| 生成待ち | screenshot機能が必要 | 30秒間隔で状態を確認 |
+| ダウンロード | browser/UI依存 | 現行UIで対象画像と保存先を確認 |
+| リサイズ | ImageMagickが必要 | 元画像を残して別の出力先へ保存 |
 
 ## Notes
 

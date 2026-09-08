@@ -25,6 +25,10 @@ keybindは実際の利用で必要性を確認してから追加する。
 
 ## 導入済みの決定
 
+### Codex CLI
+
+OpenAI公式installerで`~/.local/bin/codex`へ導入する。Home Managerのactivation (`setupCodex`) が未導入時だけbootstrapし、`update-all` (`update-codex`) で最新版へ更新する。account・sessionは`CODEX_HOME`ごとに分離し、共有configは`nix/home-manager/programs/codex.nix`から生成する。
+
 ### Antigravity CLI
 
 Google公式installerで`~/.local/bin/agy`へ導入する。自己更新するnative binaryのためNix storeには置かない。`~/.local/bin`はHome ManagerでPATHに含め、Home Managerのactivation (`setupAntigravity`) により `dr` 時に自動インストール、`update-all` (`update-antigravity`) で最新へ更新する。

@@ -24,7 +24,8 @@ Node系CLIはできるだけ Nix package として管理する。`dr` 時の `bu
 
 1. **nixpkgs にあるCLIはそのまま使う**
 2. **nixpkgs にない npm CLI は `nix/pkgs/` で custom package 化する**
-3. **skills から参照する補助スクリプトは `agent-skill-path` で解決する**
+3. **公式native installerを持つ自己更新型agent CLIはinstallerを使う**
+4. **skills から参照する補助スクリプトは `agent-skill-path` で解決する**
 
 ### 実装
 
@@ -33,7 +34,6 @@ Node系CLIはできるだけ Nix package として管理する。`dr` 時の `bu
 ```nix
 # 例: nixpkgs にあるもの + custom package
 commonPackages = with pkgs; [
-  codex
   gemini-cli
   agent-browser
 ];
@@ -55,6 +55,8 @@ buildNpmPackage rec {
 }
 ```
 
+Claude Code・Codex・Antigravityは更新速度を優先し、公式native installer版を`~/.local/bin`へ導入する。Home Managerのactivationは未導入時だけbootstrapし、更新は`update-all`から実行する。
+
 ## まとめ
 
 | 項目                | 内容                                     |
@@ -68,5 +70,6 @@ buildNpmPackage rec {
 ## 注意点
 
 - `nixpkgs` にあるものを優先する
+- 公式native installerを使う例外はHome Manager側にbootstrapと更新経路を持たせる
 - npm CLI を custom package 化する時は tarball hash と `npmDepsHash` の両方を固定する
 - skill 本体は read-only なので、設定ファイルは XDG 配下に置く

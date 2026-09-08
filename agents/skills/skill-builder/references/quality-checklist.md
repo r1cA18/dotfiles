@@ -1,165 +1,84 @@
 # Skill Quality Checklist
 
-スキル生成後の自己レビューに使用する。
-skill-auditor のルーブリックと Anthropic公式ガイドのベストプラクティスを統合。
+作成または改善したskillを、固定の文字数・trigger数・言語数で採点せずに確認する。判定は対象skillの目的と対象agentに対する証拠で行う。
 
-## 必須チェック（全て OK でないとリリース不可）
+## Release gates
 
-### 1. Frontmatter
+次のformat gateに失敗した場合はリリースせず修正する。
 
-- [ ] `name` が kebab-case でフォルダ名と一致
-- [ ] `description` が存在し、50文字以上
-- [ ] description に WHAT（何をするか）が含まれる
-- [ ] description に WHEN（いつ使うか/トリガー条件）が含まれる
-- [ ] description が 1024文字以内
-- [ ] XML タグ (< >) が含まれていない
-- [ ] `---` デリミタが正しく閉じている
+| 確認 | 合格条件 | 証拠 |
+| --- | --- | --- |
+| Frontmatter | YAMLとしてparseでき、`name`と`description`が存在する | validatorの結果 |
+| Name | kebab-caseで識別でき、フォルダ名や配布IDとの対応を説明できる | pathと配布定義 |
+| Description | 能力と適用条件が読み取れ、必要なら境界も分かる | description本文 |
+| Portability limit | 対象runtimeが受け付けるdescriptionの上限を超えない | validatorの結果 |
+| Local links | `SKILL.md`から参照するrepository内fileが存在する | validatorの結果 |
+| Unfinished work | TODOや仮のplaceholderを成果物として残していない | 差分と検索結果 |
 
-### 2. トリガー品質
+上限値はformat compatibilityのための検査であり、短いdescriptionや長いbodyを品質点へ機械的に変換しない。
 
-- [ ] 英語トリガーフレーズが 3つ以上
-- [ ] 日本語トリガーフレーズが 3つ以上（「〜して」形式）
-- [ ] パラフレーズ（同じ意図の異なる言い回し）がある
-- [ ] 必要に応じて negative trigger がある（「NOT for X」）
-- [ ] 既存スキルとトリガーが競合しない
+## Intent and discovery
 
-### 3. Body 品質
+- ユーザーの目的とskillの成果物が一致している
+- descriptionから、使う依頼と使わない依頼の境界を必要な範囲で判断できる
+- 呼び出し例は実際の利用者の表現を補助する。英語・日本語の両方や一定個数を必須条件にしない
+- 日本語または英語での呼び出し漏れ・誤起動を問題にする場合は、対象agentで実測したpromptと結果を記録する
+- 類似skillのdescriptionやbodyと役割が重なる場合は、統合・境界・配布対象の判断を記録する
 
-- [ ] 命令形（imperative form）で記述
-- [ ] 二人称（「あなたは」「you should」）を使っていない
-- [ ] SKILL.md body が 200行以下（Simple は 100行以下）
-- [ ] 重要な情報が先頭に配置されている
-- [ ] 判断基準が表で整理されている（該当する場合）
+triggerの静的な語数や`Triggers:`という見出しの有無だけでdiscoveryを保証しない。未実施のruntime検証は未評価と記録する。
 
-### 4. Progressive Disclosure
+## Behavior and actionability
 
-- [ ] SKILL.md body に全情報を詰め込んでいない
-- [ ] references/ のファイルが SKILL.md からリンクされている
-- [ ] 各 reference ファイルが 300行以下（超える場合は TOC あり）
-- [ ] SKILL.md と references/ の間で内容が重複していない
+- bodyに、入力・判断・操作・成果物が実行可能な形で書かれている
+- workflowの順序を固定する理由がある場合だけ順序を明記している
+- 失敗・不足権限・未対応OS・未接続toolに遭遇したときの停止条件またはfallbackがある
+- 外部toolを使う場合は、必須依存・任意依存・代替手段・副作用を区別している
+- agentへ実装を指示する本文は命令形で、不要な一般論や二人称の説明を含めていない
+- `SKILL.md`に必要な判断を残し、条件付きの詳細は関連referenceだけへ分離している
 
-### 5. 構造
+knowledge提供が目的のskillでは、実行scriptがないことを欠陥としない。実行workflowが目的なら、例示だけでなく実際に使える手順または検証済みhelperを用意する。
 
-- [ ] パターンに見合ったディレクトリ構成
-- [ ] ファイル名が SKILL.md（大文字・小文字正確）
-- [ ] 参照されている全ファイルが実在する
-- [ ] スクリプトがある場合、実行権限あり
+## Structure and progressive disclosure
 
-## 推奨チェック（品質向上に寄与）
+- architectureは必要な知識・動作・依存に対して過不足がない
+- `references/`・`scripts/`・`templates/`は実際のworkflowから参照され、存在だけを目的に追加されていない
+- referenceを使う場合は`SKILL.md`から相対linkし、使う段階で該当fileだけ読むよう案内している
+- `SKILL.md`とreferenceの重複を避け、更新時に片方だけが古くならない構成になっている
+- bodyの行数はcontext効率を確認する手がかりに留め、固定の合格ラインにしない
 
-### 6. 環境対応
+## Cross-agent dependencies
 
-- [ ] パスが`~/dotfiles/agents/skills/`前提で正しい
-- [ ] Nix 環境固有の考慮事項がある場合、記載されている
-- [ ] 外部ツールの依存が明記されている
+| 項目 | 確認内容 |
+| --- | --- |
+| Agent | Claude・Codexなど対象agentと配布先を明記する |
+| Tool | 実際に提供されるtool名・CLI・MCPを確認する |
+| OS | macOS・Linuxなど実行可能な環境を区別する |
+| Credential | login・secret・session stateの前提を明記し、repoへ保存しない |
+| Product boundary | 製品固有の登録・UI・adapterを共有本文から分離する |
+| Install policy | global installやsystem applyを既定手順にしない |
 
-### 7. 重複回避
+対象agentで依存を実行できない場合は、静的確認済みとruntime未検証を分けて記録する。optional frontmatterや`allowed-tools`の有無だけで合否を決めない。
 
-- [ ] `~/dotfiles/agents/skills/`内の既存スキルとの重複を確認済み
-- [ ] 関連スキルとの境界が明確（description で区別）
-- [ ] 統合すべきスキルがないか検討済み
+## Verification record
 
-### 8. エラーハンドリング
+次の表を埋め、実施していない確認は`未検証`と書く。
 
-- [ ] よくある失敗パターンの対処が記載
-- [ ] MCP 接続エラーの対処（MCP 依存の場合）
-- [ ] フォールバック手順がある
+| 項目 | 判定 | 根拠 |
+| --- | --- | --- |
+| Format | `OK` / `要修正` | validatorの出力 |
+| Intent | `OK` / `要修正` / `未評価` | 対象依頼と境界 |
+| Behavior | `OK` / `要修正` / `未評価` | 手順・fixture・実行結果 |
+| Dependencies | `OK` / `要修正` / `未検証` | tool・OS・credential |
+| Structure | `OK` / `要修正` | patternとlink |
+| Discovery | `OK` / `要修正` / `未検証` | agent・prompt・結果 |
+| Duplication | `OK` / `要整理` / `候補` | 比較対象と根拠 |
 
-### 9. 実行可能性
+判定は`Ready`・`Revise`・`Blocked by evidence`のいずれかでまとめる。数値scoreや総合gradeを、実際の動作確認の代わりに使わない。
 
-- [ ] 手順が具体的（コマンド例、ファイルパス等）
-- [ ] 抽象的な指示ではなく実行可能な指示
-- [ ] テンプレートやスクリプトで自動化されている部分がある
+## Common corrections
 
-## 簡易スコアリング
-
-必須チェック (1-5) の OK 率で簡易判定:
-
-| OK 率   | 判定                        |
-| ------- | --------------------------- |
-| 100%    | Excellent - リリース可能    |
-| 80-99%  | Good - 軽微な修正後リリース |
-| 60-79%  | Needs Work - 修正が必要     |
-| 60%未満 | Weak - 再設計を検討         |
-
-## 良い description の例
-
-```yaml
-# Category 1: Document & Asset Creation
-description: |
-  Create and edit presentation slides with consistent branding.
-  Generates PPTX files from Markdown or natural language descriptions.
-  Supports templates, brand colors, and custom layouts.
-  Triggers: "create slides", "make a presentation", "build a deck", "pptx"
-  日本語: 「スライド作って」「プレゼン資料作成」「デッキを作って」「発表資料」
-
-# Category 2: Workflow Automation
-description: |
-  Automated sprint planning workflow for Linear projects.
-  Fetches project status, analyzes velocity, suggests priorities, creates tasks.
-  Triggers: "plan sprint", "sprint planning", "create sprint tasks", "Linear sprint"
-  日本語: 「スプリント計画」「スプリントプランニング」「タスク作成」
-
-# Category 3: MCP Enhancement
-description: |
-  Code review workflow using Sentry error data and GitHub PRs.
-  Analyzes detected bugs, suggests fixes, and creates review comments.
-  Requires: Sentry MCP + GitHub MCP.
-  Triggers: "review with sentry", "sentry code review", "analyze errors in PR"
-  日本語: 「Sentryでレビュー」「エラー分析」「PRのバグを確認」
-```
-
-## 悪い description の例と修正
-
-```yaml
-# Bad: 曖昧
-description: Helps with projects.
-# Fix: 具体的に
-description: |
-  Manage project tasks in Notion with automated status tracking.
-  Triggers: "create project", "update task status", "project overview"
-  日本語: 「プロジェクト作成」「タスク更新」「進捗確認」
-
-# Bad: トリガーなし
-description: Creates sophisticated multi-page documentation systems.
-# Fix: トリガーを追加
-description: |
-  Generate multi-page technical documentation from codebase analysis.
-  Triggers: "generate docs", "document this project", "create API docs"
-  日本語: 「ドキュメント生成」「API仕様書作成」「このプロジェクトを文書化」
-
-# Bad: 技術的すぎ
-description: Implements the Project entity model with hierarchical relationships.
-# Fix: ユーザー視点に
-description: |
-  Set up hierarchical project structures with parent-child task relationships.
-  Triggers: "organize project", "create task hierarchy", "set up project structure"
-  日本語: 「プロジェクト整理」「タスク階層作成」「構造化して」
-```
-
-## Over-trigger 対策
-
-description が広すぎてノイズになる場合:
-
-1. **Negative trigger を追加**:
-
-   ```yaml
-   description: |
-     Advanced data analysis for CSV files. Statistical modeling, regression, clustering.
-     NOT for simple data exploration (use data-viz skill instead).
-   ```
-
-2. **スコープを限定**:
-
-   ```yaml
-   description: |
-     PayFlow payment processing for e-commerce.
-     Specifically for online payment workflows, not general financial queries.
-   ```
-
-3. **関連スキルとの境界を明示**:
-   ```yaml
-   description: |
-     PDF form filling and manipulation.
-     For PDF creation from scratch, use document-builder skill instead.
-   ```
+- descriptionが曖昧なら対象成果物と適用条件を具体化する
+- 競合するskillがあるなら、descriptionの境界を狭めるか統合の要否を検討する
+- referenceが未リンクなら`SKILL.md`に利用条件付きの相対linkを追加する
+- script依存が対象agentにないなら、条件付きfallbackを記載するか依存を配布定義へ追加する
+- 未検証のtrigger結果を`未検証`として残し、語数や言語数を増やして代用しない
