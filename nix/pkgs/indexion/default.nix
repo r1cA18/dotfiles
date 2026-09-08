@@ -4,6 +4,7 @@
   glibc,
   lib,
   makeWrapper,
+  openssl,
   stdenv,
 }:
 let
@@ -33,6 +34,8 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ glibc ];
+  # OpenSSL is loaded dynamically and is not detected from ELF dependencies.
+  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [ (lib.getLib openssl) ];
   dontBuild = true;
   dontStrip = true;
 

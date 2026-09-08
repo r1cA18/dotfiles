@@ -142,7 +142,9 @@ Codexは単独実行方針を維持し短周期の状態確認を避ける待機
 - Nix生成instructionで共有clipboardルールとCodex専用ルールの配布境界を確認
 - branch差分の`git diff --check`が成功
 
-次は追加変更をcommitしてPRのLinux CIを確認しmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
+Macの`nix flake check`も成功した。PR #12の初回CIではLinux版indexionのOpenSSL動的読み込み失敗とgitleaks actionへのtoken渡し忘れを確認した。Linuxのruntime依存へOpenSSLを追加しsecret-scanに読み取り権限と自動tokenを渡す。PRコメントは無効にする。
+
+次は修正後のLinux CIを確認してmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
 
 ## 関連文書
 
