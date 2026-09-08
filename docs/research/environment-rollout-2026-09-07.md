@@ -131,6 +131,19 @@ Home Managerの全体適用とGitHub Actions上の実行と実productのonboardi
 
 unitのNix依存skipはintegrationで検証する。suite間で重複があるため件数を合算しない。全skill資産の網羅検証と実際のNix生成help catalogの対話E2Eは未整備。Linux実機とGitHub Actions上の結果と実product onboardingも未確認。SSH許可の確認は設定上の確認でありJetsonへの接続試験ではない。
 
+## 2026-09-08の追加ルールとマージ準備
+
+手入力が必要なcommandを本人のclipboardへコピーする共有ルールを追加した。Macは`pbcopy`を使いLinuxは利用可能なdesktop sessionとtoolに応じて`wl-copy`・`xclip`・`xsel`を使う。commandは展開せず文字列として渡し成功後だけコピー済みと伝える。headless SSHなど本人のclipboardに届かない場合は未コピーと明示する。
+
+Codexは単独実行方針を維持し短周期の状態確認を避ける待機ルールを追加した。完了通知と対応する待機toolを優先し待機時間は残り時間の見積もりとtool上限と応答性の制約に従う。記事のmulti-agent待機設定は無効化中の機能用なので追加しない。token削減量は実測していない。
+
+- 追加変更後のMacでunit 48 pass・18 skip・0 fail
+- integration 40 pass・0 fail
+- Nix生成instructionで共有clipboardルールとCodex専用ルールの配布境界を確認
+- branch差分の`git diff --check`が成功
+
+次は追加変更をcommitしてPRのLinux CIを確認しmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
+
 ## 関連文書
 
 - [workspace運用](../guides/multi-repo-workspaces.md)
