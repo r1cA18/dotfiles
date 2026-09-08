@@ -144,7 +144,9 @@ Codexは単独実行方針を維持し短周期の状態確認を避ける待機
 
 Macの`nix flake check`も成功した。PR #12の初回CIではLinux版indexionのOpenSSL動的読み込み失敗とgitleaks actionへのtoken渡し忘れを確認した。Linuxのruntime依存へOpenSSLを追加しsecret-scanに読み取り権限と自動tokenを渡す。PRコメントは無効にする。
 
-次は修正後のLinux CIを確認してmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
+修正後のLinux Home Manager buildと実indexionの検索testとsecret-scanは成功した。instruction生成testはNix評価がBun既定の5秒を超えて中断されたため既存のprofile build検証と同じ120秒上限を明示した。Macのindexion/workspace package再buildも成功した。
+
+次はtimeout修正後のLinux CIを確認してmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
 
 ## 関連文書
 

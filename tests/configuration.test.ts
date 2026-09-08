@@ -60,4 +60,4 @@ nixTest("generated global instructions keep the Codex-only policy boundary", () 
   expect(codex).toBe(`${common}\n\n${codexOnly}`);
   expect(codex.indexOf(common)).toBe(0);
   expect(codex.indexOf(codexOnly)).toBe(common.length + 2);
-});
+}, 120_000);
