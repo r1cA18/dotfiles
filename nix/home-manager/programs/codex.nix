@@ -16,8 +16,20 @@ let
   olympusMcpEntry = "${olympusLinuxRoot}/apps/mcp/src/index.ts";
 
   tomlFormat = pkgs.formats.toml { };
-  sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
+  codexAgentInstructions = import ../../lib/agent-instructions.nix {
+    inherit lib pkgs;
+    extraFiles = [ ../../../codex/rules/orchestration.md ];
+  };
   mkAgentProfileManager = import ../../lib/agent-profile-manager.nix { inherit lib; };
+  installCodex = ''
+    ${pkgs.coreutils}/bin/install -d "$HOME/.codex" "$HOME/.local/bin"
+    ${pkgs.curl}/bin/curl -fsSL https://chatgpt.com/codex/install.sh \
+      | PATH="$HOME/.local/bin:$PATH" \
+        CODEX_HOME="$HOME/.codex" \
+        CODEX_INSTALL_DIR="$HOME/.local/bin" \
+        CODEX_NON_INTERACTIVE=1 \
+        ${pkgs.bash}/bin/bash
+  '';
 
   # home, dotfiles, vault は homeDir 由来で両OS共通。
   # Develop 配下の個別プロジェクトは macOS にしか無いので Darwin 限定。
@@ -82,7 +94,7 @@ let
       skills = true;
       shell_snapshot = true;
       apply_patch_freeform = true;
-      multi_agent = true;
+      multi_agent = false;
     };
 
     tui.status_line = [
@@ -175,6 +187,15 @@ let
     }
   ) (builtins.readDir ../../../codex/prompts);
 
+  updateCodex = pkgs.writeShellApplication {
+    name = "update-codex";
+    text = ''
+      echo "[codex] updating to latest..."
+      ${installCodex}
+      "$HOME/.local/bin/codex" --version
+    '';
+  };
+
   codexProfile = pkgs.writeShellApplication {
     name = "cxp";
     runtimeInputs = [
@@ -186,11 +207,12 @@ let
       ${codexProfileCommon}
 
       profile_command="cxp"
-      codex_bin="$(command -v codex || true)"
+      codex_bin="$HOME/.local/bin/codex"
 
       require_codex() {
-        if [[ -z "$codex_bin" || ! -x "$codex_bin" ]]; then
-          echo "Codex CLI was not found in PATH." >&2
+        if [[ ! -x "$codex_bin" ]]; then
+          echo "Codex CLI was not found at $codex_bin" >&2
+          echo "Run 'update-codex' to install it, then retry." >&2
           exit 1
         fi
       }
@@ -248,7 +270,7 @@ let
         if [[ -n "$config_dir" ]]; then
           CODEX_HOME="$config_dir" "$codex_bin" login
         else
-          "$codex_bin" login
+          env -u CODEX_HOME "$codex_bin" login
         fi
         verify_profile_identity "$config_dir" true
       }
@@ -298,11 +320,14 @@ let
       EOF
       }
 
-      require_codex
       command="''${1:-}"
       if [[ $# -gt 0 ]]; then
         shift
       fi
+
+      case "$command" in
+        add|login|status|run) require_codex ;;
+      esac
 
       case "$command" in
         list)
@@ -370,11 +395,14 @@ in
   # Codex can write at runtime; next dr resets dotfiles defaults.
 
   home = {
-    packages = [ codexProfile ];
+    packages = [
+      codexProfile
+      updateCodex
+    ];
 
     file = {
-      # Built from agents/INSTRUCTIONS.md + agents/rules/*.md.
-      ".codex/AGENTS.md".source = sharedAgentInstructions;
+      # Shared instructions plus the Codex-specific single-agent policy.
+      ".codex/AGENTS.md".source = codexAgentInstructions;
 
       # Lifecycle hooks (Claude 互換スキーマ)。スクリプト本体は
       # agents/hooks/ に置き Claude Code と共有する。内容を変えたら
@@ -411,9 +439,25 @@ in
         )}
       '';
 
-      codexPlugins = lib.hm.dag.entryAfter [ "codexConfig" ] ''
-        if command -v codex >/dev/null 2>&1; then
-          CODEX_HOME="$HOME/.codex" codex plugin add claude-code-advisor@claude-plugin-codex >/dev/null 2>&1 || true
+      # Codex CLI native 版の初回導入。更新は update-all の
+      # update-codex が担う。
+      setupCodex = lib.hm.dag.entryAfter [ "codexConfig" ] ''
+        bin="$HOME/.local/bin/codex"
+        if [ ! -x "$bin" ]; then
+          echo "[codex] installing Codex CLI..."
+          if ! (
+            set -o pipefail
+            ${installCodex}
+          ); then
+            echo "[codex] install failed; run update-codex after network is available" >&2
+          fi
+        fi
+      '';
+
+      codexPlugins = lib.hm.dag.entryAfter [ "setupCodex" ] ''
+        bin="$HOME/.local/bin/codex"
+        if [ -x "$bin" ]; then
+          CODEX_HOME="$HOME/.codex" "$bin" plugin add claude-code-advisor@claude-plugin-codex >/dev/null 2>&1 || true
         fi
       '';
     };

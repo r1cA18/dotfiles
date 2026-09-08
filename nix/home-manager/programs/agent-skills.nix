@@ -19,6 +19,17 @@
         subdir = "skills";
       };
 
+      openai = {
+        path = inputs.openai-skills;
+        subdir = "skills/.curated";
+        filter.nameRegex = "(gh-fix-ci|security-best-practices)";
+      };
+
+      trailofbits = {
+        path = inputs.trailofbits-skills;
+        subdir = "plugins/property-based-testing/skills";
+      };
+
       # difit スキル
       difit = {
         path = inputs.difit-skills;
@@ -72,6 +83,7 @@
         "skill-auditor"
         "idea-to-ship"
         "project-init"
+        "security-best-practices"
         "swift-dev-toolkit"
         "ios-device-build"
         "codex-app-screenshots"
@@ -80,6 +92,8 @@
         "vercel-react-best-practices"
         "remotion-best-practices"
         "session-documentation"
+        "session-handoff"
+        "indexion-workspace"
         "design-capture"
         "forms-archive"
         "x-article-publisher"
@@ -118,6 +132,32 @@
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.
       explicit = {
+        gh-fix-ci = {
+          from = "openai";
+          packages = [ pkgs.gh ];
+          # Use current gh JSON commands instead of the legacy Python helper.
+          transform =
+            { dependencies, ... }:
+            builtins.readFile ../../../agents/skills/upstream-adapters/gh-fix-ci.md + "\n" + dependencies;
+        };
+
+        property-based-testing = {
+          from = "trailofbits";
+          transform =
+            { original, ... }:
+            builtins.replaceStrings [ "effort: low\n" ] [ "" ] original
+            + ''
+
+              ## Distribution
+
+              By Trail of Bits, from https://github.com/trailofbits/skills.
+              Distributed under CC-BY-SA-4.0. Local changes remove the provider-specific
+              effort metadata and add these distribution notes.
+              Full license: ${inputs.trailofbits-skills}/LICENSE.
+              Use the target project's existing test runner and dependency manager.
+            '';
+        };
+
         video-editing = {
           from = "custom";
           packages = [ pkgs.ffmpeg ];

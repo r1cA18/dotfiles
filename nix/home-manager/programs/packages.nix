@@ -136,39 +136,44 @@ let
   };
 
   # 共通パッケージ (両OS)
-  commonPackages = with pkgs; [
-    # Development
-    bun
-    nodejs_22
-    pnpm
-    codex
-    gemini-cli
+  commonPackages =
+    with pkgs;
+    [
+      # Development
+      bun
+      nodejs_22
+      pnpm
+      gemini-cli
 
-    # Typesetting
-    typst
+      # Typesetting
+      typst
 
-    # CLI tools
-    ast-grep
-    bat
-    bottom
-    eza
-    fzf
-    ghq
-    jq
-    ripgrep
-    fd
-    mdv
-    cloudflared
-    tmux
-    ffmpeg
-    agent-browser
-    inputs.herdr.packages.${pkgs.system}.default
-    agentSkillPath
-    difit
-    _1password-cli
-    updateGithubApps
-    updateClaudeCode
-  ];
+      # CLI tools
+      ast-grep
+      bat
+      bottom
+      eza
+      fzf
+      ghq
+      jq
+      ripgrep
+      fd
+      mdv
+      cloudflared
+      tmux
+      ffmpeg
+      agent-browser
+      inputs.herdr.packages.${pkgs.system}.default
+      agentSkillPath
+      difit
+      _1password-cli
+      updateGithubApps
+      updateClaudeCode
+    ]
+    ++ pkgs.lib.optionals (pkgs ? indexion) [
+      pkgs.indexion
+      pkgs.workspace
+    ];
 
   # macOS専用パッケージ
   darwinPackages = with pkgs; [
@@ -185,8 +190,7 @@ let
     xcodegen
 
     # CLI alternatives for GUI apps
-    # Linux 側は apt + systemd で入れるため Nix 管理しない (CLI/daemon
-    # 二重インストールによるバージョン skew を避ける)
+    # LinuxのTailscaleはAnsibleでapt + systemd管理。Ollamaは未導入。
     ollama
     tailscale
 

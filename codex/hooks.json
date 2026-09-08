@@ -5,7 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
+            "timeout": 5
           }
         ]
       }
@@ -15,7 +16,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
+            "timeout": 5
           }
         ]
       }
@@ -25,11 +27,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"$HOME/.superset/hooks/notify.sh\" ] && \"$HOME/.superset/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
+            "timeout": 5
           },
           {
             "type": "command",
-            "command": "if command -v bun >/dev/null 2>&1; then bun \"$HOME/dotfiles/agents/hooks/check-knowledge-index.ts\" --all --if-cwd \"$HOME/vault\"; fi"
+            "command": "if command -v bun >/dev/null 2>&1; then bun \"$HOME/dotfiles/agents/hooks/check-knowledge-index.ts\" --stop --if-cwd \"${VAULT_DIR:-$HOME/vault}\"; fi",
+            "timeout": 5
           }
         ]
       }

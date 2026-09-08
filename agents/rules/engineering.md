@@ -30,6 +30,15 @@
 - Verify builds and user-facing behavior before declaring completion
 - Continue until the requested outcome is complete or genuinely blocked
 
+## Progress Records
+
+- At the start of substantial work or a resumed task read its existing progress document under the project's docs before continuing
+- For work spanning multiple stages update that document at meaningful milestones and before an interruption or handoff with the objective decisions changes verification results and next action
+- Distinguish completed checks from unverified assumptions and remaining work
+- Reuse the project's task or session document convention; create one concise document under docs only when no suitable record exists
+- Keep records proportional to the task; small changes do not need a progress document and individual tool calls do not need logging
+- Respect the document's publication boundary; exclude credentials personal account data private paths and raw session transcripts from shared or public docs
+
 ## Code And Git
 
 - Do not use emoji in code comments commit messages or Markdown

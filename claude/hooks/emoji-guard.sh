@@ -1,26 +1,17 @@
 #!/usr/bin/env bash
-# PreToolUse: Edit/Writeで絵文字が含まれていたらブロック
+# PreToolUse: emoji候補を通知する。product dataを含むためblockしない。
 set -euo pipefail
 
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
-
-if [ "$TOOL" = "Edit" ]; then
-  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.new_string // empty')
-elif [ "$TOOL" = "Write" ]; then
-  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // empty')
-else
-  exit 0
-fi
-
-[ -z "$CONTENT" ] && exit 0
-
-if echo "$CONTENT" | node -e "
-  let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-    if(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(d))process.exit(0);
-    process.exit(1);
-  });
-" 2>/dev/null; then
-  echo "BLOCKED: 絵文字が検出された。コード規約により絵文字は禁止。絵文字を削除してやり直すこと。"
-  exit 2
-fi
+exec bun -e '
+let input;
+try { input = await Bun.stdin.json(); } catch { process.exit(0); }
+const content = input?.tool_name === "Edit" ? input.tool_input?.new_string
+  : input?.tool_name === "Write" ? input.tool_input?.content : null;
+if (typeof content !== "string") process.exit(0);
+if (/\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3/u.test(content)) {
+  console.log(JSON.stringify({ hookSpecificOutput: {
+    hookEventName: "PreToolUse",
+    additionalContext: "Emoji-like symbols occur in this edit. Shared writing rules exclude decorative emoji from comments and Markdown; product data or explicit requirements may be intentional."
+  }}));
+}
+'

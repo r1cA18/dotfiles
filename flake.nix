@@ -36,6 +36,15 @@
     anthropic-skills.url = "github:anthropics/skills";
     anthropic-skills.flake = false;
 
+    # Selected portable skills from the official legacy catalog.
+    # The successor openai/plugins does not currently ship these CLI workflows.
+    openai-skills.url = "github:openai/skills";
+    openai-skills.flake = false;
+
+    # Focused property-based testing guidance; no marketplace-wide activation.
+    trailofbits-skills.url = "github:trailofbits/skills";
+    trailofbits-skills.flake = false;
+
     # difit skills
     difit-skills.url = "github:yoshiko-pg/difit";
     difit-skills.flake = false;

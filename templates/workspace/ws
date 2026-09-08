@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd -- "${BASH_SOURCE[0]%/*}"
+if ! command -v bun >/dev/null 2>&1; then
+  printf '%s\n' 'Bun is required. Install Bun with your environment manager or run nix develop if you use Nix.' >&2
+  exit 1
+fi
+exec bun scripts/workspace.ts "$@"

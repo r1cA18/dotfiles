@@ -79,6 +79,7 @@ let
       require_claude() {
         if [[ ! -x "$claude_bin" ]]; then
           echo "Claude Code was not found at $claude_bin" >&2
+          echo "Run 'update-claude-code' to install it, then retry." >&2
           exit 1
         fi
       }
@@ -119,7 +120,7 @@ let
         if [[ -n "$config_dir" ]]; then
           CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login
         else
-          "$claude_bin" auth login
+          env -u CLAUDE_CONFIG_DIR "$claude_bin" auth login
         fi
         verify_profile_identity "$config_dir" true
       }
@@ -170,11 +171,14 @@ let
       EOF
       }
 
-      require_claude
       command="''${1:-}"
       if [[ $# -gt 0 ]]; then
         shift
       fi
+
+      case "$command" in
+        add|login|status|run|gpt) require_claude ;;
+      esac
 
       case "$command" in
         list)
@@ -270,6 +274,7 @@ in
 
       permissions = {
         allow = [
+          "Bash(ssh *)"
           "Bash(bun install*)"
           "Bash(bun run *)"
           "Bash(bun test*)"
@@ -306,7 +311,6 @@ in
           "Bash(curl *)"
           "Bash(wget *)"
           "Bash(nc *)"
-          "Bash(ssh *)"
           "Bash(git push --force*)"
           "Bash(git push -f*)"
           "Bash(git push * --force*)"
@@ -333,7 +337,8 @@ in
             hooks = [
               {
                 type = "command";
-                command = "~/.claude/hooks/emoji-guard.sh";
+                command = ''"${dotfilesDir}/claude/hooks/emoji-guard.sh"'';
+                timeout = 5;
               }
             ];
           }
@@ -342,7 +347,8 @@ in
             hooks = [
               {
                 type = "command";
-                command = "~/.claude/hooks/large-file-guard.sh";
+                command = ''"${dotfilesDir}/claude/hooks/large-file-guard.sh"'';
+                timeout = 5;
               }
             ];
           }
@@ -351,7 +357,13 @@ in
             hooks = [
               {
                 type = "command";
-                command = "~/.claude/hooks/debug-print-guard.sh";
+                command = ''PATH="${
+                  lib.makeBinPath [
+                    pkgs.python3
+                    pkgs.git
+                  ]
+                }:$PATH" "${dotfilesDir}/claude/hooks/debug-print-guard.sh"'';
+                timeout = 5;
               }
             ];
           }
@@ -362,22 +374,16 @@ in
             hooks = [
               {
                 type = "command";
-                command = "~/.claude/hooks/auto-format.sh";
-              }
-              {
-                type = "command";
-                command = "~/.claude/hooks/ai-slop-guard.sh";
-              }
-              {
-                type = "command";
-                command = "~/.claude/hooks/test-reminder.sh";
+                command = ''"${dotfilesDir}/claude/hooks/ai-slop-guard.sh"'';
+                timeout = 5;
               }
               {
                 # vault 20_Knowledge の index カバレッジ検査 (agents/hooks/ は
                 # Codex と共有。Codex 側は codex/hooks.json の Stop hook で同じ
-                # スクリプトを --all モードで呼ぶ)
+                # スクリプトを --stop モードで呼ぶ)
                 type = "command";
-                command = "${lib.getExe pkgs.bun} ~/dotfiles/agents/hooks/check-knowledge-index.ts";
+                command = ''${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/check-knowledge-index.ts"'';
+                timeout = 5;
               }
             ];
           }
@@ -387,6 +393,7 @@ in
               {
                 type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+                timeout = 5;
               }
             ];
           }
@@ -398,6 +405,7 @@ in
               {
                 type = "command";
                 command = notificationCommand "Submarine";
+                timeout = 5;
               }
             ];
           }
@@ -407,6 +415,7 @@ in
               {
                 type = "command";
                 command = notificationCommand "Ping";
+                timeout = 5;
               }
             ];
           }
@@ -417,6 +426,7 @@ in
               {
                 type = "command";
                 command = notificationCommand "Funk";
+                timeout = 5;
               }
             ];
           }
@@ -425,6 +435,7 @@ in
               {
                 type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+                timeout = 5;
               }
             ];
           }
@@ -435,6 +446,7 @@ in
               {
                 type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+                timeout = 5;
               }
             ];
           }
@@ -446,6 +458,7 @@ in
               {
                 type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+                timeout = 5;
               }
             ];
           }
@@ -457,6 +470,7 @@ in
               {
                 type = "command";
                 command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+                timeout = 5;
               }
             ];
           }

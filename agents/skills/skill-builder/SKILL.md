@@ -1,178 +1,101 @@
 ---
 name: skill-builder
 description: |
-  Create new skills, improve existing skills, and validate skill quality for ~/dotfiles/agents/skills/.
-  Interactive workflow: use-case discovery, architecture selection, SKILL.md generation, self-review, iteration.
-  Generates dotfiles-native skills with Nix-aware paths, JA/EN triggers, progressive disclosure, and rubric-based self-scoring.
-  Triggers: "create a skill", "new skill", "build a skill", "make a skill", "skill for X", "improve skill", "rewrite skill"
-  日本語: 「スキルを作って」「新しいスキル作成」「スキルを改善して」「このスキルを書き直して」「スキル生成」
+  Create or improve reusable Agent Skills under ~/dotfiles/agents/skills/.
+  Use when a request needs a new shared skill or a substantial rewrite; choose a fitting architecture, write SKILL.md and only necessary resources, and validate references and dependencies.
+  Keep shared behavior portable across Claude and Codex. Use the system skill-creator for skills outside this repository and skill-auditor for an independent review.
+  Example requests: "create a skill", "improve this skill", "rewrite the skill"; 日本語:「スキルを作って」「スキルを改善して」「書き直して」
 ---
 
-# Skill Creator
+# Skill Builder
 
-~/dotfiles/agents/skills/ 配下に高品質なスキルを作成する対話的ワークフロー。
+`~/dotfiles/agents/skills/`に共有skillを作成または改善する。作成・改善の判断と実装を扱い、独立した品質監査は`skill-auditor`へ分ける。
 
-**監査は skill-auditor を使う。** このスキルは **作成と改善** に特化している。
+## モード
 
-## モード選択
+| 依頼 | モード | 主な成果物 |
+| --- | --- | --- |
+| 新しいskillを作る | Create | 新しいディレクトリと必要な資産 |
+| 既存skillを改善する | Improve | 目的を保った限定的な修正 |
+| 既存skillを書き直す | Rewrite | ユースケースに合わせた再設計 |
 
-| モード  | トリガー                               | 概要                              |
-| ------- | -------------------------------------- | --------------------------------- |
-| Create  | 「スキルを作って」「new skill」        | ゼロから新規スキルを作成          |
-| Improve | 「スキルを改善して」「improve {name}」 | 既存スキルの description/構造改善 |
-| Rewrite | 「書き直して」「rewrite {name}」       | 既存スキルの全面再設計            |
+対象がこのrepository外のCodex skillなら`.system/skill-creator`を使う。監査だけを求められた場合は`skill-auditor`を使う。
 
-引数なし → Create モード（対話的にユースケースをヒアリング）
-スキル名指定 → そのスキルの Improve/Rewrite
+## 進め方
 
-## Create ワークフロー
+### 1. 依頼と適用範囲を確定する
 
-### Phase 1: Use-Case Discovery
+- ユーザーが示した目的・成果物・対象agentを要件として抽出する
+- 既存の依頼例がある場合はそれを優先し、例が足りない場合だけ判断に必要な質問をする
+- ユースケース数や言語数を固定条件にしない。実装の境界が曖昧なときだけ、代表的な依頼と非該当の依頼を確認する
+- `agents/skills/`内の関連skillと配布定義を読み、重複・製品固有依存・runtimeで使えるtoolを確認する
+- 結果を変える重要な選択が未確定なら選択肢を確認する。依頼が明確な場合に形式的な承認段階を追加しない
 
-ユーザーから具体的なユースケースを引き出す。最低2つのユースケースが必要。
+### 2. 構成を選ぶ
 
-質問の進め方（一度に2問まで）:
+[architecture-patterns.md](references/architecture-patterns.md)を読み、必要な知識・動作・依存に合う構成を選ぶ。
 
-1. 「このスキルで何を実現したい？具体的なシナリオを1つ教えて」
-2. 「他にどんな場面で使う？もう1つ例を」
-3. 「ユーザーがこのスキルを呼び出すとき、どんな言葉で頼む？（日本語・英語両方）」
+| 状況 | 構成 |
+| --- | --- |
+| 独立したworkflowを名前で振り分ける | Type 1: Router + Sub-skills |
+| 目的は一つで詳細知識やhelperが必要 | Type 2: Single + References |
+| 必要時に個別ルールを読む知識集 | Type 3: Reference Library |
+| 小さく自己完結した目的 | Type 4: Simple |
 
-**必須情報の収集**:
+ディレクトリの大きさや補助ファイル数を品質目標にしない。実際に参照・実行される資産だけを追加する。
 
-- スキルの目的（何を自動化/支援するか）
-- 具体的なユースケース 2-3 個
-- トリガーフレーズ候補（JA/EN）
-- 必要な外部ツール（MCP、CLI、API）
-- 出力の形式（ファイル生成、コマンド実行、ドキュメント作成等）
+### 3. 実装する
 
-Phase 1 完了条件: ユースケースが2つ以上明確になった。
+frontmatterの書式が必要なら[frontmatter-templates.md](references/frontmatter-templates.md)を参照する。
 
-### Phase 2: Architecture Selection
+1. `agents/skills/{name}/`に作業対象を置く。新規作成では必要な`references/`・`scripts/`・`templates/`だけを先に用意する
+2. `SKILL.md`のfrontmatterをYAMLとして記述し、`name`と`description`を必ず含める
+3. descriptionには能力と適用条件を短く書く。関連skillとの境界が必要な場合だけ除外条件を加える
+4. 呼び出し例は実際の利用者が使う言語と表現から選ぶ。英語・日本語や個数を必須化せず、曖昧な依頼を減らす情報を残す
+5. bodyには目的・判断基準・実行手順・失敗時の扱いを命令形で書く。詳細なdomain knowledgeは必要なreferenceへ移す
+6. 依存するMCP・CLI・OS・credentialを明記し、対象agentで利用できない場合の条件付きfallbackを用意する
+7. `agents/`やproduct固有のtool名を共有本文へ固定しない。adapterが必要なら対象product側で解決する
+8. global installやsystem変更をskillの既定手順にしない。repositoryのpackage管理とユーザーの承認範囲に従う
 
-[references/architecture-patterns.md](references/architecture-patterns.md) を参照し、最適なアーキテクチャを提案する。
+### 4. 検証する
 
-判断基準:
+次のvalidatorで構文とローカル参照を確認する。
 
-| 条件                          | パターン                    |
-| ----------------------------- | --------------------------- |
-| 独立した機能が3つ以上         | Type 1: Router + Sub-skills |
-| 目的は1つ、ドメイン知識が必要 | Type 2: Single + References |
-| ルール/パターンが10個以上     | Type 3: Reference Library   |
-| 100行以下で書ける単純なスキル | Type 4: Simple              |
-
-提案内容:
-
-- 選択したパターンとその理由
-- ディレクトリ構成案
-- SKILL.md に入れる内容と references/ に分離する内容の仕分け
-- 必要なスクリプト・テンプレートの一覧
-
-ユーザーの承認を得てから次へ進む。
-
-### Phase 3: Skill Generation
-
-以下の順序でファイルを生成する:
-
-1. **ディレクトリ作成**: `~/dotfiles/agents/skills/{name}/`
-2. **references/ と scripts/** を先に作成（これらを SKILL.md から参照するため）
-3. **SKILL.md** を生成
-
-#### SKILL.md 生成ルール
-
-**Frontmatter**:
-
-```yaml
----
-name: { kebab-case, フォルダ名と一致 }
-description: |
-  {何をするか 1-2文}
-  {主要な機能の列挙}
-  Triggers: "{EN trigger 1}", "{EN trigger 2}", "{EN trigger 3}"
-  日本語: 「{JA trigger 1}」「{JA trigger 2}」「{JA trigger 3}」
----
+```bash
+bash ~/dotfiles/agents/skills/skill-builder/scripts/validate-skill.sh \
+  ~/dotfiles/agents/skills/{name}
 ```
 
-description のルール:
+- validatorのerrorを修正する。warningはnameと配布IDの対応など事実を確認して判断する
+- 追加したscriptは実行可能性を依存が利用できる環境で確認する。利用できない依存は未検証として記録する
+- 参照linkの解決・placeholder・対象agentのtool依存を確認する
+- triggerを評価する場合は対象agentで該当依頼と非該当依頼を実行し、prompt・agent・結果・未検証事項を記録する。descriptionの語数だけで呼び出し品質を保証しない
 
-- 1024文字以内
-- WHAT（何をするか）+ WHEN（いつ使うか）+ HOW（主要機能）を含む
-- EN triggers と JA triggers の両方を含む
-- XML タグ (< >) 禁止
-- 曖昧な表現禁止（「helps with projects」のような）
-- negative trigger を必要に応じて含める（「NOT for X」）
+### 5. 自己レビューする
 
-**Body の書き方**:
+[quality-checklist.md](references/quality-checklist.md)を使い、数値gradeではなく証拠付きの判定を残す。
 
-- 命令形（imperative form）で書く。「〜する」「〜を実行」
-- 「あなたは」「you should」のような二人称は使わない
-- SKILL.md body は 200行以下を目標（理想は 150行）
-- 判断基準は表で整理する
-- 重要な情報を先頭に配置する
-- references/ へのリンクは `[file.md](references/file.md)` 形式
-- 各セクションは ## で区切り、スキャンしやすくする
+| 観点 | 記録する内容 |
+| --- | --- |
+| Format | frontmatter・name・参照先の検証結果 |
+| Intent | 目的・適用範囲・非該当範囲の根拠 |
+| Behavior | agentが実行できる手順と失敗時の扱い |
+| Dependencies | tool・OS・credential・fallbackの確認状況 |
+| Maintenance | 構成の妥当性と重複の有無 |
+| Discovery | 実測したprompt・対象agent・結果。未実施は未評価 |
 
-**Progressive Disclosure 3レベル**:
+必須形式が壊れている場合は修正してから結果を返す。意図や権限が変わる修正は勝手に広げず、必要な確認を求める。
 
-- Level 1: frontmatter (name + description) -- 常にコンテキストに存在
-- Level 2: SKILL.md body -- スキル発動時に読み込み
-- Level 3: references/, scripts/ -- 必要時のみ Read で参照
+## Progressive disclosure
 
-### Phase 4: Self-Review
+- Level 1: frontmatterには選択に必要な能力と適用条件だけを書く
+- Level 2: `SKILL.md`には共有workflowと判断基準を書く
+- Level 3: 条件付きの知識は`references/`へ分け、使う段階で該当ファイルだけ読む
 
-生成したスキルを [references/quality-checklist.md](references/quality-checklist.md) で自己採点する。
+各referenceは`SKILL.md`から相対linkで参照する。単純なskillに不要なreferenceやrouterを追加しない。
 
-採点結果をユーザーに提示:
+## dotfilesへの反映
 
-```
-## Self-Review: {skill-name}
+共有skillの正本は`agents/skills/`であり、`agent-skills.nix`の有効化対象を確認する。ClaudeとCodexへのruntime同期はNixの配布機構が担当する。
 
-| Check                    | Status | Note          |
-| ------------------------ | ------ | ------------- |
-| Frontmatter valid        | OK/NG  | ...           |
-| JA triggers present      | OK/NG  | ...           |
-| EN triggers present      | OK/NG  | ...           |
-| WHAT + WHEN in desc      | OK/NG  | ...           |
-| Body < 200 lines         | OK/NG  | {actual}行    |
-| Imperative form          | OK/NG  | ...           |
-| Progressive disclosure   | OK/NG  | ...           |
-| No inline bloat          | OK/NG  | ...           |
-| References linked        | OK/NG  | ...           |
-| No duplicate with others | OK/NG  | ...           |
-
-Estimated Grade: {Excellent/Good/Needs Work/Weak}
-```
-
-NG がある場合は自動修正してから提示する。
-
-### Phase 5: Nix Integration
-
-スキルが `~/dotfiles/agents/skills/` に作成されたことを確認。
-Nix (agent-skills-nix) 経由で Claude / Codex の両方に同期されるため、
-`dr` の実行を促す。
-
-ただし、symlink 構造上 `rules/` `agents/` `hooks/` と同様に即反映される可能性がある。
-`agent-skill-path {name}` で反映を確認。
-
-## Improve ワークフロー
-
-1. 対象スキルの全ファイルを Read で読む
-2. [references/quality-checklist.md](references/quality-checklist.md) で採点
-3. 問題点を特定し、具体的な改善案を提示
-4. ユーザーの承認後に修正を実行
-5. 修正後に再採点
-
-## Rewrite ワークフロー
-
-1. 対象スキルの全ファイルを Read で読む
-2. Phase 1 (Use-Case Discovery) からやり直す
-3. 既存の良い部分は引き継ぐ
-4. Create ワークフローの Phase 2-5 を実行
-
-## 環境固有の注意事項
-
-- スキルパス: `~/dotfiles/agents/skills/{name}/SKILL.md`
-- 言語: 日本語で記述（技術用語は英語）
-- body の指示は命令形
-- frontmatter の description は JA/EN 両方のトリガーを含む
-- `allowed-tools` は最小権限で指定（不要なら省略可、ただしリスクを認識）
-- 既存スキルとの重複を ~/dotfiles/agents/skills/ 内で確認してから作成
+`dr`やsystem applyはこのworkflowから自動実行しない。必要な反映コマンドと、runtime同期・実agent発火をまだ確認していない場合はその事実を報告する。

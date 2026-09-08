@@ -2,8 +2,8 @@
 
 ## 最初に読むこと
 
-**このリポジトリを変更する前に、必ず `docs/architecture.md` を読むこと。**
-**agent 関連の運用方針は `docs/agent-platforms.md` も読むこと。**
+Nix構成・ファイル配置・symlink・OS分岐を変更するときは`docs/architecture.md`の関連節を参照する。
+agent資産の配布・製品間の境界・運用を変更するときは`docs/agent-platforms.md`も参照する。
 
 このファイルには以下が記載されている：
 
@@ -21,11 +21,12 @@
 
 ## 実務ルール
 
-- `docs/architecture.md` を読んでから編集する
+Codexは当面サブエージェントを使わない。探索・実装・reviewを主agentで行い、他CLIやbridgeを経由した委譲もしない。詳細は`codex/rules/orchestration.md`を参照する。所有者が明示的に方針を変更するまで継続する。
+
 - Nix 環境ではグローバルインストール禁止。`comma` か `nix run` / `nix shell` を使う
 - Web 検索とページ取得は組み込みの Web ツールを使う
 - ブラウザ操作は `agent-browser` 優先
-- テストや build がある変更は、変更前後で検証する
+- 検証範囲は変更の影響に合わせる。不具合は可能なら変更前に再現し、修正後に関連する検証を実行する
 - `Codex` では `.codex/agents/`、`Claude Code` では `claude/agents/` を使う
 - 共通化したい skill は `agents/skills/` を source of truth にする
 

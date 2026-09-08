@@ -17,7 +17,11 @@ dotfiles/
 │   ├── INSTRUCTIONS.md       # 共有instruction本体
 │   ├── rules/                # 共有rule
 │   ├── hooks/                # 製品非依存のhook実装
+│   ├── scripts/              # workspace CLIと配置・探索の検証
 │   └── skills/               # Agent Skillsのsource of truth
+│
+├── templates/workspace/     # 個人dotfilesに依存しないworkspace生成元
+├── tests/                   # workspaceとaccount profileの回帰test
 │
 ├── nix/                      # Nix設定（メイン）
 │   ├── darwin/               # macOS専用 (nix-darwin)
@@ -86,23 +90,23 @@ dotfiles/
 
 home-managerが以下のシンボリックリンクを自動管理：
 
-| ソース                                     | リンク先                                 | 管理ファイル                                       |
-| ------------------------------------------ | ---------------------------------------- | -------------------------------------------------- |
-| `nvim/`                                    | `~/.config/nvim`                         | `neovim.nix` (mkOutOfStoreSymlink)                 |
-| `programs.ghostty.settings`                | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
-| `karabiner/karabiner.json`                 | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
-| `agents/skills/`                           | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
-| `programs.claude-code.settings` (attrset)  | `~/.claude/settings.json`                | `claude-code.nix` (Nix生成)                        |
-| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.claude/CLAUDE.md`                    | `agent-instructions.nix` で結合                    |
-| `claude/rules/`                            | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/hooks/`                            | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/commands/`                         | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `claude/agents/`                           | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
-| `nix/home-manager/programs/codex.nix`      | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
-| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.codex/AGENTS.md`                     | `agent-instructions.nix` で結合                    |
-| `agents/INSTRUCTIONS.md` + `agents/rules/` | `~/.gemini/GEMINI.md`                    | `agent-instructions.nix` で結合                    |
-| `codex/hooks.json`                         | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
-| `codex/prompts/`                           | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
+| ソース                                           | リンク先                                 | 管理ファイル                                       |
+| ------------------------------------------------ | ---------------------------------------- | -------------------------------------------------- |
+| `nvim/`                                          | `~/.config/nvim`                         | `neovim.nix` (mkOutOfStoreSymlink)                 |
+| `programs.ghostty.settings`                      | `~/.config/ghostty/config`               | `ghostty.nix` (programs.ghostty)                   |
+| `karabiner/karabiner.json`                       | `~/.config/karabiner/karabiner.json`     | `karabiner.nix` (mkOutOfStoreSymlink)              |
+| `agents/skills/`                                 | `~/.claude/skills/` + `~/.codex/skills/` | `agent-skills.nix` (agent-skills-nix symlink-tree) |
+| `programs.claude-code.settings` (attrset)        | `~/.claude/settings.json`                | `claude-code.nix` (Nix生成)                        |
+| `agents/INSTRUCTIONS.md` + `agents/rules/`       | `~/.claude/CLAUDE.md`                    | `agent-instructions.nix` で結合                    |
+| `claude/rules/`                                  | `~/.claude/rules/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/hooks/`                                  | `~/.claude/hooks/`                       | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/commands/`                               | `~/.claude/commands/`                    | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `claude/agents/`                                 | `~/.claude/agents/`                      | `claude-code.nix` (mkOutOfStoreSymlink)            |
+| `nix/home-manager/programs/codex.nix`            | `~/.codex/config.toml`                   | Nix生成の writable copy                            |
+| 共有instruction + `codex/rules/orchestration.md` | `~/.codex/AGENTS.md`                     | `agent-instructions.nix`の`extraFiles`で追加       |
+| `agents/INSTRUCTIONS.md` + `agents/rules/`       | `~/.gemini/GEMINI.md`                    | `agent-instructions.nix` で結合                    |
+| `codex/hooks.json`                               | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
+| `codex/prompts/`                                 | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
 Claude account profileは`claude-code.nix`が生成する`clp`で管理する。
 Codex account profileは`codex.nix`が生成する`cxp`で管理する。
@@ -126,25 +130,27 @@ Codex account profileは`codex.nix`が生成する`cxp`で管理する。
 GPT backend版Claude Codeの起動・Proxy管理・profile管理は
 [docs/guides/claude-code-gpt.md](guides/claude-code-gpt.md)を参照。
 
-## Claude Code 指示の強度階層
+## Agent指示と自動検査の役割
 
-Claude への指示は強度順に以下の仕組みで管理する:
+常時必要な制約と用途別の知識を分ける。hookはイベントに応じた検査であり、文章上のinstruction優先順位とは別の仕組み。
 
 ```
-Hook (自動強制)  > Rule (常時ロード)  > CLAUDE.md (人格)       > Skill (オンデマンド)
+Hook (イベント検査)  Rule (共通制約)  CLAUDE.md (共有指示)  Skill (用途別知識)
 claude/hooks/      claude/rules/        agents/{INSTRUCTIONS,rules}  agents/skills/*/SKILL.md
 ```
 
-| 階層      | 配置先                                     | 役割                               | 例                                       |
-| --------- | ------------------------------------------ | ---------------------------------- | ---------------------------------------- |
-| Hook      | `claude/hooks/*.sh`                        | 違反を自動検出・ブロック           | emoji-guard, secret-guard, ai-slop-guard |
-| Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | tool-preferences, workflow               |
-| CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                   |
-| Skill     | `agents/skills/*/SKILL.md`                 | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing         |
+| 階層      | 配置先                                     | 役割                               | 例                                           |
+| --------- | ------------------------------------------ | ---------------------------------- | -------------------------------------------- |
+| Hook      | `claude/hooks/*.sh`                        | 対象イベントの検査と助言           | emoji-guard, large-file-guard, ai-slop-guard |
+| Rule      | `claude/rules/*.md`                        | ドメイン別の明示的指示             | tool-preferences, workflow                   |
+| CLAUDE.md | `agents/INSTRUCTIONS.md` + `agents/rules/` | 共有の人格・行動原則               | 文体、調査、実装、検証                       |
+| Skill     | `agents/skills/*/SKILL.md`                 | 複雑なドメイン知識（オンデマンド） | swift-dev-toolkit, video-editing             |
 
-学習内容の蓄積先も同じ階層で選択する:
+現在の登録と検査の限界は[hook運用](guides/agent-hooks.md)を参照する。未登録のscriptが自動実行されるとは考えない。
 
-- 自動防止できるもの → Hook 作成
+学習内容の蓄積先も役割で選択する:
+
+- 機械的に判定できるもの → 既存検査との重複と誤検知を確認してHookを検討
 - 明示的な指示が必要 → Rule 作成/更新
 - 複雑なワークフロー知識 → Skill 作成
 - CLAUDE.md への lessons 蓄積は避ける

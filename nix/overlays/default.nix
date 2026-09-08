@@ -1,4 +1,4 @@
 # Custom overlays
 {
-  additions = final: _prev: import ../pkgs final;
+  additions = final: prev: import ../pkgs (prev // { inherit (final) callPackage; });
 }

@@ -34,16 +34,17 @@ SKILL.md に本来 references/ に分離すべき詳細情報が全てインラ�
 
 ---
 
-## AP-3: Missing JA Triggers
+## AP-3: Discovery Mismatch
 
-description に日本語トリガーフレーズがない。
+descriptionの適用範囲と実際の呼び出しが一致しない。
 
-**症状**: description が英語のみ。日本語で指示しても skill が呼ばれない。
-**リスク**: 日本語ユーザーがスキルを活用できない。
-**検出**: description 内に日本語文字列がない。
-**修正**: 「〜して」「〜を実行」形式の日本語トリガーを追加。
+**症状**: 該当する依頼で呼ばれない。または非該当の依頼にも適用される。
+**リスク**: 必要なworkflowの欠落や無関係な指示の混入。
+**検出**: 対象agentで該当・非該当の依頼を検証する。未実施の場合は候補として記録する。
+**修正**: 能力と適用条件を簡潔にし、誤起動を招く条件を絞る。
 
-**影響が大きいケース**: 外部から導入したスキル（remotion、vercel-react 等）。
+英語のみという理由では問題扱いしない。日本語の呼び出し漏れを実測した場合に、
+意味の曖昧さを解消する日本語の用例を検討する。強制文言やtriggerの数を増やすことを目的にしない。
 
 ---
 
@@ -53,28 +54,25 @@ description が「何をするか」だけで「いつ使うか」を説明し�
 
 **症状**: "Security check skill" のような1行 description。
 **リスク**: エージェントがスキルを使うべき場面を判断できない。
-**検出**: description が 50文字未満、または "when" の文脈がない。
-**修正**: "Use when..." / "Triggers:" を追加。具体的なユーザーフレーズを含める。
+**検出**: descriptionから能力または適用条件を判断できない。文字数や特定語句の有無だけで判定しない。
+**修正**: 対象とする依頼や成果物を明記する。
 
 **悪い例**: `description: Security check skill`
-**良い例**: `description: |`
-`Security analysis for codebases. Scans for vulnerabilities, secrets, and common security issues.`
-`Triggers: "security check", "vulnerability scan", "find secrets"`
-`日本語: 「セキュリティチェック」「脆弱性を確認」「秘密鍵が漏れてないか確認」`
+**良い例**: `description: Review a codebase for vulnerabilities when the user requests a security audit.`
 
 ---
 
-## AP-5: Missing allowed-tools
+## AP-5: Unsupported Tool Assumptions
 
-allowed-tools が未指定で、不要なツールにアクセスできる状態。
+対象agentが提供しないtoolやmetadataの効果を前提にしている。
 
-**症状**: frontmatter に allowed-tools がない。
-**リスク**: スキルが意図しないツール（Write、Bash 等）を使用する可能性。
-**検出**: frontmatter に allowed-tools フィールドがない。
-**修正**: 最小権限の原則で必要なツールのみ指定。
+**症状**: 共有skillが特定製品のtool名に固定され、利用可能性を確認しない。
+**リスク**: 他agentで実行できない。metadataだけで権限が制御されると誤認する。
+**検出**: 必須toolと対象環境の対応を照合する。
+**修正**: 必須依存を明記し、利用可能な代替手段を条件付きで示す。
 
-**注意**: 全ツールが必要な場合は意図的な省略として許容。
-ただし、参照のみのスキル（reference-library）は Read, Glob, Grep に制限すべき。
+allowed-tools等の任意fieldは対応する製品でのみ評価する。省略を一律の欠陥とせず、
+実際の権限は対象runtimeの設定と承認範囲で判断する。
 
 ---
 
@@ -122,9 +120,9 @@ audit 時の検出優先度（影響の大きさ順）:
 
 1. **AP-1** Near-Duplicate（即座に修正可能、メンテコスト削減）
 2. **AP-4** Vague Description（トリガー精度に直結）
-3. **AP-3** Missing JA Triggers（日本語環境での利用に直結）
+3. **AP-3** Discovery Mismatch（呼び出し漏れ・誤起動）
 4. **AP-2** Inline Bloat（context window 効率に影響）
 5. **AP-6** No Progressive Disclosure（context 効率）
-6. **AP-5** Missing allowed-tools（セキュリティ）
+6. **AP-5** Unsupported Tool Assumptions（実行可能性）
 7. **AP-7** Demo Quality（ノイズ削減）
 8. **AP-8** Stale External References（安定性）

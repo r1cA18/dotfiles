@@ -53,7 +53,7 @@ nix run ~/dotfiles#homelab-apply  # Linuxのsystem設定とHome Managerを一括
 h      # エイリアス一覧（説明付き）
 hv nix # エイリアス一覧を絞り込み
 dr     # macOS全体またはLinuxのHome Managerをリビルド
-update-all # flake・GitHub apps・Claude Code・Antigravityを更新
+update-all # flake・GitHub apps・Claude Code・Codex・Antigravityを更新
 ```
 
 ### Claude Code
@@ -105,11 +105,10 @@ dotfiles/
 
 - `nh`
 - `gemini-cli`
-- `codex`
 - `agent-browser`
 - `ast-grep`
 
-`Claude Code`本体はnative installer版を使う。Home Managerは未導入時のbootstrapとversion channelと`~/.claude/`配下の宣言設定を管理する。runtime stateはprofileごとに分離する。
+`Claude Code`・`Codex`・`Antigravity`本体はnative installer版を使う。Home Managerは未導入時のbootstrapと宣言設定を管理し、`update-all`から明示的に更新する。runtime stateはprofileごとに分離する。
 
 ### Skills
 

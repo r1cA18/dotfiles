@@ -1,25 +1,21 @@
 #!/usr/bin/env bash
-# PostToolUse: 過剰装飾のprint/log文を検出して警告
+# PostToolUse: 今回追加されたprint/logの装飾だけを通知する。
 set -euo pipefail
 
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
-[ -z "$FILE_PATH" ] && exit 0
-[ ! -f "$FILE_PATH" ] && exit 0
-
-EXT="${FILE_PATH##*.}"
-
-case "$EXT" in
-  py)
-    # Python: 装飾的なprint文を検出（=== や --- や *** を含むprint）
-    if grep -nE 'print\(.*[=\-\*]{3,}' "$FILE_PATH" 2>/dev/null; then
-      echo "WARNING: 過剰に装飾されたprint文が検出された。シンプルなデバッグ出力にすること。"
-    fi
-    ;;
-  js|jsx|ts|tsx)
-    # JS/TS: 装飾的なconsole.log文を検出
-    if grep -nE 'console\.(log|info|warn)\(.*[=\-\*]{3,}' "$FILE_PATH" 2>/dev/null; then
-      echo "WARNING: 過剰に装飾されたconsole.log文が検出された。シンプルなデバッグ出力にすること。"
-    fi
-    ;;
-esac
+exec bun -e '
+let input;
+try { input = await Bun.stdin.json(); } catch { process.exit(0); }
+const file = input?.tool_input?.file_path;
+const content = input?.tool_input?.new_string ?? input?.tool_input?.content;
+if (typeof file !== "string" || typeof content !== "string") process.exit(0);
+const pattern = file.endsWith(".py")
+  ? /print\(\s*[fFrR]?["\x27][^\n]*[=*-]{3,}/
+  : /\.(?:[cm]?js|jsx|ts|tsx)$/.test(file)
+    ? /console\.(?:log|info|warn)\(\s*["\x27\x60][^\n]*[=*-]{3,}/ : null;
+if (pattern?.test(content)) {
+  console.log(JSON.stringify({ hookSpecificOutput: {
+    hookEventName: "PostToolUse",
+    additionalContext: "The inserted text contains decorative separators in a print or console message. Shared writing rules prefer plain diagnostic output."
+  }}));
+}
+'

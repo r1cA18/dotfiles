@@ -1,103 +1,38 @@
 # Frontmatter Templates
 
-スキル作成時のコピペ用テンプレート。パターンに応じて選択。
+必要な能力と適用条件を記述する。triggerの個数や日英の併記を必須にしない。
 
-## Minimal (Type 4: Simple)
-
-```yaml
----
-name: { skill-name }
-description: |
-  {1行で何をするか}
-  Triggers: "{phrase1}", "{phrase2}", "{phrase3}"
-  日本語: 「{フレーズ1}」「{フレーズ2}」「{フレーズ3}」
----
-```
-
-## Standard (Type 2: Single + References)
+## Minimal
 
 ```yaml
 ---
-name: { skill-name }
-description: |
-  {何をするか 1-2文}
-  {主要な機能の列挙}
-  Triggers: "{phrase1}", "{phrase2}", "{phrase3}"
-  日本語: 「{フレーズ1}」「{フレーズ2}」「{フレーズ3}」
+name: example-skill
+description: Validate repository manifests when adding repositories or reviewing manifest changes.
 ---
 ```
 
-## Full (Type 1: Router / Type 3: Library)
+nameとdescriptionを対象用途へ変更する。nameは文字列で記述し波括弧によるYAML mappingにしない。
+
+## Multiline
 
 ```yaml
 ---
-name: { skill-name }
+name: example-skill
 description: |
-  {何をするか 1-2文}
-  {サブスキル/機能の列挙}
-  Triggers: "{phrase1}", "{phrase2}", ..., "{phraseN}"
-  日本語: 「{フレーズ1}」「{フレーズ2}」...「{フレーズN}」
+  Validate repository manifests and explain failed entries.
+  Use for manifest maintenance rather than cloning unrelated repositories.
 ---
 ```
 
-## With Tool Restriction
+workflowの詳細は本文へ置く。呼び出し例は境界を明確にする場合だけ加える。
 
-```yaml
----
-name: { skill-name }
-description: |
-  {description}
-allowed-tools: "Read Glob Grep WebFetch WebSearch"
----
-```
+## Compatibility
 
-## With Metadata
+- nameは64文字以下のkebab-caseとし配布IDとの対応を確認する
+- descriptionは空でない文字列とし共有validatorでは1024文字以内を確認する
+- licenseやmetadataは実際の配布要件がある場合だけ追加する
+- allowed-toolsなど製品固有fieldは対象runtimeの対応を確認する
+- fieldを省略してもsessionの権限やsandbox制約を解除できるわけではない
+- Claudeのtool名をCodexにも使えると仮定しない
 
-```yaml
----
-name: { skill-name }
-description: |
-  {description}
-metadata:
-  author: r1ca18
-  version: 1.0.0
-  mcp-server: { server-name }
----
-```
-
-## YAML Frontmatter Rules
-
-### Required Fields
-
-| Field       | Rule                            |
-| ----------- | ------------------------------- |
-| name        | kebab-case, フォルダ名と一致    |
-| description | 50-1024文字, WHAT + WHEN を含む |
-
-### Optional Fields
-
-| Field         | Purpose              | Example             |
-| ------------- | -------------------- | ------------------- |
-| license       | OSS の場合           | MIT, Apache-2.0     |
-| allowed-tools | ツール制限           | "Read Glob Grep"    |
-| compatibility | 環境要件 (1-500文字) | "Requires Bun 1.0+" |
-| metadata      | カスタム key-value   | author, version 等  |
-
-### Forbidden
-
-- XML angle brackets (< >) -- セキュリティ制限
-- "claude" or "anthropic" in name -- 予約語
-- unclosed quotes in YAML
-- missing `---` delimiters
-
-## allowed-tools の設計指針
-
-| スキルの種類   | 推奨 allowed-tools                  |
-| -------------- | ----------------------------------- |
-| 参照のみ       | "Read Glob Grep"                    |
-| Web 調査       | "Read Glob Grep WebFetch WebSearch" |
-| コード実行あり | "Read Glob Grep Bash Write Edit"    |
-| 全権限必要     | （省略 = 全ツール許可）             |
-
-最小権限の原則: 不要なツールへのアクセスを制限する。
-ただし、全ツールが必要な場合は省略で OK。
+YAMLの構文・必須field・参照fileをvalidatorで確認する。静的検証の成功と実agentでの発火精度は別に記録する。
