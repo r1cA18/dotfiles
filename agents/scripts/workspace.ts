@@ -3,7 +3,7 @@ import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readF
 import { dirname, join, resolve } from "node:path";
 
 function run(argv: string[], capture = false): string {
-  const result = Bun.spawnSync(argv, { stdin: "inherit", stdout: capture ? "pipe" : "inherit", stderr: "inherit" });
+  const result = Bun.spawnSync(argv, { env: process.env, stdin: "inherit", stdout: capture ? "pipe" : "inherit", stderr: "inherit" });
   if (result.exitCode !== 0) throw new Error(`${argv[0]} exited ${result.exitCode}`);
   return capture ? result.stdout.toString().trim() : "";
 }
@@ -58,6 +58,64 @@ function checkoutMode(): "local" | "ghq" {
   const config = JSON.parse(readFileSync("workspace.json", "utf8"));
   if (config?.checkout !== "local" && config?.checkout !== "ghq") throw new Error('workspace.json checkout must be "local" or "ghq"');
   return config.checkout;
+}
+
+type Agent = "codex" | "claude";
+const profileManagers = { codex: "cxp", claude: "clp" };
+
+function savedProfile(agent: Agent): string | undefined {
+  const root = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { stdout: "pipe", stderr: "pipe" });
+  if (root.exitCode !== 0 || realpathSync(root.stdout.toString().trim()) !== realpathSync(process.cwd())) return;
+  const result = Bun.spawnSync(["git", "config", "--local", "--no-includes", "--get", `workspace.${agent}Profile`], { stdout: "pipe", stderr: "pipe" });
+  if (result.exitCode === 1) return;
+  if (result.exitCode !== 0) throw new Error("Cannot read workspace profile configuration");
+  const value = result.stdout.toString().trim();
+  if (!value || /[\r\n]/.test(value)) throw new Error(`Invalid ${agent} profile; run ws profile ${agent} again`);
+  return value;
+}
+
+function configureProfile(args: string[]) {
+  entries();
+  checkRoot(".");
+  if (!args.length) {
+    for (const agent of ["codex", "claude"] as const) console.log(`${agent}: ${savedProfile(agent) || "not configured (inherits environment)"}`);
+    return;
+  }
+  const [agent, option] = args;
+  if ((agent !== "codex" && agent !== "claude") || args.length > 2 || (option && option !== "--clear")) {
+    throw new Error("Usage: ws profile [codex|claude [--clear]]");
+  }
+  const key = `workspace.${agent}Profile`;
+  if (option === "--clear") {
+    if (savedProfile(agent)) run(["git", "config", "--local", "--unset-all", key]);
+    console.log(`${agent}: profile cleared`);
+    return;
+  }
+  const manager = profileManagers[agent];
+  if (!Bun.which(manager) || !Bun.which("fzf")) throw new Error(`${manager} and fzf are required; use your Nix environment to provide them`);
+  const rows = run([manager, "list"], true).split("\n").slice(1).filter(Boolean);
+  if (!rows.length) throw new Error(`No profiles found; run ${manager} add first`);
+  const selected = Bun.spawnSync([
+    "fzf", "--delimiter=\t", "--with-nth=1,2", "--reverse", "--height=40%",
+    "+m", "--no-print-query", "--no-expect", `--prompt=${agent} profile> `,
+  ], { stdin: Buffer.from(rows.join("\n") + "\n"), stdout: "pipe", stderr: "inherit" });
+  if (selected.exitCode === 1 || selected.exitCode === 130) return;
+  if (selected.exitCode !== 0) throw new Error("Profile selection failed; retry ws profile");
+  const row = selected.stdout.toString().trimEnd();
+  if (!rows.includes(row)) throw new Error("Invalid profile selection");
+  const selector = row.split("\t")[0];
+  if (!selector) throw new Error("Invalid profile selector");
+  run([manager, "path", selector], true);
+  run(["git", "config", "--local", "--replace-all", key, selector]);
+  console.log(`${agent}: ${selector}`);
+}
+
+function agentCommand(agent: Agent): string[] {
+  const profile = savedProfile(agent);
+  if (!profile) return [agent];
+  const manager = profileManagers[agent];
+  if (!Bun.which(manager)) throw new Error(`${manager} is required for the saved profile; restore it or run ws profile ${agent} --clear`);
+  return [manager, "run", profile];
 }
 
 function writeManifest(data: Record<string, string>) {
@@ -217,12 +275,14 @@ function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
     console.log("workspace init <dir> | clone <workspace-URL> <dir> | add <repository-URL> [alias] | remove <alias> | sync | status | snapshot | verify | rg <args...> | search <query> | orient <task> | index | query <purpose> | codex [args...] | claude [args...]\nCore: Git + Bun. Optional: ghq for ghq mode; ripgrep for rg; indexion for index/search/query/orient; agent CLI for codex/claude.");
+    console.log("workspace profile [codex|claude [--clear]]: select a saved account with fzf, show settings, or clear one. Requires cxp/clp and fzf.");
     return;
   }
   if (command === "init") return init(args[0]);
   if (command === "clone") return clone(args);
   if (command === "add") return add(args);
   if (command === "remove") return remove(args);
+  if (command === "profile") return configureProfile(args);
   if (command === "sync") return sync();
   if (command === "snapshot" || command === "verify") return snapshot(command === "verify");
   const repos = linked();
@@ -268,11 +328,11 @@ function main() {
       }
       break;
     case "codex":
-      run(["codex", "-C", process.cwd(), ...paths.flatMap(path => ["--add-dir", path]), ...args]);
+      run([...agentCommand("codex"), "-C", process.cwd(), ...paths.flatMap(path => ["--add-dir", path]), ...args]);
       break;
     case "claude":
       process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD = "1";
-      run(["claude", ...args, ...paths.flatMap(path => ["--add-dir", path])]);
+      run([...agentCommand("claude"), ...args, ...paths.flatMap(path => ["--add-dir", path])]);
       break;
     default:
       throw new Error(`Unknown command: ${command}`);

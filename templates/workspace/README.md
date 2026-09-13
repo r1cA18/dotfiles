@@ -51,6 +51,20 @@ Each agent CLI must already be installed and authenticated on your machine.
 Account profiles, credentials, and native sessions stay local.
 Read each edited repository's instructions and run its own builds and tests.
 
+With `cxp` / `clp` and fzf installed, select an account for this workspace:
+
+```sh
+./ws profile codex
+./ws profile claude
+./ws profile
+```
+
+Selections are stored in the parent repository's local Git config and are not shared by clone.
+Agent launches use the selected account through `cxp run` / `clp run`, including their identity checks.
+Escape leaves the previous selection unchanged. Use `./ws profile codex --clear` or
+`./ws profile claude --clear` to return to inheriting the calling shell's account environment.
+Without a saved selection, profile managers and fzf are not required.
+
 Optional tools:
 
 - `./ws rg -n 'pattern'` requires ripgrep

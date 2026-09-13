@@ -1,5 +1,6 @@
 {
   bun,
+  fzf,
   ghq,
   git,
   indexion,
@@ -10,6 +11,7 @@ writeShellApplication {
   name = "workspace";
   runtimeInputs = [
     bun
+    fzf
     ghq
     git
     indexion

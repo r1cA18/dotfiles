@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -132,6 +132,94 @@ function localFixture() {
   env.PATH = bin;
   return context;
 }
+
+function profileFixture() {
+  const context = localFixture();
+  const { cmd, env, ws } = context;
+  expect(cmd(["git", "init", "-q"]).code).toBe(0);
+  expect(ws("sync").code).toBe(0);
+  for (const manager of ["cxp", "clp"]) {
+    writeFileSync(join(env.PATH!, manager), `#!${process.execPath}
+const args = process.argv.slice(2);
+if (args[0] === "list") console.log("PROFILE\\tEMAIL\\tPATH\\ndefault\\towner@example.invalid\\t/tmp/default\\nwork\\twork@example.invalid\\t/tmp/work");
+else if (args[0] === "path") { if (process.env.PROFILE_GONE) process.exit(1); console.log("/tmp/" + args[1]); }
+else if (args[0] === "run") {
+  if (process.env.PROFILE_GONE) process.exit(1);
+  console.log(JSON.stringify({ manager: ${JSON.stringify(manager)}, args, memory: process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD }));
+} else process.exit(2);
+`, { mode: 0o755 });
+  }
+  writeFileSync(join(env.PATH!, "fzf"), `#!${process.execPath}
+if (process.env.PICK_CANCEL) process.exit(130);
+const rows = (await Bun.stdin.text()).trimEnd().split("\\n");
+console.log(rows[process.env.PICK_DEFAULT ? 0 : 1]);
+`, { mode: 0o755 });
+  return context;
+}
+
+test("workspace profiles persist separately and route launches through account managers", () => {
+  const { ws, cmd, workspace, env } = profileFixture();
+  expect(ws("profile", "codex").code).toBe(0);
+  env.PICK_DEFAULT = "1";
+  expect(ws("profile", "claude").code).toBe(0);
+  expect(ws("profile").out).toContain("codex: work\nclaude: default");
+  const codex = JSON.parse(ws("codex", "fix this").out);
+  expect(codex.manager).toBe("cxp");
+  expect(codex.args.slice(0, 4)).toEqual(["run", "work", "-C", realpathSync(workspace)]);
+  expect(codex.args.at(-1)).toBe("fix this");
+  expect(codex.args.filter((arg: string) => arg === "--add-dir")).toHaveLength(2);
+  const claude = JSON.parse(ws("claude", "fix this", "--model", "sonnet").out);
+  expect(claude.manager).toBe("clp");
+  expect(claude.args.slice(0, 6)).toEqual(["run", "default", "fix this", "--model", "sonnet", "--add-dir"]);
+  expect(claude.memory).toBe("1");
+  expect(cmd(["git", "config", "--local", "--get", "workspace.codexProfile"]).out.trim()).toBe("work");
+  expect(cmd(["git", "status", "--porcelain", "--untracked-files=all"]).out).not.toContain("profile");
+  expect(readFileSync(join(workspace, "workspace.json"), "utf8")).not.toContain("work@example");
+});
+
+test("profile cancellation and stale selections preserve settings without launching another account", () => {
+  const { ws, env } = profileFixture();
+  expect(ws("profile", "codex").code).toBe(0);
+  env.PICK_CANCEL = "1";
+  expect(ws("profile", "codex").code).toBe(0);
+  expect(ws("profile").out).toContain("codex: work");
+  delete env.PICK_CANCEL;
+  env.PICK_DEFAULT = "1";
+  env.PROFILE_GONE = "1";
+  expect(ws("profile", "codex").code).toBe(1);
+  expect(ws("profile").out).toContain("codex: work");
+  expect(ws("codex").code).toBe(1);
+  rmSync(join(env.PATH!, "cxp"));
+  expect(ws("codex").err).toContain("cxp is required");
+  expect(ws("profile", "codex", "--clear").code).toBe(0);
+  expect(ws("profile", "codex", "--clear").code).toBe(0);
+});
+
+test("real fzf selects a registered workspace profile", () => {
+  const { ws, env } = profileFixture();
+  rmSync(join(env.PATH!, "fzf"));
+  symlinkSync(Bun.which("fzf")!, join(env.PATH!, "fzf"));
+  env.FZF_DEFAULT_OPTS = "--filter=work@example.invalid";
+  expect(ws("profile", "codex").code).toBe(0);
+  expect(ws("profile").out).toContain("codex: work");
+});
+
+test("clearing a profile restores environment inheritance and ignores ancestor settings", () => {
+  const { ws, cmd, env, workspace } = profileFixture();
+  writeFileSync(join(env.PATH!, "codex"), `#!${process.execPath}\nconsole.log(process.env.CODEX_HOME);\n`, { mode: 0o755 });
+  env.CODEX_HOME = "/tmp/inherited-account";
+  expect(ws("profile", "codex").code).toBe(0);
+  expect(ws("profile", "codex", "--clear").code).toBe(0);
+  expect(ws("codex").out.trim()).toBe(env.CODEX_HOME);
+  expect(ws("profile", "codex").code).toBe(0);
+  const nested = join(workspace, "nested");
+  mkdirSync(nested);
+  writeFileSync(join(nested, "repos.json"), "{}");
+  writeFileSync(join(nested, "workspace.json"), '{"checkout":"local"}');
+  expect(cmd([process.execPath, script, "profile", "codex"], nested).err).toContain("Not a repository root");
+  expect(cmd([process.execPath, script, "codex"], nested).out.trim()).toBe(env.CODEX_HOME);
+  expect(ws("profile", "unknown").err).toContain("Usage:");
+});
 
 test("local sync clones all repos with only Git and Bun and preserves local work", () => {
   const { ws, workspace, cmd } = localFixture();
