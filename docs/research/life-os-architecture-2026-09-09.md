@@ -20,15 +20,15 @@ Life OSの中心は、日常の入力を保存し、その根拠を取り出し�
 
 ### 2.1 確認できた構成
 
-| 資産 | 確認した内容 | 活かす責務 | 確認の限界 |
-| --- | --- | --- | --- |
-| dotfiles | Nixによる環境配布・account profile・session handoff・複数repo workspace | ツールと配置と運用設定 | 現在のサーバー適用状態は未確認 |
-| vault | Daily・Knowledge・Projects・AI観測領域とTimes運用文書 | 人が読み訂正できる知識と成果 | 個人の日記本文全体は調査対象外 |
-| vault-agi | Discord/Web GatewayとMaster構成。VaultWriterがDailyへTimesを追記 | Discord入力adapterの移行元 | 全機能の稼働確認は未実施 |
-| Olympus | Times・intakeのREST route。投稿ID・client・audio参照。SQLite indexとLLM job worker | 生活データとUIとdomain operation | driverは設定情報を返す薄い実装であり完全なrunnerではない |
-| Home Assistant | HA/ESPHomeと機器操作・routineの構成文書 | 家電状態と機器操作 | 音声会話runtimeは未実装と明記 |
-| VoiceOS設計 | 音響・会話・capability・job supervisor・runnerの境界 | 音声接続の設計素材 | 常時保存とは異なる保存方針を含む |
-| flux-voice | 発話からGuide/Scout/議事録へ進む構想と介入頻度のUI | 壁打ち体験の比較素材 | README確認のみ。現行動作は未検証 |
+| 資産           | 確認した内容                                                                       | 活かす責務                       | 確認の限界                                               |
+| -------------- | ---------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| dotfiles       | Nixによる環境配布・account profile・session handoff・複数repo workspace            | ツールと配置と運用設定           | 現在のサーバー適用状態は未確認                           |
+| vault          | Daily・Knowledge・Projects・AI観測領域とTimes運用文書                              | 人が読み訂正できる知識と成果     | 個人の日記本文全体は調査対象外                           |
+| vault-agi      | Discord/Web GatewayとMaster構成。VaultWriterがDailyへTimesを追記                   | Discord入力adapterの移行元       | 全機能の稼働確認は未実施                                 |
+| Olympus        | Times・intakeのREST route。投稿ID・client・audio参照。SQLite indexとLLM job worker | 生活データとUIとdomain operation | driverは設定情報を返す薄い実装であり完全なrunnerではない |
+| Home Assistant | HA/ESPHomeと機器操作・routineの構成文書                                            | 家電状態と機器操作               | 音声会話runtimeは未実装と明記                            |
+| VoiceOS設計    | 音響・会話・capability・job supervisor・runnerの境界                               | 音声接続の設計素材               | 常時保存とは異なる保存方針を含む                         |
+| flux-voice     | 発話からGuide/Scout/議事録へ進む構想と介入頻度のUI                                 | 壁打ち体験の比較素材             | README確認のみ。現行動作は未検証                         |
 
 ローカル根拠は付録Aにrepository名と相対パスで記載する。API routeの登録とworker起動箇所まで確認したが、実サーバーに接続したend-to-end確認ではない。
 
@@ -54,13 +54,13 @@ Olympusのmutation receiptも完全な重複排除保証としては扱えない
 
 ### 3.1 生活の入力と実行をつなぐ製品
 
-| 候補 | 一次資料で確認した機能 | この構想との関係 | 採用判断 |
-| --- | --- | --- | --- |
-| Omi | wearable・desktop・mobileからbackendへ入力。音声処理と会話活用 | 常時入力から生活記憶を作る体験が近い | 入力体験とデータ構造を参考にする |
-| Screenpipe | ローカルの画面履歴・音声認識・検索用の記録 | 音声以外の生活・作業文脈を追加できる | PC観測adapterの将来候補 |
-| OpenClaw | 多数のchannelをGatewayへ集約。typed WebSocketとnode接続 | 多入口の個人agentとして近い | Gateway全体採用とadapter利用を比較する |
-| Home Assistant | ローカルSTT/TTSを組み合わせるAssist | 家電と定型操作の既存基盤 | 家電の正本として維持 |
-| Orca | 複数coding CLI・worktree・remote・mobile・account切り替え | 開発の実行と人間の監督に近い | runner側の評価候補 |
+| 候補           | 一次資料で確認した機能                                         | この構想との関係                     | 採用判断                               |
+| -------------- | -------------------------------------------------------------- | ------------------------------------ | -------------------------------------- |
+| Omi            | wearable・desktop・mobileからbackendへ入力。音声処理と会話活用 | 常時入力から生活記憶を作る体験が近い | 入力体験とデータ構造を参考にする       |
+| Screenpipe     | ローカルの画面履歴・音声認識・検索用の記録                     | 音声以外の生活・作業文脈を追加できる | PC観測adapterの将来候補                |
+| OpenClaw       | 多数のchannelをGatewayへ集約。typed WebSocketとnode接続        | 多入口の個人agentとして近い          | Gateway全体採用とadapter利用を比較する |
+| Home Assistant | ローカルSTT/TTSを組み合わせるAssist                            | 家電と定型操作の既存基盤             | 家電の正本として維持                   |
+| Orca           | 複数coding CLI・worktree・remote・mobile・account切り替え      | 開発の実行と人間の監督に近い         | runner側の評価候補                     |
 
 Omiの公開構成図にはDeepgram、Firestore、Redis、LLMが含まれる。open sourceであることは、標準構成が完全ローカルであることを意味しない。自宅での連続音声処理をそのまま満たす前提では採用しない。[^1]
 
@@ -72,13 +72,13 @@ OpenClawは複数channelを単一Gatewayへ集約し、nodeのcapabilityを接�
 
 ### 3.2 音声会話基盤
 
-| 候補 | 強み | Life OS側で別途持つもの | 判断 |
-| --- | --- | --- | --- |
-| LiveKit Agents | turn detection・割り込み・会話sessionの基盤 | 常時記録・長期記憶・介入方針・job | スマホを含む会話実験の第一候補 |
-| Pipecat | Pythonの音声pipelineと多数のprovider接続 | 同上 | ローカル音声処理を細かく組む場合の比較候補 |
-| ElevenLabs Agents | 会話flow・無音待ち・割り込み・応答タイミングの設定 | provider外の原本と作業状態 | 体験を早期比較する候補 |
-| OpenAI Realtime | 音声対音声・VAD・server側tool制御 | sessionを超える記憶と介入判断 | 自然な会話の比較対象 |
-| HA Assist | 機器制御に結びついた音声pipeline | 自由会話の記憶と長時間作業 | 家電用途で継続 |
+| 候補              | 強み                                               | Life OS側で別途持つもの           | 判断                                       |
+| ----------------- | -------------------------------------------------- | --------------------------------- | ------------------------------------------ |
+| LiveKit Agents    | turn detection・割り込み・会話sessionの基盤        | 常時記録・長期記憶・介入方針・job | スマホを含む会話実験の第一候補             |
+| Pipecat           | Pythonの音声pipelineと多数のprovider接続           | 同上                              | ローカル音声処理を細かく組む場合の比較候補 |
+| ElevenLabs Agents | 会話flow・無音待ち・割り込み・応答タイミングの設定 | provider外の原本と作業状態        | 体験を早期比較する候補                     |
+| OpenAI Realtime   | 音声対音声・VAD・server側tool制御                  | sessionを超える記憶と介入判断     | 自然な会話の比較対象                       |
+| HA Assist         | 機器制御に結びついた音声pipeline                   | 自由会話の記憶と長時間作業        | 家電用途で継続                             |
 
 LiveKitのturn detectionはVADだけでなく意味や音響による終話判断を扱う。PipecatはSTT、TTS、transport等を組み合わせるPython frameworkである。どちらもLife OSの記憶正本や意図の有効期限を自動で定義するものではない。[^4][^5]
 
@@ -90,13 +90,13 @@ OpenAI Realtimeの公開仕様にはVADによる自動返答の制御とWebRTC/S
 
 ### 3.3 記憶基盤
 
-| 候補 | 何を提供するか | 適した実験 | 留意点 |
-| --- | --- | --- | --- |
-| Basic Memory | Markdownを使ったAI向け記憶と検索。SQLiteを利用可能 | 既存Knowledgeの小規模接続 | Olympusと同じnoteを複数writerで管理しない |
-| Mem0 | 会話からLLMで記憶を抽出して検索へつなぐ | 少量の発言から観測候補を生成 | 抽出時のLLM費と誤認を測る |
-| Graphiti | 時間変化と出典episodeを持つgraph | 訂正・人物・プロジェクト関係の検索 | entity統合精度と運用負担の検証が必要 |
-| Letta | 持続するagent状態と記憶を管理する設計 | stateful agentの比較 | 既存harnessとの責務重複を確認 |
-| SQLiteと独自の小さなschema | 原本参照・検索・訂正・queueを限定実装 | 現行Olympusに沿ったbaseline | 記憶の意味づけは別途設計が必要 |
+| 候補                       | 何を提供するか                                     | 適した実験                         | 留意点                                    |
+| -------------------------- | -------------------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| Basic Memory               | Markdownを使ったAI向け記憶と検索。SQLiteを利用可能 | 既存Knowledgeの小規模接続          | Olympusと同じnoteを複数writerで管理しない |
+| Mem0                       | 会話からLLMで記憶を抽出して検索へつなぐ            | 少量の発言から観測候補を生成       | 抽出時のLLM費と誤認を測る                 |
+| Graphiti                   | 時間変化と出典episodeを持つgraph                   | 訂正・人物・プロジェクト関係の検索 | entity統合精度と運用負担の検証が必要      |
+| Letta                      | 持続するagent状態と記憶を管理する設計              | stateful agentの比較               | 既存harnessとの責務重複を確認             |
+| SQLiteと独自の小さなschema | 原本参照・検索・訂正・queueを限定実装              | 現行Olympusに沿ったbaseline        | 記憶の意味づけは別途設計が必要            |
 
 Basic MemoryはMarkdownと複数AI clientをつなぐ候補であり、vaultの構造が根本的にAIと相性が悪いという見方への反例になる。Mem0は通常の記憶追加にLLM抽出を用いる。Graphitiはfactの時間的な有効性と原本episodeへの参照を扱う。機能が異なるため、三つを同時導入する理由にはならない。[^10][^11][^12]
 
@@ -108,11 +108,11 @@ OpenClawのmemory資料も、記憶に許可の背景を書いておくことと
 
 ### 4.1 三つの選択肢
 
-| 案 | 利点 | 代償 | 適する条件 |
-| --- | --- | --- | --- |
-| Olympusを中心に育てる | Times・UI・task・indexを再利用できる | 音声とrunnerとの境界を整える必要 | 現在の成果を維持したい |
-| OpenClawを中心にする | channelとagent運用を既製基盤へ寄せやすい | Olympusとのsession・memory・scheduler重複 | 統合機能の自作を減らす方が重要 |
-| 独立した新Life OS core | 境界を新たに定義しやすい | 第三のGatewayと移行作業が増える | 既存coreの再利用困難が実証された |
+| 案                     | 利点                                     | 代償                                      | 適する条件                       |
+| ---------------------- | ---------------------------------------- | ----------------------------------------- | -------------------------------- |
+| Olympusを中心に育てる  | Times・UI・task・indexを再利用できる     | 音声とrunnerとの境界を整える必要          | 現在の成果を維持したい           |
+| OpenClawを中心にする   | channelとagent運用を既製基盤へ寄せやすい | Olympusとのsession・memory・scheduler重複 | 統合機能の自作を減らす方が重要   |
+| 独立した新Life OS core | 境界を新たに定義しやすい                 | 第三のGatewayと移行作業が増える           | 既存coreの再利用困難が実証された |
 
 現時点では第一案を推奨する。理由は既存コードに汎用intake、Times ID、検索、jobの一部があり、第三の中枢を作る前にその境界を整理できるからである。OpenClawの全体採用は、channel追加と運用の比較実験で明確に有利な場合に再評価する。
 
@@ -140,18 +140,18 @@ flowchart TD
 
 この図は論理モジュールであり、全箱を別serviceにする提案ではない。最初はOlympusのcontrol processと既存core、独立audio process、外部runnerで足りるかを検証する。音声frameworkがPythonを要求する場合も、生活domainの全面書き直しは不要である。
 
-| 領域 | 正本の所有者 | 接続先が持つもの |
-| --- | --- | --- |
-| 受信した出来事 | intakeの永続記録 | event IDと取得用参照 |
-| 文字起こし | transcript store | revision付き本文 |
-| 確認済みの知識 | vault/Olympusの文書領域 | 検索index |
-| 推定した好みや意図 | 観測・判断領域 | 根拠と確度と有効期限 |
-| taskとproject | Olympus | IDと表示用snapshot |
-| jobの依頼と結果 | 一つの作業受付module | 音声とWebは表示・操作client |
-| coding processの状態 | runner supervisor | job IDとnative session参照 |
-| 音声turnと再生位置 | 会話・audio runtime | 永続記録への参照 |
-| 家電状態 | Home Assistant | 取得時刻付きsnapshot |
-| toolの版と配置 | dotfiles | 各runtimeの設定 |
+| 領域                 | 正本の所有者            | 接続先が持つもの            |
+| -------------------- | ----------------------- | --------------------------- |
+| 受信した出来事       | intakeの永続記録        | event IDと取得用参照        |
+| 文字起こし           | transcript store        | revision付き本文            |
+| 確認済みの知識       | vault/Olympusの文書領域 | 検索index                   |
+| 推定した好みや意図   | 観測・判断領域          | 根拠と確度と有効期限        |
+| taskとproject        | Olympus                 | IDと表示用snapshot          |
+| jobの依頼と結果      | 一つの作業受付module    | 音声とWebは表示・操作client |
+| coding processの状態 | runner supervisor       | job IDとnative session参照  |
+| 音声turnと再生位置   | 会話・audio runtime     | 永続記録への参照            |
+| 家電状態             | Home Assistant          | 取得時刻付きsnapshot        |
+| toolの版と配置       | dotfiles                | 各runtimeの設定             |
 
 jobの受付状態とprocessの状態は同じではない。runnerが停止しても「何を頼まれたか」は残り、runnerから再開・失敗・不明を照合できるようにする。
 
@@ -165,14 +165,14 @@ repoをまとめる単位はLife OS用workspaceが適する。既存の複数rep
 
 一方、音声frame、細かいASR更新、queue lease、再試行回数を人間用Dailyへ直接追加すると、読みやすさと並行更新の両方を損なう。ファイル形式の良し悪しより、データの頻度、更新の仕方、訂正、復旧要件で分けるべきである。
 
-| データ | 初期案 | 復旧の扱い |
-| --- | --- | --- |
-| 音声原本 | privateなblob領域に分割保存 | 保持方針に従ってbackupまたは期限削除 |
-| 入力eventとtranscript revision | 永続SQLiteまたは追記可能な記録 | 消してよいcacheにはしない |
-| 日記・知識・設計 | 現行Markdown | 版管理とbackup |
-| task/project | 現行Olympus Markdown | 既存契約を維持 |
-| 全文検索・embedding | 再生成できるindex | 原本revisionから再構築 |
-| queue・実行receipt・通知状態 | 運用SQLite | 独立してbackupと復旧 |
+| データ                         | 初期案                         | 復旧の扱い                           |
+| ------------------------------ | ------------------------------ | ------------------------------------ |
+| 音声原本                       | privateなblob領域に分割保存    | 保持方針に従ってbackupまたは期限削除 |
+| 入力eventとtranscript revision | 永続SQLiteまたは追記可能な記録 | 消してよいcacheにはしない            |
+| 日記・知識・設計               | 現行Markdown                   | 版管理とbackup                       |
+| task/project                   | 現行Olympus Markdown           | 既存契約を維持                       |
+| 全文検索・embedding            | 再生成できるindex              | 原本revisionから再構築               |
+| queue・実行receipt・通知状態   | 運用SQLite                     | 独立してbackupと復旧                 |
 
 上記のevent保存は現行Olympusからの変更提案である。全domain dataをMarkdown正本とする現在の設計を黙って変更しない。volumeと障害実験を経て、eventだけDB正本にするか、追記ログを正本にしてDBを派生物にするかをADRで確定する。新たにDBを使う場合も、JSONL等へexportできることを受入条件にする。
 
@@ -225,14 +225,14 @@ STTのraw textと読みやすく整形したtextは分ける。「やりたい�
 
 「さっきの話を覚えている」を成立させるには、wake wordより前の発言が保存・検索対象になっている必要がある。wake wordを必須にしなくても、発話がagentに向けられているかを決める機能は必要になる。
 
-| 判定 | 分かること | 分からないこと |
-| --- | --- | --- |
-| VAD | 発話らしい音の区間 | 誰への発話か |
-| STT | 音から得た文字列 | 実行してよいか |
-| 話者分離 | 声が同じか異なるかの推定 | 本人認証の保証 |
-| turn detection | 話が一区切りか | 口を挟んでほしいか |
-| 呼びかけ判定 | agent宛てかの推定 | 長期的な意思の確定 |
-| 介入policy | 返答・提案・記録だけの選択 | 観測できない心の状態 |
+| 判定           | 分かること                 | 分からないこと       |
+| -------------- | -------------------------- | -------------------- |
+| VAD            | 発話らしい音の区間         | 誰への発話か         |
+| STT            | 音から得た文字列           | 実行してよいか       |
+| 話者分離       | 声が同じか異なるかの推定   | 本人認証の保証       |
+| turn detection | 話が一区切りか             | 口を挟んでほしいか   |
+| 呼びかけ判定   | agent宛てかの推定          | 長期的な意思の確定   |
+| 介入policy     | 返答・提案・記録だけの選択 | 観測できない心の状態 |
 
 ### 6.2 ローカルSTTの実現性
 
@@ -264,14 +264,14 @@ episodeは「いつ何と言ったか」、semantic memoryは「現在何を知�
 
 ### 7.2 介入を段階化する
 
-| 段階 | 行動 | 初期の扱い |
-| --- | --- | --- |
-| 0 | 記録して検索可能にする | 常時記録の基本 |
-| 1 | 関連情報を裏で用意する | 明示された予算内で実験 |
-| 2 | 静かなUIに提案を出す | 採用・却下を観測 |
-| 3 | 声で話しかける | 状況と頻度を測定して追加 |
-| 4 | taskやローカル作業を開始する | 継続的な委任範囲を定義 |
-| 5 | 外部へ公開・送信・購入・実機操作する | capabilityごとの権限契約 |
+| 段階 | 行動                                 | 初期の扱い               |
+| ---- | ------------------------------------ | ------------------------ |
+| 0    | 記録して検索可能にする               | 常時記録の基本           |
+| 1    | 関連情報を裏で用意する               | 明示された予算内で実験   |
+| 2    | 静かなUIに提案を出す                 | 採用・却下を観測         |
+| 3    | 声で話しかける                       | 状況と頻度を測定して追加 |
+| 4    | taskやローカル作業を開始する         | 継続的な委任範囲を定義   |
+| 5    | 外部へ公開・送信・購入・実機操作する | capabilityごとの権限契約 |
 
 「困っていそう」を一つの感情推定へ寄せない。繰り返し失敗している、明示した目標の期限が近い、同じ疑問を複数回述べている、といった観測可能な根拠と本人の好みを使う。声を出す利益と割り込む負担を別々に評価し、何もしない選択を持たせる。
 
@@ -293,15 +293,15 @@ indexionはコードと登録されたworkspace知識の探索へ使う。既存
 
 ### 8.2 静的処理で賄うもの
 
-| 処理 | 初期方式 | LLMを使う条件 |
-| --- | --- | --- |
-| source ID・重複排除 | schemaとunique制約 | 原則不要 |
-| URL・日時・添付識別 | parser | 曖昧な相対表現の解釈 |
-| 再送・期限・queue | 状態機械 | 原則不要 |
-| Dailyへの表示 | template | 日記として意味を編集する時 |
-| taskの完全一致参照 | IDと索引 | 曖昧な対象の解決 |
-| 発話の意図分類 | ルールと小モデル | 曖昧さが重要な時 |
-| 複雑な設計・調査 | 高性能LLM | 必要なcontextを構築した後 |
+| 処理                | 初期方式           | LLMを使う条件              |
+| ------------------- | ------------------ | -------------------------- |
+| source ID・重複排除 | schemaとunique制約 | 原則不要                   |
+| URL・日時・添付識別 | parser             | 曖昧な相対表現の解釈       |
+| 再送・期限・queue   | 状態機械           | 原則不要                   |
+| Dailyへの表示       | template           | 日記として意味を編集する時 |
+| taskの完全一致参照  | IDと索引           | 曖昧な対象の解決           |
+| 発話の意図分類      | ルールと小モデル   | 曖昧さが重要な時           |
+| 複雑な設計・調査    | 高性能LLM          | 必要なcontextを構築した後  |
 
 VADやSTTは学習済みモデルを使う場合があるため、「LLMを呼ばない」と「すべて古典的処理」は同じではない。目的は高価な汎用推論を必要な箇所へ限定することに置く。
 
@@ -335,16 +335,16 @@ providerの内部状態、prompt cache、隠れた推論を移せる前提には
 
 ## 10. 段階的な導入
 
-| 段階 | 作るもの | 完了条件 |
-| --- | --- | --- |
-| 0 | 現行責務表と現行/提案/廃止の文書区分 | 各domainのwriterと正本が一つに定まる |
-| 1 | Discordとスマホを共通intakeへ接続 | 再送・切断・再起動で欠落と重複を検出できる |
-| 2 | 出典付き検索と訂正 | 本人が作った質問集合で根拠と最新版を取得できる |
-| 3 | 部屋一か所のローカル音声記録 | 日本語の原発言を時間指定で検索できる |
-| 4 | 対話と短い記憶注入 | 割り込みと過去参照を含む連続会話が成立 |
-| 5 | 一つのrunnerによる調査job | 会話を閉じても結果と状態が残る |
-| 6 | shadow modeから能動提案へ | 本人が許容する頻度と有用性を満たす |
-| 7 | 別harness・accountのhandoff | 再説明なしで検証済み地点から続行できる |
+| 段階 | 作るもの                             | 完了条件                                       |
+| ---- | ------------------------------------ | ---------------------------------------------- |
+| 0    | 現行責務表と現行/提案/廃止の文書区分 | 各domainのwriterと正本が一つに定まる           |
+| 1    | Discordとスマホを共通intakeへ接続    | 再送・切断・再起動で欠落と重複を検出できる     |
+| 2    | 出典付き検索と訂正                   | 本人が作った質問集合で根拠と最新版を取得できる |
+| 3    | 部屋一か所のローカル音声記録         | 日本語の原発言を時間指定で検索できる           |
+| 4    | 対話と短い記憶注入                   | 割り込みと過去参照を含む連続会話が成立         |
+| 5    | 一つのrunnerによる調査job            | 会話を閉じても結果と状態が残る                 |
+| 6    | shadow modeから能動提案へ            | 本人が許容する頻度と有用性を満たす             |
+| 7    | 別harness・accountのhandoff          | 再説明なしで検証済み地点から続行できる         |
 
 音声の成立性実験と既存intakeの整理は独立した研究課題として進められる。最初の実装範囲は大規模なLife OS再構築ではなく、一つの通しの体験を選ぶ。
 
@@ -356,16 +356,16 @@ providerの内部状態、prompt cache、隠れた推論を移せる前提には
 
 以下は提案する評価項目であり、達成済みの性能値ではない。閾値は質問票の回答と最初の測定から決める。
 
-| 領域 | 測るもの | 含める失敗条件 |
-| --- | --- | --- |
-| 入力 | 受信件数と一意件数と保存遅延 | 同時再送・圏外復帰・保存途中停止 |
-| 音声 | 日本語CERと固有名詞・否定の誤り | 音楽・TV・遠距離・複数話者 |
-| 会話 | speech endから可聴応答のp50/p95 | 言いよどみ・割り込み・tool待ち |
-| 記憶 | source recallと訂正後の回答 | 古い情報・該当情報なし・同名entity |
-| 意図 | active/paused/completedの整合 | 保留した希望の勝手な再開 |
-| 能動性 | 有用な提案率と不要な介入回数 | 集中中・通話中・独り言 |
-| 実行 | 復旧率と重複副作用 | runner停止・timeout後の不明状態 |
-| 費用 | 有用成果当たりの推論費 | 空振り起動・同じ原本の再処理 |
+| 領域   | 測るもの                        | 含める失敗条件                     |
+| ------ | ------------------------------- | ---------------------------------- |
+| 入力   | 受信件数と一意件数と保存遅延    | 同時再送・圏外復帰・保存途中停止   |
+| 音声   | 日本語CERと固有名詞・否定の誤り | 音楽・TV・遠距離・複数話者         |
+| 会話   | speech endから可聴応答のp50/p95 | 言いよどみ・割り込み・tool待ち     |
+| 記憶   | source recallと訂正後の回答     | 古い情報・該当情報なし・同名entity |
+| 意図   | active/paused/completedの整合   | 保留した希望の勝手な再開           |
+| 能動性 | 有用な提案率と不要な介入回数    | 集中中・通話中・独り言             |
+| 実行   | 復旧率と重複副作用              | runner停止・timeout後の不明状態    |
+| 費用   | 有用成果当たりの推論費          | 空振り起動・同じ原本の再処理       |
 
 最初の記憶評価セットは30〜50問を提案する。直近の参照、過去の好み、変更された予定、同名対象、存在しない情報、他入口からの継続を混ぜる。精度だけでなく出典の正しさと回答を控える能力を採点する。公開benchmarkのスコアをそのまま個人環境の期待値にしない。
 
@@ -379,45 +379,66 @@ providerの内部状態、prompt cache、隠れた推論を移せる前提には
 
 下記は各repository内の相対パスである。個人の発言原文・認証情報・account一覧・実機private pathは含めない。コードは2026年9月9日のworking treeを読んだもので、本番deploy版と一致する保証はない。
 
-| repository | 確認した資料・実装 |
-| --- | --- |
-| dotfiles | `docs/architecture.md`・`docs/agent-platforms.md` |
-| dotfiles | `docs/guides/multi-repo-workspaces.md`・`docs/guides/agent-session-handoff.md` |
-| dotfiles | `nix/home-manager/hosts/homelab.nix`内のTimes timer宣言 |
-| Olympus | `docs/architecture.md` |
-| Olympus | `apps/gateway/src/routes/times.ts`・`apps/gateway/src/index.ts` |
-| Olympus | `packages/core/src/types/times.ts`・`packages/core/src/vault/times.ts` |
-| Olympus | `packages/core/src/index/schema.ts` |
-| Olympus | `apps/gateway/src/jobs/llm-workflows.ts`・`apps/gateway/src/jobs/croner.ts` |
-| Olympus | `apps/gateway/src/driver/index.ts` |
-| vault-agi | `README.md`・`master/src/vault-writer.ts` |
-| vault | `AGENTS.md`・`CLAUDE.md`・`90_docs/times-user-model-and-research.md`・`90_docs/storage.md` |
-| Home Assistant | `docs/01-architecture.md`・`docs/10-voiceos-design.md` |
-| flux-voice | `README.md` |
+| repository     | 確認した資料・実装                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| dotfiles       | `docs/architecture.md`・`docs/agent-platforms.md`                                          |
+| dotfiles       | `docs/guides/multi-repo-workspaces.md`・`docs/guides/agent-session-handoff.md`             |
+| dotfiles       | `nix/home-manager/hosts/homelab.nix`内のTimes timer宣言                                    |
+| Olympus        | `Olympus/docs/architecture.md`                                                             |
+| Olympus        | `apps/gateway/src/routes/times.ts`・`apps/gateway/src/index.ts`                            |
+| Olympus        | `packages/core/src/types/times.ts`・`packages/core/src/vault/times.ts`                     |
+| Olympus        | `packages/core/src/index/schema.ts`                                                        |
+| Olympus        | `apps/gateway/src/jobs/llm-workflows.ts`・`apps/gateway/src/jobs/croner.ts`                |
+| Olympus        | `apps/gateway/src/driver/index.ts`                                                         |
+| vault-agi      | `README.md`・`master/src/vault-writer.ts`                                                  |
+| vault          | `AGENTS.md`・`CLAUDE.md`・`90_docs/times-user-model-and-research.md`・`90_docs/storage.md` |
+| Home Assistant | `home-assistant/docs/01-architecture.md`・`home-assistant/docs/10-voiceos-design.md`       |
+| flux-voice     | `README.md`                                                                                |
 
 ## Sources
 
 すべて2026年9月9日参照。更新日のない製品文書は参照日時点の仕様として扱う。GitHubのmainと製品文書は変化するため、採用実験時には使用releaseを固定する。
 
 [^1]: Based Hardware. [Omi READMEと構成図](https://github.com/BasedHardware/omi). 更新日表示なし。常時入力とbackend構成。
+
 [^2]: Screenpipe. [Screenpipe README](https://github.com/screenpipe/screenpipe). 更新日表示なし。PC観測とローカル音声処理。
+
 [^3]: OpenClaw. [Gateway architecture](https://docs.openclaw.ai/concepts/architecture). 更新日表示なし。channel・node・event欠落時の扱い。
+
 [^4]: LiveKit. [Turns overview](https://docs.livekit.io/agents/logic/turns/). 更新日表示なし。終話判定と割り込み。
+
 [^5]: Pipecat maintainers. [Pipecat README](https://github.com/pipecat-ai/pipecat). 更新日表示なし。音声pipelineの構成。
+
 [^6]: ElevenLabs. [Conversation flow](https://elevenlabs.io/docs/eleven-agents/customization/conversation-flow). 更新日表示なし。会話タイミング設定。
+
 [^7]: OpenAI. [Voice activity detection](https://developers.openai.com/api/docs/guides/realtime-vad). 更新日表示なし。発話区切りと自動応答の制御。
+
 [^8]: OpenAI. [Webhooks and server-side controls](https://developers.openai.com/api/docs/guides/realtime-server-controls). 更新日表示なし。sideband接続。
+
 [^9]: OpenAI. [Realtime conversations](https://developers.openai.com/api/docs/guides/realtime-conversations). 更新日表示なし。sessionと60分の上限。
+
 [^10]: Basic Machines. [Basic Memory README](https://github.com/basicmachines-co/basic-memory). 更新日表示なし。MarkdownとSQLite。
+
 [^11]: Mem0. [Add Memory](https://docs.mem0.ai/core-concepts/memory-operations/add). 更新日表示なし。記憶追加時のLLM抽出。
+
 [^12]: Zep. [Graphiti README](https://github.com/getzep/graphiti). 更新日表示なし。時間的なfactとepisodeの出典。
+
 [^13]: Letta. [Introduction to Stateful Agents](https://docs.letta.com/v1-sdk/concepts/stateful-agents). V1 SDK legacy資料。記憶blockとmessageの概念。
+
 [^14]: OpenClaw. [Memory overview](https://docs.openclaw.ai/concepts/memory). 更新日表示なし。action-sensitive memoryとpolicyの分離。
+
 [^15]: ggml-org. [whisper.cpp README](https://github.com/ggml-org/whisper.cpp)・[stream example](https://github.com/ggml-org/whisper.cpp/tree/master/examples/stream). 更新日表示なし。ローカル推論と実時間入力例。
+
 [^16]: Home Assistant. [Set up a fully local voice assistant](https://www.home-assistant.io/voice_control/voice_remote_local_assistant/). 更新日表示なし。Speech-to-PhraseとWhisperの適用範囲。
+
 [^17]: Di Wuほか. [LongMemEval: Benchmarking Chat Assistants on Long-Term Interactive Memory](https://arxiv.org/abs/2410.10813). 初出2024年10月14日。改訂2025年3月4日。長期記憶の評価軸。
+
 [^18]: Yuedi Zhangほか. [Assistance Without Interruption: A Benchmark and LLM-based Framework for Non-Intrusive Human-Robot Assistance](https://arxiv.org/abs/2605.01368). arXiv初出2026年5月2日。介入の時機と行動の評価。
+
 [^19]: SQLite. [FTS5 Extension](https://www.sqlite.org/fts5.html). 更新日表示なし。trigramの仕様と短語制約。
+
 [^20]: Temporal. [Temporal Workflow](https://docs.temporal.io/workflows). 更新日表示なし。event historyとreplay。
+
 [^21]: Stably. [Orca README](https://github.com/stablyai/orca). 更新日表示なし。coding agentの管理機能。
+
 [^22]: Orca. [Codex in Orca](https://www.onorca.dev/docs/agents/codex). 更新日表示なし。account homeと新sessionへのhandoff。
