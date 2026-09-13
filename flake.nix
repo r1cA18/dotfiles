@@ -73,6 +73,10 @@
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
 
+    # Orca skills
+    orca-skills.url = "github:stablyai/orca";
+    orca-skills.flake = false;
+
     # treefmt-nix (unified formatter)
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";

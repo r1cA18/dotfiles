@@ -289,6 +289,22 @@
         "type": "github"
       }
     },
+    "orca-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789282893,
+        "narHash": "sha256-xiT/IaLU4VE94H5YyS63BuZiCEAfMhkvuFYB1Z9LPww=",
+        "owner": "stablyai",
+        "repo": "orca",
+        "rev": "fe4237cd41e4d48793fd135640939ef8aa5418e0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "stablyai",
+        "repo": "orca",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agent-skills-nix": "agent-skills-nix",
@@ -306,6 +322,7 @@
         "nixpkgs": "nixpkgs",
         "notebooklm-skill": "notebooklm-skill",
         "openai-skills": "openai-skills",
+        "orca-skills": "orca-skills",
         "taste-skill": "taste-skill",
         "trailofbits-skills": "trailofbits-skills",
         "treefmt-nix": "treefmt-nix",

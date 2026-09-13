@@ -67,6 +67,12 @@
         subdir = "skills";
       };
 
+      # Orca skills
+      orca = {
+        path = inputs.orca-skills;
+        subdir = "skills";
+      };
+
     };
 
     skills = {
@@ -128,6 +134,10 @@
         "brandkit" # name: brandkit (brand identity image generation)
         "imagegen-frontend-web" # name: imagegen-frontend-web (web reference images)
         "imagegen-frontend-mobile" # name: imagegen-frontend-mobile (mobile images)
+        # orca
+        "orca-cli"
+        "computer-use"
+        "orchestration"
       ];
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.
@@ -181,7 +191,7 @@
       };
     };
 
-    # Claude / Codex に同期
+    # Claude / Codex / Antigravity に同期
     targets = {
       claude = {
         dest = "\${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills";
@@ -191,6 +201,12 @@
       };
       codex = {
         dest = "\${CODEX_HOME:-$HOME/.codex}/skills";
+        structure = "symlink-tree";
+        enable = true;
+        systems = [ ];
+      };
+      antigravity = {
+        dest = "$HOME/.gemini/antigravity/skills";
         structure = "symlink-tree";
         enable = true;
         systems = [ ];
