@@ -272,6 +272,13 @@ let
         子repoのcommit・pullは各repoで行ってください。
         syncは不足repoを取得します。既存repoのpullは行いません。
         workspaceへの移動: wsg
+
+        account profileの選択と保存:
+          ws profile codex
+          ws profile claude
+        設定確認: ws profile
+        解除: ws profile codex --clear
+        保存先は親repoの.git/configです。以後のws codex・ws claudeに適用します。
       '';
     };
   };

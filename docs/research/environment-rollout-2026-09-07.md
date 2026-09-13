@@ -148,6 +148,20 @@ Macの`nix flake check`も成功した。PR #12の初回CIではLinux版indexion
 
 次はtimeout修正後のLinux CIを確認してmainへマージする。今回の追加instructionの実環境への適用とLinux実機でのclipboard操作は未実施。
 
+## workspace別account選択の追加
+
+先の変更はPR #12で全Linux CI成功後にmainへマージ済み。追加依頼として`ws profile codex`・`ws profile claude`によるfzf選択を実装する。候補は既存の`cxp list`・`clp list`から取得し親repoのlocal Git configに保存する。起動もprofile managerを経由して既存のaccount照合を維持する。
+
+設定表示・解除とキャンセル時の変更保持を追加し動的helpとworkspace guideにも掲載した。既存workspace内のCLIコピーは更新しないため適用後のグローバル`ws`を案内する。起動testでClaudeの追加repo向け環境変数が子processに渡らない問題も確認し現在の環境を明示して渡すよう修正した。
+
+- Macで統合test 44 pass・0 fail
+- 製品別保存と起動引数と失敗時のaccount保持をfixtureで確認
+- 実fzfのfilter選択を確認
+- 修正後のworkspace Nix package buildが成功
+- Nix flake checkとdocs path lintと差分空白検査が成功
+
+実accountでのagent起動と対話pickerの目視確認とLinux実行は未検証。変更は作業ブランチにあり未commit・未適用。次は`dr`で適用後にworkspace親directoryから`ws profile codex`または`ws profile claude`を利用する。
+
 ## 関連文書
 
 - [workspace運用](../guides/multi-repo-workspaces.md)
