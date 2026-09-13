@@ -4,10 +4,10 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 
 ## サポート環境
 
-| OS                 | 管理方法                                   | ビルドコマンド            |
-| ------------------ | ------------------------------------------ | ------------------------- |
-| **macOS**          | nix-darwin + home-manager                  | `dr`                      |
-| **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#server-apply`  |
+| OS                 | 管理方法                                   | ビルドコマンド           |
+| ------------------ | ------------------------------------------ | ------------------------ |
+| **macOS**          | nix-darwin + home-manager                  | `dr`                     |
+| **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#server-apply` |
 
 共通のCLI・shell・agent設定は`nix/home-manager/home.nix`から両OSへ配布する。
 macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定とservice運用は`server/`に閉じる。
