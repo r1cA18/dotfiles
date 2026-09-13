@@ -27,7 +27,7 @@ macOS systemはnix-darwinで管理し、Ubuntu systemはAnsibleで管理する�
 - [testing.md](guides/testing.md) - ローカル回帰テストとNix統合テスト・CI
 - [guide-macos.md](../nix/docs/guide-macos.md) - macOS初回構築と運用
 - [guide-ubuntu.md](../nix/docs/guide-ubuntu.md) - Ubuntu初回構築と運用
-- [homelab/README.md](../homelab/README.md) - homelab移行とservice運用
+- [server/README.md](../server/README.md) - homelab移行とservice運用
 
 ### Nix運用
 
@@ -57,7 +57,7 @@ macOS systemはnix-darwinで管理し、Ubuntu systemはAnsibleで管理する�
 | `nx`           | flake ルートへ移動             |
 
 `dr`はmacOSではnix-darwin全体を適用し、UbuntuではHome Managerだけを適用する。
-Ubuntu system設定も含める場合は`nix run ~/dotfiles#homelab-apply`を使う。
+Ubuntu system設定も含める場合は`nix run ~/dotfiles#server-apply`を使う。
 
 ### 編集場所
 

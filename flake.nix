@@ -211,8 +211,8 @@
           pre-commit = hooks;
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          homelab =
-            pkgs.runCommand "homelab-check"
+          server =
+            pkgs.runCommand "server-check"
               {
                 nativeBuildInputs = [
                   pkgs.ansible
@@ -222,8 +222,8 @@
               }
               ''
                 export HOME="$TMPDIR"
-                shellcheck ${./homelab/scripts}/*.sh
-                cd ${./homelab/ansible}
+                shellcheck ${./server/scripts}/*.sh
+                cd ${./server/ansible}
                 ansible-playbook --syntax-check -i inventory.yml playbook.yml
                 ansible-lint --offline playbook.yml
                 touch "$out"
@@ -264,8 +264,8 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          homelabManager = pkgs.writeShellApplication {
-            name = "homelab";
+          serverManager = pkgs.writeShellApplication {
+            name = "server";
             runtimeInputs = [
               pkgs.ansible
               pkgs.coreutils
@@ -275,20 +275,20 @@
               pkgs.systemd
               home-manager.packages.${system}.default
             ];
-            text = builtins.readFile ./homelab/scripts/manage.sh;
+            text = builtins.readFile ./server/scripts/manage.sh;
           };
-          mkHomelabApp = action: {
+          mkServerApp = action: {
             type = "app";
             program = "${
               pkgs.writeShellApplication {
-                name = "homelab-${action}";
-                runtimeInputs = [ homelabManager ];
+                name = "server-${action}";
+                runtimeInputs = [ serverManager ];
                 text = ''
-                  exec homelab ${action} "$@"
+                  exec server ${action} "$@"
                 '';
               }
-            }/bin/homelab-${action}";
-            meta.description = "Run the homelab ${action} workflow";
+            }/bin/server-${action}";
+            meta.description = "Run the server ${action} workflow";
           };
         in
         {
@@ -299,12 +299,12 @@
           };
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          homelab-apply = mkHomelabApp "apply";
-          homelab-restore = mkHomelabApp "restore";
-          homelab-start = mkHomelabApp "start";
-          homelab-stop = mkHomelabApp "stop";
-          homelab-rdp-setup = mkHomelabApp "rdp-setup";
-          homelab-doctor = mkHomelabApp "doctor";
+          server-apply = mkServerApp "apply";
+          server-restore = mkServerApp "restore";
+          server-start = mkServerApp "start";
+          server-stop = mkServerApp "stop";
+          server-rdp-setup = mkServerApp "rdp-setup";
+          server-doctor = mkServerApp "doctor";
         }
       );
 
@@ -325,7 +325,7 @@
         };
       };
 
-      # Standalone Home Manager configuration used by homelab-apply.
+      # Standalone Home Manager configuration used by server-apply.
       homeConfigurations."r1ca18@homelab" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           system = "x86_64-linux";

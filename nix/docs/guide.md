@@ -22,7 +22,7 @@
 ```
 1. 設定ファイルを編集
 2. macOSまたはLinux user設定は`dr`でリビルド
-3. Linux system設定を含む場合は`nix run ~/dotfiles#homelab-apply`でリビルド
+3. Linux system設定を含む場合は`nix run ~/dotfiles#server-apply`でリビルド
 4. 問題なければgit commit & push
 ```
 
@@ -167,7 +167,7 @@ home.sessionPath = [
 │   │   ├── hosts/homelab.nix # Ubuntu host固有設定
 │   │   └── programs/         # 共通moduleとOS条件分岐
 │   └── docs/                 # Nix運用ガイド
-├── homelab/                  # Ubuntu system設定とservice操作
+├── server/                   # Ubuntu system設定とservice操作
 └── docs/                     # 全体architectureと個別guide
 ```
 

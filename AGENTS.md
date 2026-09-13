@@ -67,7 +67,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 
 ```bash
 dr  # macOS全体 / LinuxのHome Managerだけを適用
-nix run ~/dotfiles#homelab-apply  # Linuxのsystem設定とHome Managerを一括適用
+nix run ~/dotfiles#server-apply  # Linuxのsystem設定とHome Managerを一括適用
 ```
 
 ## 詳細ドキュメント

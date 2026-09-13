@@ -66,7 +66,7 @@ dotfiles/
 ├── karabiner/               # Karabiner-Elements設定（macOS専用）
 │   └── karabiner.json       # ~/.config/karabiner/へリンク
 │
-├── homelab/                 # Ubuntu systemとservice起動設定
+├── server/                  # Ubuntu systemとservice起動設定
 │   ├── ansible/             # package・daemon・firewall・power・Compose起動
 │   └── README.md            # bootstrap・data同期・検証
 │
@@ -372,11 +372,11 @@ in {
 | ----------------------- | --------------------------------------------- | ---------- |
 | macOS                   | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
 | Linux user設定          | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
-| Linux system + user設定 | `nix run ~/dotfiles#homelab-apply`            | なし       |
+| Linux system + user設定 | `nix run ~/dotfiles#server-apply`             | なし       |
 
 ## 重要な注意事項
 
-1. 変更後は対象に応じて`dr`または`homelab-apply`でリビルド
+1. 変更後は対象に応じて`dr`または`server-apply`でリビルド
 2. **Nix設定のフォーマット**: `nix fmt` で整形可能
 3. **パッケージ検索**: `nix search nixpkgs <name>` または https://search.nixos.org/packages
 4. **home-managerオプション検索**: https://home-manager-options.extranix.com/

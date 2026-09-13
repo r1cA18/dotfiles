@@ -60,7 +60,7 @@ dp
 dr
 
 # Ubuntu system設定も含めて適用
-nix run ~/dotfiles#homelab-apply
+nix run ~/dotfiles#server-apply
 
 # パッケージを探す
 ds nodejs
@@ -130,7 +130,7 @@ dg
 ```
 1. 設定ファイルを編集
 2. macOSまたはLinux user設定は`dr`でリビルド
-3. Linux system設定を含む場合は`nix run ~/dotfiles#homelab-apply`でリビルド
+3. Linux system設定を含む場合は`nix run ~/dotfiles#server-apply`でリビルド
 4. git commit & push
 ```
 

@@ -33,7 +33,7 @@
         Service = {
           Type = "oneshot";
           Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash /home/r1ca18/vault/40_AI/automation/olympus-times-triage.sh";
+          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-times-triage.sh";
           TimeoutStartSec = "4h";
           Nice = 10;
           IOSchedulingClass = "idle";
@@ -52,7 +52,7 @@
         Service = {
           Type = "oneshot";
           Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash /home/r1ca18/vault/40_AI/automation/olympus-deadline-scheduler.sh";
+          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-deadline-scheduler.sh";
           TimeoutStartSec = "10min";
           Nice = 10;
           IOSchedulingClass = "idle";

@@ -33,7 +33,7 @@ sudo apt install -y \
   xz-utils
 ```
 
-SSH・rsyncを含むsystem packageは`homelab-apply`が管理する。
+SSH・rsyncを含むsystem packageは`server-apply`が管理する。
 
 ### 1. Nix インストール
 
@@ -55,14 +55,14 @@ Docker・Tailscale・SSH・firewall・power設定・desktop appはAnsibleで管�
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-apply
+nix run .#server-apply
 ```
 
-詳細は[`homelab/README.md`](../../homelab/README.md)を参照。
+詳細は[`server/README.md`](../../server/README.md)を参照。
 
 ### 4. 適用される内容
 
-前節の`homelab-apply`がUbuntu systemとHome Managerを続けて適用する。これで以下が自動的にセットアップされる。
+前節の`server-apply`がUbuntu systemとHome Managerを続けて適用する。これで以下が自動的にセットアップされる。
 
 - CLI ツール (Node.js, ripgrep, fd など)
 - Zsh + oh-my-zsh + Powerlevel10k
@@ -130,7 +130,7 @@ codex --version
 ### 設定変更のフロー
 
 ```
-1. system設定を含む変更は`nix run ~/dotfiles#homelab-apply`で適用
+1. system設定を含む変更は`nix run ~/dotfiles#server-apply`で適用
 2. Home Managerだけの変更は`dr`で適用
 3. 問題なければ git commit & push
 ```
@@ -175,7 +175,7 @@ LinuxではHomebrewの代わりにAnsibleからsystem package managerを使用�
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-apply
+nix run .#server-apply
 ```
 
 GUI app本体はNixの管理対象外。Google Chrome・ChatGPT・1Passwordは公式APT repositoryから更新する。
@@ -298,7 +298,7 @@ nix store gc
 
 ## 新しい Linux マシンへの移行
 
-新しい実機への完全移行は[`homelab/README.md`](../../homelab/README.md)をsource of truthとする。Bootstrap・Syncthing・Home Assistant再デプロイ・検証を記載順に実行する。
+新しい実機への完全移行は[`server/README.md`](../../server/README.md)をsource of truthとする。Bootstrap・Syncthing・Home Assistant再デプロイ・検証を記載順に実行する。
 
 ---
 

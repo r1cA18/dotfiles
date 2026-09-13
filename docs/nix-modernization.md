@@ -5,7 +5,7 @@ ryoppippi の dotfiles を参考に自分の Nix 構成を近代化するため�
 
 > [!NOTE]
 > これは2026-06-02時点の比較調査を保存したhistorical note。
-> 現在の構成や操作方法は`docs/architecture.md`と`homelab/README.md`を正本とする。
+> 現在の構成や操作方法は`docs/architecture.md`と`server/README.md`を正本とする。
 > 下記の「自分（現状）」は調査時点のsnapshotであり、現在値へ逐次更新しない。
 
 > 出典: Claude Code セッション `260be7c3`（2026-06-02）の比較調査。

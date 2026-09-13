@@ -7,10 +7,10 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 | OS                 | 管理方法                                   | ビルドコマンド            |
 | ------------------ | ------------------------------------------ | ------------------------- |
 | **macOS**          | nix-darwin + home-manager                  | `dr`                      |
-| **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#homelab-apply` |
+| **Ubuntu homelab** | Nix app + Ansible + home-manager + Compose | `nix run .#server-apply`  |
 
 共通のCLI・shell・agent設定は`nix/home-manager/home.nix`から両OSへ配布する。
-macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定とservice運用は`homelab/`に閉じる。
+macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定とservice運用は`server/`に閉じる。
 共有module内で差が必要な設定だけ`pkgs.stdenv.isDarwin`または`isLinux`で分岐する。
 
 ## クイックスタート
@@ -38,13 +38,13 @@ nix run nix-darwin -- switch --flake .#r1ca18lab
 
 ### Ubuntu homelab
 
-UbuntuはNixの前に必要なbootstrap packageがある。初回手順は[homelab/README.md](homelab/README.md)を上から実行する。
+UbuntuはNixの前に必要なbootstrap packageがある。初回手順は[server/README.md](server/README.md)を上から実行する。
 
 ### 3. 以降の更新
 
 ```bash
 dr  # macOS全体またはLinuxのHome Managerだけを適用
-nix run ~/dotfiles#homelab-apply  # Linuxのsystem設定とHome Managerを一括適用
+nix run ~/dotfiles#server-apply  # Linuxのsystem設定とHome Managerを一括適用
 ```
 
 ## よく使うコマンド
@@ -93,7 +93,7 @@ dotfiles/
 │           └── karabiner.nix     # Karabiner
 ├── nvim/                         # Neovim設定
 ├── karabiner/                    # Karabiner設定
-├── homelab/                      # Ansible・service起動・移行手順
+├── server/                       # Ansible・service起動・移行手順
 └── docs/                         # ドキュメント
 ```
 
@@ -123,7 +123,7 @@ dotfiles/
 | [docs/agent-platforms.md](docs/agent-platforms.md)         | Claude / Codex 運用整理 |
 | [docs/claude-plugin-audit.md](docs/claude-plugin-audit.md) | Claude plugin 棚卸し    |
 | [docs/guides/](docs/guides/)                               | 各種ガイド              |
-| [homelab/README.md](homelab/README.md)                     | 新homelab構築・移行     |
+| [server/README.md](server/README.md)                       | 新homelab構築・移行     |
 
 ## 参考
 

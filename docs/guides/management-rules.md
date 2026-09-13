@@ -18,7 +18,7 @@
 | GUI（macOS）              | `nix/darwin/configuration.nix`の`homebrew.casks`           | discord       |
 | macOS専用                 | `packages.nix`の`darwinPackages`                           | texliveFull   |
 | Linux専用                 | `packages.nix`の`linuxPackages`                            | Nerd Font     |
-| Ubuntu system / GUI       | `homelab/ansible/playbook.yml`                             | Docker        |
+| Ubuntu system / GUI       | `server/ansible/playbook.yml`                              | Docker        |
 
 ### エイリアス追加
 

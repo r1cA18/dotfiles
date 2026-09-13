@@ -1,4 +1,4 @@
-# homelab
+# server
 
 Ubuntu Desktopをhome server・常駐agent host・持ち出し可能なdemo machineとして再現する構成。
 
@@ -34,7 +34,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
   | sh -s -- install
 ```
 
-この段階ではNix installer・repository clone・Ansible実行に必要なpackageだけを入れる。SSH・rsyncを含むsystem packageは`homelab-apply`が管理する。
+この段階ではNix installer・repository clone・Ansible実行に必要なpackageだけを入れる。SSH・rsyncを含むsystem packageは`server-apply`が管理する。
 
 Nix installerの案内どおりterminalを開き直す。`nix --version`が通ってからcloneする。
 
@@ -48,12 +48,12 @@ cd ~/dotfiles
 Ubuntu system設定とHome Managerを一括適用する。初回はHome Assistantを起動しない。2回目以降も起動状態は現状維持になる。AnsibleとHome Managerは`flake.lock`で固定されたものを使う。
 
 ```bash
-nix run .#homelab-apply
+nix run .#server-apply
 ```
 
 通常の`sudo` passwordを一度入力する。Ubuntu 26.04のsudo-rsとAnsibleの`become` promptには互換性問題があるため、local playbook全体をrootで実行し、Home Managerだけを一般userで適用する。
 
-`homelab-apply`はHome Managerの`zsh`をlogin shellとして登録する。一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
+`server-apply`はHome Managerの`zsh`をlogin shellとして登録する。一度logoutして入り直す。これでdefault shell・`docker` group・hardware access groupが反映される。
 
 ## 2. Tailscale
 
@@ -71,11 +71,11 @@ Tailscale admin consoleでexit nodeを承認する。旧homelabと名前が衝�
 
 `Desktop Sharing`ではなくsystem-levelの`Remote Login`を使う。`Desktop Sharing`は既存のGUI sessionを共有するためlocal loginが必要になる。`Remote Login`はGDMのlogin画面をRDPで提供するため、再起動直後もUbuntu側の承認なしで接続できる。
 
-`homelab-apply`が`gnome-remote-desktop`・TLS証明書・RDP backend・boot時のsystem serviceを宣言管理する。RDP用credentialだけはrepositoryへ保存せず、初回に対話形式で設定する。
+`server-apply`が`gnome-remote-desktop`・TLS証明書・RDP backend・boot時のsystem serviceを宣言管理する。RDP用credentialだけはrepositoryへ保存せず、初回に対話形式で設定する。
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-rdp-setup
+nix run .#server-rdp-setup
 ```
 
 Remote Login専用のusernameと強いpasswordを設定し、passwordを1Passwordへ保存する。このcredentialはRDP接続をGDMへ通すためのもの。GDM表示後はUbuntu user`r1ca18`の通常passwordでloginする。
@@ -109,10 +109,10 @@ Mac側のSyncthing UIで新しいhomelab deviceを承認する。既存の旧hom
 
 続いて`vault`と`Develop`のfolder shareを承認する。両方が`Up to Date`になるまでHome Assistantを起動しない。
 
-`homelab-apply`は大規模な`Develop` treeを監視できるようLinuxのinotify上限を設定する。Syncthingに`failed to set up inotify handler`が表示された場合は、最新のdotfilesで`homelab-apply`を再実行してからuser serviceを再起動する。
+`server-apply`は大規模な`Develop` treeを監視できるようLinuxのinotify上限を設定する。Syncthingに`failed to set up inotify handler`が表示された場合は、最新のdotfilesで`server-apply`を再実行してからuser serviceを再起動する。
 
 ```bash
-nix run .#homelab-apply
+nix run .#server-apply
 systemctl --user restart syncthing
 ```
 
@@ -139,10 +139,10 @@ Develop配下では`git pull`・`reset`・`checkout`・`clean`を実行しない
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-restore
+nix run .#server-restore
 ```
 
-`homelab-restore`は必須runtime dataとCompose構文を検証し、vault-agi依存関係とOlympusの
+`server-restore`は必須runtime dataとCompose構文を検証し、vault-agi依存関係とOlympusの
 typecheck・test・buildを完了してからsystemd serviceを順番に有効化する。Home Assistantと
 ESPHomeは既存構成の`host` network・BlueZ D-Bus・capability・device設定をそのまま保つ。
 Home Assistant Containerはsupported構成どおりrootで動かす。owner-onlyで再作成される
@@ -202,10 +202,10 @@ Syncthingは実行bitを同期しないため、automation scriptはNix管理の
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-stop
+nix run .#server-stop
 ```
 
-初回復旧後の再起動は`homelab-start`を使う。start・stopはdependency installやsystem
+初回復旧後の再起動は`server-start`を使う。start・stopはdependency installやsystem
 provisioningを再実行しないためofflineでも利用できる。
 
 ## 6. Google Chrome・ChatGPT・1Password
@@ -233,13 +233,13 @@ codex --version
 
 すべてのserviceはTailscaleから利用できる。home LANの`192.168.0.0/24`にはHome Assistant・HomeKit・Syncthing・discoveryだけを公開し、SSHとESPHome dashboardは公開しない。Tailscale exit node向けのforwardingだけを明示的に許可する。
 
-home LANのsubnetを変更した場合は`ansible/playbook.yml`の`homelab_lan_networks`を更新して`homelab-apply`を再実行する。持ち出し先のprivate LAN全体を自動的に信頼しない。
+home LANのsubnetを変更した場合は`ansible/playbook.yml`の`homelab_lan_networks`を更新して`server-apply`を再実行する。持ち出し先のprivate LAN全体を自動的に信頼しない。
 
 ## 8. 検証
 
 ```bash
 cd ~/dotfiles
-nix run .#homelab-doctor
+nix run .#server-doctor
 ```
 
 ChatGPT Linux previewではComputer Useがまだ使えない。local project・file・Codexは利用できる。Wayland native modeはexperimentalなので通常はXWaylandのまま使う。

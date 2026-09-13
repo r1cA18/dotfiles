@@ -4,35 +4,31 @@ set -euo pipefail
 resolve_dotfiles_root() {
   local candidate
 
-  for candidate in "${HOMELAB_DOTFILES_ROOT:-}" "$PWD" "$HOME/dotfiles"; do
-    if [[ -n $candidate && -f "$candidate/flake.nix" && -f "$candidate/homelab/ansible/playbook.yml" ]]; then
+  for candidate in "${SERVER_DOTFILES_ROOT:-}" "$PWD" "$HOME/dotfiles"; do
+    if [[ -n $candidate && -f "$candidate/flake.nix" && -f "$candidate/server/ansible/playbook.yml" ]]; then
       printf '%s\n' "$candidate"
       return
     fi
   done
 
-  printf 'dotfiles repository not found; run from ~/dotfiles or set HOMELAB_DOTFILES_ROOT\n' >&2
+  printf 'dotfiles repository not found; run from ~/dotfiles or set SERVER_DOTFILES_ROOT\n' >&2
   exit 1
 }
 
-require_homelab_host() {
-  local homelab_os_id homelab_os_version ID VERSION_ID
+require_server_host() {
+  local server_os_id server_os_version ID VERSION_ID
 
   # shellcheck source=/dev/null
   . /etc/os-release
-  homelab_os_id="$ID"
-  homelab_os_version="$VERSION_ID"
+  server_os_id="$ID"
+  server_os_version="$VERSION_ID"
 
-  [[ "$(id -un)" == "r1ca18" ]] || {
-    printf 'expected user r1ca18; detected %s\n' "$(id -un)" >&2
-    exit 1
-  }
   [[ "$(uname -m)" == "x86_64" ]] || {
     printf 'expected x86_64; detected %s\n' "$(uname -m)" >&2
     exit 1
   }
-  [[ $homelab_os_id == "ubuntu" && $homelab_os_version == "26.04" ]] || {
-    printf 'expected Ubuntu 26.04; detected %s %s\n' "$homelab_os_id" "$homelab_os_version" >&2
+  [[ $server_os_id == "ubuntu" && $server_os_version == "26.04" ]] || {
+    printf 'expected Ubuntu 26.04; detected %s %s\n' "$server_os_id" "$server_os_version" >&2
     exit 1
   }
 }
@@ -90,7 +86,7 @@ require_unit() {
   local unit="$1"
 
   systemctl cat "$unit" >/dev/null || {
-    printf '%s is not installed; run homelab-apply first\n' "$unit" >&2
+    printf '%s is not installed; run server-apply first\n' "$unit" >&2
     return 1
   }
 }
@@ -135,16 +131,16 @@ run_playbook() {
 
   ansible_playbook="$(command -v ansible-playbook)"
   sudo /usr/bin/env \
-    "ANSIBLE_CONFIG=$dotfiles_root/homelab/ansible/ansible.cfg" \
+    "ANSIBLE_CONFIG=$dotfiles_root/server/ansible/ansible.cfg" \
     "$ansible_playbook" \
-    -i "$dotfiles_root/homelab/ansible/inventory.yml" \
-    "$dotfiles_root/homelab/ansible/playbook.yml"
+    -i "$dotfiles_root/server/ansible/inventory.yml" \
+    "$dotfiles_root/server/ansible/playbook.yml"
 }
 
 configure_login_shell() {
-  local current_shell homelab_user zsh_path
+  local current_shell server_user zsh_path
 
-  homelab_user="$(id -un)"
+  server_user="$(id -un)"
   zsh_path="$HOME/.nix-profile/bin/zsh"
 
   [[ -x $zsh_path ]] || {
@@ -156,9 +152,9 @@ configure_login_shell() {
     printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells >/dev/null
   fi
 
-  current_shell="$(getent passwd "$homelab_user" | cut -d: -f7)"
+  current_shell="$(getent passwd "$server_user" | cut -d: -f7)"
   if [[ $current_shell != "$zsh_path" ]]; then
-    sudo usermod --shell "$zsh_path" "$homelab_user"
+    sudo usermod --shell "$zsh_path" "$server_user"
   fi
 }
 
@@ -258,7 +254,7 @@ prepare_workloads() {
   )
 }
 
-start_homelab_services() {
+start_server_services() {
   local unit
 
   validate_application_inputs
@@ -361,16 +357,16 @@ initialize_user_timers() {
     olympus-deadline-scheduler.timer
 }
 
-restore_homelab_workloads() {
+restore_server_workloads() {
   prepare_workloads
-  start_homelab_services
+  start_server_services
   configure_olympus_serve
   initialize_user_timers
 }
 
 setup_remote_login() {
   systemctl cat gnome-remote-desktop.service >/dev/null || {
-    printf 'GNOME Remote Desktop is not installed; run homelab-apply first\n' >&2
+    printf 'GNOME Remote Desktop is not installed; run server-apply first\n' >&2
     exit 1
   }
 
@@ -384,6 +380,7 @@ setup_remote_login() {
 
 command_name="${1:-}"
 dotfiles_root="$(resolve_dotfiles_root)"
+hm_profile="$(id -un)@$(hostname)"
 home_assistant_root="$HOME/Develop/github.com/r1cA18/home-assistant"
 vault_agi_root="$HOME/Develop/github.com/r1cA18/vault-agi"
 olympus_root="$HOME/Develop/github.com/r1cA18/olympus"
@@ -391,25 +388,25 @@ bun_path="$HOME/.nix-profile/bin/bun"
 
 case "$command_name" in
 apply)
-  require_homelab_host
+  require_server_host
   run_playbook
-  home-manager switch --flake "$dotfiles_root#r1ca18@homelab"
+  home-manager switch --flake "$dotfiles_root#$hm_profile"
   systemctl --user restart codex-app-server.service
   configure_login_shell
-  printf 'homelab applied; log out and back in to activate shell and group changes\n'
+  printf 'server applied; log out and back in to activate shell and group changes\n'
   ;;
 start)
-  require_homelab_host
-  start_homelab_services
+  require_server_host
+  start_server_services
   configure_olympus_serve
   initialize_user_timers
   ;;
 restore)
-  require_homelab_host
-  restore_homelab_workloads
+  require_server_host
+  restore_server_workloads
   ;;
 stop)
-  require_homelab_host
+  require_server_host
   systemctl --user disable --now \
     olympus-times-triage.timer \
     olympus-deadline-scheduler.timer
@@ -421,15 +418,15 @@ stop)
     homelab-compose.service
   ;;
 rdp-setup)
-  require_homelab_host
+  require_server_host
   setup_remote_login
   ;;
 doctor)
-  require_homelab_host
-  exec bash "$dotfiles_root/homelab/scripts/doctor.sh"
+  require_server_host
+  exec bash "$dotfiles_root/server/scripts/doctor.sh"
   ;;
 *)
-  printf 'usage: homelab {apply|restore|start|stop|rdp-setup|doctor}\n' >&2
+  printf 'usage: server {apply|restore|start|stop|rdp-setup|doctor}\n' >&2
   exit 2
   ;;
 esac
