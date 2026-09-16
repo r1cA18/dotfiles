@@ -16,6 +16,8 @@ let
     runtimeInputs = with pkgs; [
       curl
       bash
+      gnutar
+      coreutils
     ];
     text = ''
       if command -v agy >/dev/null 2>&1; then
@@ -46,10 +48,16 @@ in
       # Antigravity CLI (agy) native 版の自動導入。
       # 更新は update-all の update-antigravity (または agy update) が担う。
       setupAntigravity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        export PATH="${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH"
         bin="$HOME/.local/bin/agy"
+        log="$HOME/.local/state/antigravity/install.log"
         if [ ! -x "$bin" ]; then
           echo "[antigravity] installing agy..."
-          ${pkgs.curl}/bin/curl -fsSL https://antigravity.google/cli/install.sh | ${pkgs.bash}/bin/bash || true
+          mkdir -p "$(dirname "$log")"
+          if ! ${pkgs.curl}/bin/curl -fsSL https://antigravity.google/cli/install.sh \
+            | ${pkgs.bash}/bin/bash >>"$log" 2>&1; then
+            echo "[antigravity] install failed, see $log" >&2
+          fi
         fi
       '';
     };

@@ -34,7 +34,7 @@ ws = {
 };
 ```
 
-`help`がない項目も説明と展開先をpreviewする。`clp`・`cxp`・`clgpt`・`clproxy`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
+`help`がない項目も説明と展開先をpreviewする。`ccspace`・`clgpt`・`clproxy`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
 
 ## 背景・課題
 
@@ -95,9 +95,9 @@ nixLinuxAliases = {
 };
 
 claudeAliases = {
-  clc = {cmd = "clp run default --continue"; desc = "Continue last Claude session";};
-  clr = {cmd = "clp run default --resume"; desc = "Resume Claude session from picker";};
-  cld = {cmd = "clp run default --dangerously-skip-permissions"; desc = "Start Claude without prompts";};
+  clc = {cmd = "claude --continue"; desc = "Continue last Claude session";};
+  clr = {cmd = "claude --resume"; desc = "Resume Claude session from picker";};
+  cld = {cmd = "claude --dangerously-skip-permissions"; desc = "Start Claude without prompts";};
 };
 
 # ヘルプ生成関数
@@ -153,7 +153,7 @@ $ hv
 | Claude Code    | Claude Code関連（clc, clr, cld, cls）         |
 | Codex          | Codex関連（cx, cxc, cxr, cxrev）              |
 | Workspace      | `ws`から`workspace`への短縮入口               |
-| Agent Commands | `clp`・`cxp`・`clgpt`・`clproxy`              |
+| Agent Commands | `ccspace`・`clgpt`・`clproxy`                 |
 | Help           | `h`・`hp`・`hv`                               |
 
 `Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。
@@ -171,7 +171,7 @@ shell aliasやabbrには変換しないため、実体のcommandをshadowしな�
 - Docker containerの起動には`docker run`を使用
 - `cl`・`cx`系の既存prefixとsession操作の短縮名は維持
 
-`clp`・`cxp`の補完には`doctor`と`archive`も含める。
+`clp`・`cxp`は廃止し`ccspace`へ置き換えた。補完はccspace自身の`install.sh`が生成する。
 
 ## Runtime abbreviation
 

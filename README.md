@@ -59,7 +59,7 @@ update-all # flake・GitHub apps・Claude Code・Codex・Antigravityを更新
 ### Claude Code
 
 ```bash
-cl     # Claude Code起動
+claude # Claude Code起動
 clc    # 前回のセッション継続
 clr    # セッション選択して再開
 cld    # 承認スキップモード

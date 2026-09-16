@@ -20,11 +20,10 @@ let
     inherit lib pkgs;
     extraFiles = [ ../../../codex/rules/orchestration.md ];
   };
-  mkAgentProfileManager = import ../../lib/agent-profile-manager.nix { inherit lib; };
   installCodex = ''
     ${pkgs.coreutils}/bin/install -d "$HOME/.codex" "$HOME/.local/bin"
     ${pkgs.curl}/bin/curl -fsSL https://chatgpt.com/codex/install.sh \
-      | PATH="$HOME/.local/bin:$PATH" \
+      | PATH="$HOME/.local/bin:${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH" \
         CODEX_HOME="$HOME/.codex" \
         CODEX_INSTALL_DIR="$HOME/.local/bin" \
         CODEX_NON_INTERACTIVE=1 \
@@ -158,23 +157,6 @@ let
     name: settings: tomlFormat.generate "codex-${name}-config.toml" settings
   ) codexConfigProfiles;
 
-  codexProfileSharedPaths = [
-    "AGENTS.md"
-    "config.toml"
-    "hooks.json"
-    "prompts"
-    "skills"
-  ]
-  ++ map (name: "${name}.config.toml") (builtins.attrNames codexConfigProfiles);
-  codexProfileCommon = mkAgentProfileManager {
-    productName = "Codex";
-    profileStatePath = "codex/profiles";
-    primaryConfigPath = ".codex";
-    primaryMetadataPath = ".codex/auth.json";
-    profileMetadataName = "auth.json";
-    sharedPaths = codexProfileSharedPaths;
-  };
-
   # Individual file symlinks for .codex/prompts/. All prompts (including the
   # repo-owned sc-*.md personas) live in codex/prompts/ and are deployed here.
   # readDir uses the flake-relative path (pure-eval safe); symlinks point to
@@ -196,193 +178,6 @@ let
     '';
   };
 
-  codexProfile = pkgs.writeShellApplication {
-    name = "cxp";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.fzf
-      pkgs.jq
-    ];
-    text = ''
-      ${codexProfileCommon}
-
-      profile_command="cxp"
-      codex_bin="$HOME/.local/bin/codex"
-
-      require_codex() {
-        if [[ ! -x "$codex_bin" ]]; then
-          echo "Codex CLI was not found at $codex_bin" >&2
-          echo "Run 'update-codex' to install it, then retry." >&2
-          exit 1
-        fi
-      }
-
-      profile_email() {
-        local auth_file="$1"
-        local token payload padding
-
-        [[ -f "$auth_file" ]] || return 0
-        token="$(jq -r '.tokens.id_token // empty' "$auth_file" 2>/dev/null || true)"
-        [[ -n "$token" ]] || return 0
-        payload="''${token#*.}"
-        payload="''${payload%%.*}"
-
-        padding=$(( (4 - ''${#payload} % 4) % 4 ))
-        case "$padding" in
-          1) payload="''${payload}=" ;;
-          2) payload="''${payload}==" ;;
-          3) payload="''${payload}===" ;;
-        esac
-
-        printf '%s' "$payload" \
-          | tr '_-' '/+' \
-          | base64 --decode 2>/dev/null \
-          | jq -r '.email // empty' 2>/dev/null \
-          || true
-      }
-
-      exec_for_profile() {
-        local profile="$1"
-        local guard_identity="$2"
-        shift 2
-
-        local config_dir
-        config_dir="$(resolve_profile "$profile")"
-        ensure_shared_config "$config_dir"
-        if [[ "$guard_identity" == "true" ]]; then
-          verify_profile_identity "$config_dir"
-        fi
-
-        if [[ -n "$config_dir" ]]; then
-          export CODEX_HOME="$config_dir"
-        else
-          unset CODEX_HOME
-        fi
-        exec "$codex_bin" "$@"
-      }
-
-      login_profile() {
-        local profile="$1"
-        local config_dir
-
-        config_dir="$(resolve_profile "$profile")"
-        ensure_shared_config "$config_dir"
-        if [[ -n "$config_dir" ]]; then
-          CODEX_HOME="$config_dir" "$codex_bin" login
-        else
-          env -u CODEX_HOME "$codex_bin" login
-        fi
-        verify_profile_identity "$config_dir" true
-      }
-
-      add_profile() {
-        local email="$1"
-        local config_dir exit_code
-
-        validate_profile_email "$email"
-        if resolve_profile "$email" >/dev/null 2>&1; then
-          echo "Codex profile already exists: $email" >&2
-          return 1
-        fi
-
-        config_dir="$profile_root/$email"
-        install -d -m 700 "$profile_root"
-        install -d -m 700 "$config_dir"
-        ensure_shared_config "$config_dir"
-
-        if CODEX_HOME="$config_dir" "$codex_bin" login; then
-          :
-        else
-          exit_code=$?
-          trash_profile_dir "$config_dir" "login failed"
-          return "$exit_code"
-        fi
-        if ! verify_profile_identity "$config_dir" true; then
-          trash_profile_dir "$config_dir" "identity verification failed"
-          return 1
-        fi
-      }
-
-      usage() {
-        cat <<'EOF'
-      Usage: cxp <command> [arguments]
-
-      Commands:
-        list                  List profiles and their signed-in email addresses
-        complete              Print profile candidates for shell completion
-        add <email>           Create a profile and sign in
-        login [profile]       Sign in again for a profile selected by email or fzf
-        status [profile]      Show authentication status
-        path [profile]        Print the profile CODEX_HOME
-        doctor                Check profile identity, links, metadata, and permissions
-        archive [profile]     Move a non-default profile to recoverable trash
-        run [profile] [args]  Start Codex with a profile selected by email or fzf
-      EOF
-      }
-
-      command="''${1:-}"
-      if [[ $# -gt 0 ]]; then
-        shift
-      fi
-
-      case "$command" in
-        add|login|status|run) require_codex ;;
-      esac
-
-      case "$command" in
-        list)
-          list_profiles
-          ;;
-        complete)
-          completion_profiles
-          ;;
-        add)
-          [[ $# -eq 1 ]] || { usage >&2; exit 2; }
-          add_profile "$1"
-          ;;
-        login)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          login_profile "$profile"
-          ;;
-        status)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          exec_for_profile "$profile" false login status
-          ;;
-        path)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          config_dir="$(resolve_profile "$profile")"
-          printf '%s\n' "''${config_dir:-$HOME/.codex}"
-          ;;
-        doctor)
-          [[ $# -eq 0 ]] || { usage >&2; exit 2; }
-          doctor_profiles
-          ;;
-        archive)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          archive_profile "$profile"
-          ;;
-        run)
-          profile="$(select_profile "''${1:-}")"
-          if [[ $# -gt 0 ]]; then
-            shift
-          fi
-          exec_for_profile "$profile" true "$@"
-          ;;
-        help|-h|--help|"")
-          usage
-          ;;
-        *)
-          echo "Unknown command: $command" >&2
-          usage >&2
-          exit 2
-          ;;
-      esac
-    '';
-  };
 in
 {
   # NOTE: we deliberately do NOT use programs.codex.settings.
@@ -396,7 +191,6 @@ in
 
   home = {
     packages = [
-      codexProfile
       updateCodex
     ];
 
@@ -443,13 +237,15 @@ in
       # update-codex が担う。
       setupCodex = lib.hm.dag.entryAfter [ "codexConfig" ] ''
         bin="$HOME/.local/bin/codex"
+        log="$HOME/.local/state/codex/install.log"
         if [ ! -x "$bin" ]; then
           echo "[codex] installing Codex CLI..."
+          mkdir -p "$(dirname "$log")"
           if ! (
             set -o pipefail
             ${installCodex}
-          ); then
-            echo "[codex] install failed; run update-codex after network is available" >&2
+          ) >>"$log" 2>&1; then
+            echo "[codex] install failed, see $log" >&2
           fi
         fi
       '';

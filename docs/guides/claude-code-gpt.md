@@ -79,39 +79,13 @@ CLGPT_MODEL='gpt-5.6-terra[1m]' clgpt
 CLGPT_FAST_MODEL='gpt-5.6-luna[1m]' clgpt
 ```
 
-## Claude profile管理
+## Claude account管理
 
-profileは`clp`で管理する。primaryを含む全profileをemailから解決できる。
+複数accountの切り替えは外部tool `ccspace`が担う(旧`clp`は`archive/agent-profile-manager/`へ退避済み)。
+`ccspace add cc-work`のようにlauncherを作成すると、launcherごとにconfig homeが分離される。
+GPT backendを特定のlauncherと組み合わせる場合は、そのlauncherのconfig homeで`clgpt`を起動する。
 
-```bash
-clp list
-clp add user@example.com
-clp run user@example.com
-clp gpt user@example.com
-clp status user@example.com
-```
-
-`clp run`と`clp gpt`はemail省略時にfzf pickerを開く。
-`cl user@example.com`と`clg user@example.com`で直接指定もできる。
-Tab補完は登録済みemailを`clp complete`から動的に取得する。
-
-新規profileのruntime stateは`$XDG_STATE_HOME/claude-code/profiles/<email>`に置く。
-未設定時は`~/.local/state`を使う。
-emailはlocal pathとClaude自身のaccount metadataにだけ残り、公開dotfilesには保存しない。
-
-各profileは以下だけをprimary profileと共有する。
-
-- settings
-- global instruction
-- agents
-- commands
-- hooks
-- rules
-- skills
-
-credentials・sessions・history・local settings・plugin cacheなどのruntime stateは共有しない。
-
-Codexを含む共通構造は[Agent account profile管理](agent-profiles.md)を参照。
+Codexを含む共通構造は[ccspaceガイド](ccspace.md)を参照。
 
 ## Antigravityの境界
 

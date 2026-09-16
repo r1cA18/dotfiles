@@ -87,6 +87,7 @@
       "onedrive"
       "open-design"
       "orbstack"
+      "stablyai/orca/orca"
       "orcaslicer"
       "raycast"
       "steam"

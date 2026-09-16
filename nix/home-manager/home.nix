@@ -19,6 +19,7 @@
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
     ./programs/antigravity.nix
+    ./programs/ccspace.nix
     ./programs/claude-code.nix
     ./programs/claude-code-proxy.nix
     ./programs/codex.nix

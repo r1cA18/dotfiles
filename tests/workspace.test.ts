@@ -138,15 +138,21 @@ function profileFixture() {
   const { cmd, env, ws } = context;
   expect(cmd(["git", "init", "-q"]).code).toBe(0);
   expect(ws("sync").code).toBe(0);
-  for (const manager of ["cxp", "clp"]) {
-    writeFileSync(join(env.PATH!, manager), `#!${process.execPath}
+  // ccspace's manifest (~/.local/share/ccspace/spaces.json) is the source of
+  // truth for which launchers exist; ws profile reads it directly instead of
+  // shelling out to a profile manager. Sorted order matters: the fake fzf
+  // below picks rows[0] ("...-default") or rows[1] ("...-work").
+  const ccspaceHome = join(env.HOME!, ".local/share/ccspace");
+  mkdirSync(ccspaceHome, { recursive: true });
+  const launchers = ["cc-default", "cc-work", "cx-default", "cx-work"];
+  writeFileSync(
+    join(ccspaceHome, "spaces.json"),
+    JSON.stringify({ version: 1, launchers: Object.fromEntries(launchers.map(name => [name, { space: name }])), spaces: {} }),
+  );
+  for (const name of launchers) {
+    writeFileSync(join(env.PATH!, name), `#!${process.execPath}
 const args = process.argv.slice(2);
-if (args[0] === "list") console.log("PROFILE\\tEMAIL\\tPATH\\ndefault\\towner@example.invalid\\t/tmp/default\\nwork\\twork@example.invalid\\t/tmp/work");
-else if (args[0] === "path") { if (process.env.PROFILE_GONE) process.exit(1); console.log("/tmp/" + args[1]); }
-else if (args[0] === "run") {
-  if (process.env.PROFILE_GONE) process.exit(1);
-  console.log(JSON.stringify({ manager: ${JSON.stringify(manager)}, args, memory: process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD }));
-} else process.exit(2);
+console.log(JSON.stringify({ launcher: ${JSON.stringify(name)}, args, memory: process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD }));
 `, { mode: 0o755 });
   }
   writeFileSync(join(env.PATH!, "fzf"), `#!${process.execPath}
@@ -157,24 +163,24 @@ console.log(rows[process.env.PICK_DEFAULT ? 0 : 1]);
   return context;
 }
 
-test("workspace profiles persist separately and route launches through account managers", () => {
+test("workspace profiles persist separately and route launches through ccspace launchers", () => {
   const { ws, cmd, workspace, env } = profileFixture();
   expect(ws("profile", "codex").code).toBe(0);
   env.PICK_DEFAULT = "1";
   expect(ws("profile", "claude").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: work\nclaude: default");
+  expect(ws("profile").out).toContain("codex: cx-work\nclaude: cc-default");
   const codex = JSON.parse(ws("codex", "fix this").out);
-  expect(codex.manager).toBe("cxp");
-  expect(codex.args.slice(0, 4)).toEqual(["run", "work", "-C", realpathSync(workspace)]);
+  expect(codex.launcher).toBe("cx-work");
+  expect(codex.args.slice(0, 2)).toEqual(["-C", realpathSync(workspace)]);
   expect(codex.args.at(-1)).toBe("fix this");
   expect(codex.args.filter((arg: string) => arg === "--add-dir")).toHaveLength(2);
   const claude = JSON.parse(ws("claude", "fix this", "--model", "sonnet").out);
-  expect(claude.manager).toBe("clp");
-  expect(claude.args.slice(0, 6)).toEqual(["run", "default", "fix this", "--model", "sonnet", "--add-dir"]);
+  expect(claude.launcher).toBe("cc-default");
+  expect(claude.args.slice(0, 4)).toEqual(["fix this", "--model", "sonnet", "--add-dir"]);
   expect(claude.memory).toBe("1");
-  expect(cmd(["git", "config", "--local", "--get", "workspace.codexProfile"]).out.trim()).toBe("work");
-  expect(cmd(["git", "status", "--porcelain", "--untracked-files=all"]).out).not.toContain("profile");
-  expect(readFileSync(join(workspace, "workspace.json"), "utf8")).not.toContain("work@example");
+  expect(cmd(["git", "config", "--local", "--get", "workspace.codexLauncher"]).out.trim()).toBe("cx-work");
+  expect(cmd(["git", "status", "--porcelain", "--untracked-files=all"]).out).not.toContain("launcher");
+  expect(readFileSync(join(workspace, "workspace.json"), "utf8")).not.toContain("cx-work");
 });
 
 test("profile cancellation and stale selections preserve settings without launching another account", () => {
@@ -182,15 +188,14 @@ test("profile cancellation and stale selections preserve settings without launch
   expect(ws("profile", "codex").code).toBe(0);
   env.PICK_CANCEL = "1";
   expect(ws("profile", "codex").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: work");
+  expect(ws("profile").out).toContain("codex: cx-work");
   delete env.PICK_CANCEL;
   env.PICK_DEFAULT = "1";
-  env.PROFILE_GONE = "1";
+  rmSync(join(env.PATH!, "cx-default"));
   expect(ws("profile", "codex").code).toBe(1);
-  expect(ws("profile").out).toContain("codex: work");
-  expect(ws("codex").code).toBe(1);
-  rmSync(join(env.PATH!, "cxp"));
-  expect(ws("codex").err).toContain("cxp is required");
+  expect(ws("profile").out).toContain("codex: cx-work");
+  rmSync(join(env.PATH!, "cx-work"));
+  expect(ws("codex").err).toContain("cx-work is required");
   expect(ws("profile", "codex", "--clear").code).toBe(0);
   expect(ws("profile", "codex", "--clear").code).toBe(0);
 });
@@ -199,9 +204,9 @@ test("real fzf selects a registered workspace profile", () => {
   const { ws, env } = profileFixture();
   rmSync(join(env.PATH!, "fzf"));
   symlinkSync(Bun.which("fzf")!, join(env.PATH!, "fzf"));
-  env.FZF_DEFAULT_OPTS = "--filter=work@example.invalid";
+  env.FZF_DEFAULT_OPTS = "--filter=cx-work";
   expect(ws("profile", "codex").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: work");
+  expect(ws("profile").out).toContain("codex: cx-work");
 });
 
 test("clearing a profile restores environment inheritance and ignores ancestor settings", () => {

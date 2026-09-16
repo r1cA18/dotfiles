@@ -176,7 +176,7 @@ Codex CLIはworkspaceをcwdにして各repoの実体を追加write directoryと�
 
 通常は生成された入口で十分。追加のCLI引数も末尾へ渡せる。workspaceのprofileが未設定なら`CODEX_HOME`や`CLAUDE_CONFIG_DIR`を維持する。
 
-workspaceごとにaccountを固定する場合は親directoryで次を実行する。`cxp list`・`clp list`の登録済みaccountをfzfで選択する。設定は親repoの`.git/config`だけに保存し共有fileには書き込まない。
+workspaceごとにaccountを固定する場合は親directoryで次を実行する。`ccspace list`の登録済みlauncherをfzfで選択する。設定は親repoの`.git/config`だけに保存し共有fileには書き込まない。
 
 ```bash
 ws profile codex
@@ -186,9 +186,9 @@ ws codex
 ws claude
 ```
 
-保存済みprofileは環境変数より優先する。起動は`cxp run`・`clp run`を経由し共有設定の同期とaccount照合を行う。profileが削除済みの場合やmanagerが見つからない場合は停止する。選択画面の`Esc`は設定を変更しない。`ws profile codex --clear`または`ws profile claude --clear`で解除すると従来の環境変数継承へ戻る。`default`の選択はprimary accountへの明示的な固定になる。
+保存済みlauncherは環境変数より優先する。起動は保存済みlauncher(`cc-<name>`・`cx-<name>`)をそのまま実行する。launcherが削除済みの場合やccspaceが見つからない場合は停止する。選択画面の`Esc`は設定を変更しない。`ws profile codex --clear`または`ws profile claude --clear`で解除すると従来の環境変数継承へ戻る。
 
-profile設定には親repoのGit初期化と対象の`cxp`・`clp`とfzfが必要。clone先では各自が設定する。古いworkspaceの`./ws`は作成時のCLIコピーなので自動更新されない。dotfiles適用後のグローバル`ws`をworkspace親directoryから使えば既存workspaceでも利用できる。新規生成したworkspaceでは`./ws profile`も使える。
+profile設定には親repoのGit初期化と`ccspace`とfzfが必要。clone先では各自が設定する。古いworkspaceの`./ws`は作成時のCLIコピーなので自動更新されない。dotfiles適用後のグローバル`ws`をworkspace親directoryから使えば既存workspaceでも利用できる。新規生成したworkspaceでは`./ws profile`も使える。
 
 ```bash
 ./ws codex

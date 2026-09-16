@@ -36,22 +36,23 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 
 ## クイックリファレンス
 
-| やりたいこと          | 編集ファイル                                       |
-| --------------------- | -------------------------------------------------- |
-| CLIツール追加         | `nix/home-manager/programs/packages.nix`           |
-| GUIアプリ追加 (macOS) | `nix/darwin/configuration.nix` の `homebrew.casks` |
-| エイリアス追加        | `nix/home-manager/programs/zsh.nix`                |
-| 環境変数/PATH         | `nix/home-manager/programs/packages.nix`           |
-| Git設定               | `nix/home-manager/programs/git.nix`                |
-| Neovim設定            | `nvim/` ディレクトリ                               |
-| Ghostty設定           | `nix/home-manager/programs/ghostty.nix`            |
-| Karabiner設定         | `karabiner/karabiner.json`                         |
-| Agent Skills管理      | `nix/home-manager/programs/agent-skills.nix`       |
-| スキル追加/編集       | `agents/skills/` ディレクトリ                      |
-| Claude ルール         | `claude/rules/` ディレクトリ                       |
-| Claude フック         | `claude/hooks/` ディレクトリ                       |
-| Codex設定             | `nix/home-manager/programs/codex.nix`              |
-| グローバル指示        | `agents/INSTRUCTIONS.md` + `agents/rules/`         |
+| やりたいこと          | 編集ファイル                                                            |
+| --------------------- | ----------------------------------------------------------------------- |
+| CLIツール追加         | `nix/home-manager/programs/packages.nix`                                |
+| GUIアプリ追加 (macOS) | `nix/darwin/configuration.nix` の `homebrew.casks`                      |
+| エイリアス追加        | `nix/home-manager/programs/zsh.nix`                                     |
+| 環境変数/PATH         | `nix/home-manager/programs/packages.nix`                                |
+| Git設定               | `nix/home-manager/programs/git.nix`                                     |
+| Neovim設定            | `nvim/` ディレクトリ                                                    |
+| Ghostty設定           | `nix/home-manager/programs/ghostty.nix`                                 |
+| Karabiner設定         | `karabiner/karabiner.json`                                              |
+| Agent Skills管理      | `nix/home-manager/programs/agent-skills.nix`                            |
+| account管理 (ccspace) | `nix/home-manager/programs/ccspace.nix`、詳細は`docs/guides/ccspace.md` |
+| スキル追加/編集       | `agents/skills/` ディレクトリ                                           |
+| Claude ルール         | `claude/rules/` ディレクトリ                                            |
+| Claude フック         | `claude/hooks/` ディレクトリ                                            |
+| Codex設定             | `nix/home-manager/programs/codex.nix`                                   |
+| グローバル指示        | `agents/INSTRUCTIONS.md` + `agents/rules/`                              |
 
 ## シンボリックリンク設定済み
 

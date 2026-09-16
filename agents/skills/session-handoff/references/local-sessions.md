@@ -7,11 +7,13 @@ configuration.
 
 | Product | Primary | Additional accounts |
 | --- | --- | --- |
-| Codex | `~/.codex/sessions` | `${XDG_STATE_HOME:-~/.local/state}/codex/profiles/<account>/sessions` |
-| Claude Code | `~/.claude/projects` | `${XDG_STATE_HOME:-~/.local/state}/claude-code/profiles/<account>/projects` |
+| Codex | `~/.codex/sessions` | ccspace space home, e.g. `~/.codex-<name>/sessions` |
+| Claude Code | `~/.claude/projects` | ccspace space home, e.g. `~/.claude-<name>/projects` |
 
 An explicit `CODEX_HOME` or `CLAUDE_CONFIG_DIR` can identify another current home.
-In this repository `cxp path <account>` and `clp path <account>` resolve homes.
+In this repository, ccspace launchers (`cx-<name>` for Codex, `cc-<name>` for
+Claude Code) set these; `ccspace list` shows registered launchers and `ccspace
+doctor` checks their homes.
 Use paths only; reading `auth.json`, `.claude.json`, or keychains is unnecessary.
 
 ## Find A Candidate
@@ -55,9 +57,9 @@ tool records or repeat the missing narrow check instead.
 
 ## Account Boundaries
 
-`cxp run <account> resume <id>` searches the selected account home; `--all`
+`cx-<name> resume <id>` searches the selected launcher's account home; `--all`
 broadens the directory filter, not the set of account homes. Likewise
-`clp run <account> --resume <id>` uses that Claude account's history.
+`cc-<name> --resume <id>` uses that Claude launcher's history.
 Passing another account's ID does not import its session.
 
 For a handoff to a different account/provider, read the relevant source history

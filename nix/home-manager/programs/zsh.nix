@@ -34,8 +34,8 @@ let
       desc = "Go to dotfiles (compatibility name; prefer dot)";
     };
     update-all = {
-      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity";
-      desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity";
+      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity && update-ccspace";
+      desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity + ccspace";
     };
     ds = {
       cmd = "nix search nixpkgs";
@@ -138,47 +138,47 @@ let
   # command appears inline before Enter. No custom functions, no -s/-w flag
   # interception — each variation gets its own abbr so the resolved command is
   # always visible.
+  #
+  # Account switching used to go through clp (archived; see
+  # archive/agent-profile-manager/). ccspace (docs/guides/ccspace.md) replaces
+  # it with per-account launcher shims (e.g. cc-work); cl reproduces the old
+  # picker via ccspace-pick (ccspace.nix).
   claudeAliases = {
-    # base + account variants
     cl = {
-      cmd = "clp run";
+      cmd = "ccspace-pick claude";
       desc = "Start Claude Code with account picker";
-    };
-    clg = {
-      cmd = "clp gpt";
-      desc = "Start GPT backend with account picker";
     };
     clw = {
       cmd = "ANTHROPIC_API_KEY=\${CLAUDE_CSTYLE_API_KEY} claude";
       desc = "Start Claude with work API key";
     };
-    # session actions
+    # session actions (primary account)
     clc = {
-      cmd = "clp run default --continue";
+      cmd = "claude --continue";
       desc = "Continue last Claude session";
     };
     clcd = {
-      cmd = "clp run default --continue --dangerously-skip-permissions";
+      cmd = "claude --continue --dangerously-skip-permissions";
       desc = "Continue Claude session without prompts";
     };
     clr = {
-      cmd = "clp run default --resume";
+      cmd = "claude --resume";
       desc = "Resume Claude session from picker";
     };
     clgc = {
-      cmd = "clp gpt default --continue";
+      cmd = "clgpt --continue";
       desc = "Continue last GPT-backed Claude session";
     };
     clgr = {
-      cmd = "clp gpt default --resume";
+      cmd = "clgpt --resume";
       desc = "Resume GPT-backed Claude session from picker";
     };
     cld = {
-      cmd = "clp run default --dangerously-skip-permissions";
+      cmd = "claude --dangerously-skip-permissions";
       desc = "Start Claude without prompts";
     };
     clgd = {
-      cmd = "clp gpt default --dangerously-skip-permissions";
+      cmd = "clgpt --dangerously-skip-permissions";
       desc = "Start GPT-backed Claude without prompts";
     };
     clu = {
@@ -191,58 +191,58 @@ let
     };
   };
 
-  # Codex abbreviations.
-  # `cx` opens the account picker. Named model layers are loaded from the
-  # selected CODEX_HOME as heavy.config.toml / spark.config.toml.
+  # Codex abbreviations (primary account). Named model layers are loaded from
+  # the default CODEX_HOME as heavy.config.toml / spark.config.toml.
+  # Account switching used to go through cxp (archived; see
+  # archive/agent-profile-manager/) and is now ccspace launcher shims
+  # (e.g. cx-work); cx reproduces the old picker via ccspace-pick (ccspace.nix).
   codexAliases = {
-    # base + profile variants
     cx = {
-      cmd = "cxp run";
+      cmd = "ccspace-pick codex";
       desc = "Start Codex with account picker";
     };
     cxh = {
-      cmd = "cxp run default --profile heavy";
+      cmd = "codex --profile heavy";
       desc = "Start Codex with heavy profile (gpt-5.5 high)";
     };
     cxsp = {
-      cmd = "cxp run default --profile spark";
+      cmd = "codex --profile spark";
       desc = "Start Codex with spark profile";
     };
-    # session actions
     cxc = {
-      cmd = "cxp run default resume --last";
+      cmd = "codex resume --last";
       desc = "Continue last Codex session";
     };
     cxcd = {
-      cmd = "cxp run default resume --last --dangerously-bypass-approvals-and-sandbox";
+      cmd = "codex resume --last --dangerously-bypass-approvals-and-sandbox";
       desc = "Continue Codex without prompts";
     };
     cxr = {
-      cmd = "cxp run default resume";
+      cmd = "codex resume";
       desc = "Resume Codex session from picker";
     };
     cxf = {
-      cmd = "cxp run default fork --last";
+      cmd = "codex fork --last";
       desc = "Fork last Codex session";
     };
     cxd = {
-      cmd = "cxp run default --dangerously-bypass-approvals-and-sandbox";
+      cmd = "codex --dangerously-bypass-approvals-and-sandbox";
       desc = "Start Codex without prompts";
     };
     cxa = {
-      cmd = "cxp run default --full-auto";
+      cmd = "codex --full-auto";
       desc = "Run Codex full-auto";
     };
     cxe = {
-      cmd = "cxp run default exec";
+      cmd = "codex exec";
       desc = "Run Codex non-interactively";
     };
     cxrev = {
-      cmd = "cxp run default review";
+      cmd = "codex review";
       desc = "Run code review";
     };
     cxap = {
-      cmd = "cxp run default apply";
+      cmd = "codex apply";
       desc = "Apply latest Codex diff";
     };
   };
@@ -286,32 +286,17 @@ let
   # Executables do not become abbreviations. Keep them visible in h without
   # adding shell aliases that could shadow the real commands.
   canonicalCommands = {
-    clp = {
-      cmd = "clp <command>";
-      desc = "Manage Claude account profiles";
+    ccspace = {
+      cmd = "ccspace <command>";
+      desc = "Manage Claude/Codex account spaces and launchers";
       help = ''
-        accountごとに認証とsessionを分けます。
-          clp list
-          clp add you@example.com
-          clp login you@example.com
-          clp run you@example.com
-          clp doctor
-        cl でaccount pickerを開きます。
-        workspaceから起動する場合: ./ws claude
-      '';
-    };
-    cxp = {
-      cmd = "cxp <command>";
-      desc = "Manage Codex account profiles";
-      help = ''
-        accountごとに認証とsessionを分けます。
-          cxp list
-          cxp add you@example.com
-          cxp login you@example.com
-          cxp run you@example.com
-          cxp doctor
-        cx でaccount pickerを開きます。
-        workspaceから起動する場合: ./ws codex
+        accountごとにconfig homeを分けたlauncher (cc-<name> / cx-<name>) を管理します。
+          ccspace list
+          ccspace add cc-work
+          ccspace usage
+          ccspace doctor
+        詳細: docs/guides/ccspace.md
+        workspaceから起動する場合: ./ws claude / ./ws codex
       '';
     };
     clgpt = {
@@ -487,43 +472,6 @@ in
       [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
       ${mkAbbrInit abbrDefs}
-
-      _agent_profile_completion() {
-        local manager="$1"
-        local -a commands profiles
-        commands=(
-          'list:List account profiles'
-          'add:Add an account profile'
-          'login:Sign in to an account profile'
-          'status:Show authentication status'
-          'doctor:Diagnose the profile environment'
-          'archive:Archive an account profile'
-          'path:Print the profile data directory'
-          'run:Start with an account profile'
-          'complete:Print completion candidates'
-        )
-        if [[ "$manager" == "clp" ]]; then
-          commands+=( 'gpt:Start the GPT backend with an account profile' )
-        fi
-
-        if (( CURRENT == 2 )); then
-          _describe 'command' commands
-          return
-        fi
-
-        if (( CURRENT == 3 )) && [[ "$words[2]" == (run|gpt|login|status|path|archive) ]]; then
-          profiles=("''${(@f)$("$manager" complete 2>/dev/null)}")
-          _describe 'account profile' profiles
-          return
-        fi
-
-        _normal
-      }
-
-      _clp() { _agent_profile_completion clp; }
-      _cxp() { _agent_profile_completion cxp; }
-      compdef _clp clp
-      compdef _cxp cxp
 
       [[ -f ~/.config/secrets/appstore.env ]] && source ~/.config/secrets/appstore.env
       [[ -f ~/.config/secrets/claude.env ]] && source ~/.config/secrets/claude.env

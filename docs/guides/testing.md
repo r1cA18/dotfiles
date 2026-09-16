@@ -23,7 +23,7 @@ bash scripts/test.sh
 bash scripts/test.sh all
 ```
 
-`all`はunitの後に`integration`を実行する。workspaceとindexionのNix packageをbuildし実indexionによる検索と配布用workspaceの操作を確認する。さらにhostのHome Manager宣言から`cxp`・`clp`をbuildしてaccount分離とCLI未導入時の挙動を検証する。生成されたClaude・Gemini・Codexのglobal instructionも実fileで比較し、共通ruleの順序とCodex専用routingの境界を確認する。integrationの対象はApple Silicon macOSとx86_64 Linux。
+`all`はunitの後に`integration`を実行する。workspaceとindexionのNix packageをbuildし実indexionによる検索と配布用workspaceの操作を確認する。生成されたClaude・Gemini・Codexのglobal instructionも実fileで比較し、共通ruleの順序とCodex専用routingの境界を確認する。integrationの対象はApple Silicon macOSとx86_64 Linux。
 
 依存ツールが揃っていない環境ではCIと同じくこのrepoの`flake.lock`から供給できる。
 
@@ -36,20 +36,19 @@ nix shell --no-write-lock-file --inputs-from . \
   --command bash scripts/test.sh all
 ```
 
-生成物だけを再確認するときは`bash scripts/test.sh integration`を使う。profileだけの検証は`DOTFILES_TEST_NIX=1 bun test tests/agent-profiles.test.ts`でも実行できる。
+生成物だけを再確認するときは`bash scripts/test.sh integration`を使う。旧`clp`/`cxp`をNix buildして検証していた`tests/agent-profiles.test.ts`は、`ccspace`への置き換えに伴い`archive/agent-profile-manager/`へ退避し、このunit/integration testsuiteの対象からも外れた。
 
 ## 検証範囲
 
-| 検査              | 対象                                                                                      |
-| ----------------- | ----------------------------------------------------------------------------------------- |
-| workspace         | clone・同期・manifest検証・checkout保護・共有entrypoint・検索                             |
-| account profile   | native CLIなしの管理・account分離・identity不一致の拒否・local設定保護・復元可能なarchive |
-| configuration     | Home Manager生成fileのshared instructionとCodex専用routingの配布境界                      |
-| hook              | structured advisory・Git index検査・Knowledge link・Stop再入防止                          |
-| handoff           | 会話の抽出・privileged content除外・JSON不正入力・HTML escape                             |
-| shellとskill      | 個別の`tests/`内fixtureによる回帰検証                                                     |
-| `nix flake check` | formatter・deadnix・statix・Linux homelabのshellとAnsible                                 |
-| Linux build CI    | Home Manager activation packageのbuild                                                    |
+| 検査              | 対象                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| workspace         | clone・同期・manifest検証・checkout保護・共有entrypoint・検索        |
+| configuration     | Home Manager生成fileのshared instructionとCodex専用routingの配布境界 |
+| hook              | structured advisory・Git index検査・Knowledge link・Stop再入防止     |
+| handoff           | 会話の抽出・privileged content除外・JSON不正入力・HTML escape        |
+| shellとskill      | 個別の`tests/`内fixtureによる回帰検証                                |
+| `nix flake check` | formatter・deadnix・statix・Linux homelabのshellとAnsible            |
+| Linux build CI    | Home Manager activation packageのbuild                               |
 
 テストは一時directoryとmock CLIを使う。普段のaccountでloginせずagentを起動せずsystemやHome Managerの設定も適用しない。Nix検証はstoreへのbuildと必要な依存downloadを行う。
 

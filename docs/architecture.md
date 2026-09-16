@@ -108,11 +108,10 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `codex/hooks.json`                               | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `codex/prompts/`                                 | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
-Claude account profileは`claude-code.nix`が生成する`clp`で管理する。
-Codex account profileは`codex.nix`が生成する`cxp`で管理する。
-新規runtime stateは各製品の`$XDG_STATE_HOME`配下へ置き、
-共有設定だけをprimary profileからlinkする。
-詳細は[Agent account profile管理](guides/agent-profiles.md)を参照。
+Claude・Codexのaccount切り替えは外部tool `ccspace`で管理する。
+`nix/home-manager/programs/ccspace.nix`のactivationが導入と更新経路を管理し、
+launcher(`cc-<name>`・`cx-<name>`)ごとにconfig homeを分離する。
+詳細は[ccspaceガイド](guides/ccspace.md)を参照。
 
 ## Agent 運用の基本方針
 

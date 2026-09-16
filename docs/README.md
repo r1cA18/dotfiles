@@ -17,7 +17,7 @@ macOS systemはnix-darwinで管理し、Ubuntu systemはAnsibleで管理する�
 - [management-rules.md](guides/management-rules.md) - **管理ルール（必読）**
 - [nix-npm-packages.md](guides/nix-npm-packages.md) - Node系CLIをNixで固定管理
 - [agent-workspace-tools.md](guides/agent-workspace-tools.md) - AI agent作業環境のツール方針
-- [agent-profiles.md](guides/agent-profiles.md) - Claude Code・Codexのaccount profile管理
+- [ccspace.md](guides/ccspace.md) - Claude Code・Codexのaccount切り替え（ccspace）
 - [agent-hooks.md](guides/agent-hooks.md) - hook登録とtask状態の保存
 - [agent-session-handoff.md](guides/agent-session-handoff.md) - account・製品をまたぐ作業の引き継ぎ
 - [multi-repo-workspaces.md](guides/multi-repo-workspaces.md) - 複数repoの作成・追加・一括cloneと共有

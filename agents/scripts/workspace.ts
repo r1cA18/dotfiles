@@ -61,16 +61,27 @@ function checkoutMode(): "local" | "ghq" {
 }
 
 type Agent = "codex" | "claude";
-const profileManagers = { codex: "cxp", claude: "clp" };
+// ccspace (docs/guides/ccspace.md) names launchers cc-<name> (Claude) /
+// cx-<name> (Codex); the manifest at ~/.local/share/ccspace/spaces.json is
+// the source of truth for which launchers exist.
+const launcherPrefixes = { codex: "cx-", claude: "cc-" };
+
+function ccspaceLaunchers(agent: Agent): string[] {
+  const manifestPath = join(process.env.HOME ?? "", ".local/share/ccspace/spaces.json");
+  if (!existsSync(manifestPath)) return [];
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const prefix = launcherPrefixes[agent];
+  return Object.keys(manifest?.launchers ?? {}).filter(name => name.startsWith(prefix)).sort();
+}
 
 function savedProfile(agent: Agent): string | undefined {
   const root = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { stdout: "pipe", stderr: "pipe" });
   if (root.exitCode !== 0 || realpathSync(root.stdout.toString().trim()) !== realpathSync(process.cwd())) return;
-  const result = Bun.spawnSync(["git", "config", "--local", "--no-includes", "--get", `workspace.${agent}Profile`], { stdout: "pipe", stderr: "pipe" });
+  const result = Bun.spawnSync(["git", "config", "--local", "--no-includes", "--get", `workspace.${agent}Launcher`], { stdout: "pipe", stderr: "pipe" });
   if (result.exitCode === 1) return;
-  if (result.exitCode !== 0) throw new Error("Cannot read workspace profile configuration");
+  if (result.exitCode !== 0) throw new Error("Cannot read workspace launcher configuration");
   const value = result.stdout.toString().trim();
-  if (!value || /[\r\n]/.test(value)) throw new Error(`Invalid ${agent} profile; run ws profile ${agent} again`);
+  if (!value || /[\r\n]/.test(value)) throw new Error(`Invalid ${agent} launcher; run ws profile ${agent} again`);
   return value;
 }
 
@@ -85,37 +96,33 @@ function configureProfile(args: string[]) {
   if ((agent !== "codex" && agent !== "claude") || args.length > 2 || (option && option !== "--clear")) {
     throw new Error("Usage: ws profile [codex|claude [--clear]]");
   }
-  const key = `workspace.${agent}Profile`;
+  const key = `workspace.${agent}Launcher`;
   if (option === "--clear") {
     if (savedProfile(agent)) run(["git", "config", "--local", "--unset-all", key]);
-    console.log(`${agent}: profile cleared`);
+    console.log(`${agent}: launcher cleared`);
     return;
   }
-  const manager = profileManagers[agent];
-  if (!Bun.which(manager) || !Bun.which("fzf")) throw new Error(`${manager} and fzf are required; use your Nix environment to provide them`);
-  const rows = run([manager, "list"], true).split("\n").slice(1).filter(Boolean);
-  if (!rows.length) throw new Error(`No profiles found; run ${manager} add first`);
+  if (!Bun.which("fzf")) throw new Error("fzf is required; use your Nix environment to provide it");
+  const launchers = ccspaceLaunchers(agent);
+  if (!launchers.length) throw new Error(`No ${agent} launchers found; run ccspace add first`);
   const selected = Bun.spawnSync([
-    "fzf", "--delimiter=\t", "--with-nth=1,2", "--reverse", "--height=40%",
-    "+m", "--no-print-query", "--no-expect", `--prompt=${agent} profile> `,
-  ], { stdin: Buffer.from(rows.join("\n") + "\n"), stdout: "pipe", stderr: "inherit" });
+    "fzf", "--reverse", "--height=40%",
+    "+m", "--no-print-query", "--no-expect", `--prompt=${agent} launcher> `,
+  ], { stdin: Buffer.from(launchers.join("\n") + "\n"), stdout: "pipe", stderr: "inherit" });
   if (selected.exitCode === 1 || selected.exitCode === 130) return;
-  if (selected.exitCode !== 0) throw new Error("Profile selection failed; retry ws profile");
-  const row = selected.stdout.toString().trimEnd();
-  if (!rows.includes(row)) throw new Error("Invalid profile selection");
-  const selector = row.split("\t")[0];
-  if (!selector) throw new Error("Invalid profile selector");
-  run([manager, "path", selector], true);
-  run(["git", "config", "--local", "--replace-all", key, selector]);
-  console.log(`${agent}: ${selector}`);
+  if (selected.exitCode !== 0) throw new Error("Launcher selection failed; retry ws profile");
+  const launcher = selected.stdout.toString().trimEnd();
+  if (!launchers.includes(launcher)) throw new Error("Invalid launcher selection");
+  if (!Bun.which(launcher)) throw new Error(`Launcher not on PATH: ${launcher}; run ccspace sync`);
+  run(["git", "config", "--local", "--replace-all", key, launcher]);
+  console.log(`${agent}: ${launcher}`);
 }
 
 function agentCommand(agent: Agent): string[] {
-  const profile = savedProfile(agent);
-  if (!profile) return [agent];
-  const manager = profileManagers[agent];
-  if (!Bun.which(manager)) throw new Error(`${manager} is required for the saved profile; restore it or run ws profile ${agent} --clear`);
-  return [manager, "run", profile];
+  const launcher = savedProfile(agent);
+  if (!launcher) return [agent];
+  if (!Bun.which(launcher)) throw new Error(`${launcher} is required for the saved launcher; restore it or run ws profile ${agent} --clear`);
+  return [launcher];
 }
 
 function writeManifest(data: Record<string, string>) {
@@ -275,7 +282,7 @@ function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
     console.log("workspace init <dir> | clone <workspace-URL> <dir> | add <repository-URL> [alias] | remove <alias> | sync | status | snapshot | verify | rg <args...> | search <query> | orient <task> | index | query <purpose> | codex [args...] | claude [args...]\nCore: Git + Bun. Optional: ghq for ghq mode; ripgrep for rg; indexion for index/search/query/orient; agent CLI for codex/claude.");
-    console.log("workspace profile [codex|claude [--clear]]: select a saved account with fzf, show settings, or clear one. Requires cxp/clp and fzf.");
+    console.log("workspace profile [codex|claude [--clear]]: select a saved ccspace launcher with fzf, show settings, or clear one. Requires ccspace and fzf.");
     return;
   }
   if (command === "init") return init(args[0]);

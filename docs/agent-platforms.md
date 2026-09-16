@@ -45,10 +45,10 @@
 - runtime state を含む `~/.claude.json`
 - Antigravityのprovider・credential・session state
 
-Claude account profileは`clp`で管理する。Codex account profileは`cxp`で管理する。
-どちらもemailから解決し、公開dotfilesにはemailを保存しない。
-共有設定だけをprimary profileからlinkし、credential・session・plugin cacheは分離する。
-詳細は[Agent account profile管理](guides/agent-profiles.md)を参照。
+Claude・Codexのaccount切り替えは外部tool `ccspace`(`Omakase-Robotics-Org/ccspace`)で管理する。
+`space`(config directory)ごとに`launcher`(`cc-<name>`・`cx-<name>`)を生成し、
+credential・session・plugin cacheをlauncherごとに分離する。
+詳細は[ccspaceガイド](guides/ccspace.md)を参照。
 
 ## 現在の方針
 

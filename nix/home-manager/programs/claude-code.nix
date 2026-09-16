@@ -10,7 +10,6 @@ let
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
-  mkAgentProfileManager = import ../../lib/agent-profile-manager.nix { inherit lib; };
   notificationCommand =
     sound:
     if pkgs.stdenv.isDarwin then
@@ -35,25 +34,6 @@ let
     name: _: lib.nameValuePair ".claude/agents/${name}" (mkClaudeSymlink "claude/agents/${name}")
   ) (builtins.readDir ../../../claude/agents);
 
-  # Only declarative configuration is shared between profiles. Credentials,
-  # sessions, history, local settings, and plugin runtime state stay isolated.
-  claudeProfileSharedPaths = [
-    "CLAUDE.md"
-    "agents"
-    "commands"
-    "hooks"
-    "rules"
-    "settings.json"
-    "skills"
-  ];
-  claudeProfileCommon = mkAgentProfileManager {
-    productName = "Claude";
-    profileStatePath = "claude-code/profiles";
-    primaryConfigPath = ".claude";
-    primaryMetadataPath = ".claude.json";
-    profileMetadataName = ".claude.json";
-    sharedPaths = claudeProfileSharedPaths;
-  };
   claudeStatusline = pkgs.writeShellApplication {
     name = "claude-statusline";
     runtimeInputs = [
@@ -62,184 +42,6 @@ let
       pkgs.jq
     ];
     text = builtins.readFile ../../../claude/scripts/statusline.sh;
-  };
-  claudeProfile = pkgs.writeShellApplication {
-    name = "clp";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.fzf
-      pkgs.jq
-    ];
-    text = ''
-      ${claudeProfileCommon}
-
-      profile_command="clp"
-      claude_bin="$HOME/.local/bin/claude"
-
-      require_claude() {
-        if [[ ! -x "$claude_bin" ]]; then
-          echo "Claude Code was not found at $claude_bin" >&2
-          echo "Run 'update-claude-code' to install it, then retry." >&2
-          exit 1
-        fi
-      }
-
-      profile_email() {
-        local state_file="$1"
-        [[ -f "$state_file" ]] || return 0
-        jq -r '.oauthAccount.emailAddress // empty' "$state_file" 2>/dev/null || true
-      }
-
-      exec_for_profile() {
-        local profile="$1"
-        local guard_identity="$2"
-        local command="$3"
-        shift 3
-
-        local config_dir
-        config_dir="$(resolve_profile "$profile")"
-        ensure_shared_config "$config_dir"
-        if [[ "$guard_identity" == "true" ]]; then
-          verify_profile_identity "$config_dir"
-        fi
-
-        if [[ -n "$config_dir" ]]; then
-          export CLAUDE_CONFIG_DIR="$config_dir"
-        else
-          unset CLAUDE_CONFIG_DIR
-        fi
-        exec "$command" "$@"
-      }
-
-      login_profile() {
-        local profile="$1"
-        local config_dir
-
-        config_dir="$(resolve_profile "$profile")"
-        ensure_shared_config "$config_dir"
-        if [[ -n "$config_dir" ]]; then
-          CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login
-        else
-          env -u CLAUDE_CONFIG_DIR "$claude_bin" auth login
-        fi
-        verify_profile_identity "$config_dir" true
-      }
-
-      add_profile() {
-        local email="$1"
-        local config_dir exit_code
-
-        validate_profile_email "$email"
-        if resolve_profile "$email" >/dev/null 2>&1; then
-          echo "Claude profile already exists: $email" >&2
-          return 1
-        fi
-
-        config_dir="$profile_root/$email"
-        install -d -m 700 "$profile_root"
-        install -d -m 700 "$config_dir"
-        ensure_shared_config "$config_dir"
-
-        if CLAUDE_CONFIG_DIR="$config_dir" "$claude_bin" auth login; then
-          :
-        else
-          exit_code=$?
-          trash_profile_dir "$config_dir" "login failed"
-          return "$exit_code"
-        fi
-        if ! verify_profile_identity "$config_dir" true; then
-          trash_profile_dir "$config_dir" "identity verification failed"
-          return 1
-        fi
-      }
-
-      usage() {
-        cat <<'EOF'
-      Usage: clp <command> [arguments]
-
-      Commands:
-        list                  List profiles and their signed-in email addresses
-        complete              Print profile candidates for shell completion
-        add <email>           Create a profile and sign in
-        login [profile]       Sign in again for a profile selected by email or fzf
-        status [profile]      Show authentication status
-        path [profile]        Print the profile config directory
-        doctor                Check profile identity, links, metadata, and permissions
-        archive [profile]     Move a non-default profile to recoverable trash
-        run [profile] [args]  Start Claude Code with a profile selected by email or fzf
-        gpt [profile] [args]  Start the GPT backend with a profile selected by email or fzf
-      EOF
-      }
-
-      command="''${1:-}"
-      if [[ $# -gt 0 ]]; then
-        shift
-      fi
-
-      case "$command" in
-        add|login|status|run|gpt) require_claude ;;
-      esac
-
-      case "$command" in
-        list)
-          list_profiles
-          ;;
-        complete)
-          completion_profiles
-          ;;
-        add)
-          [[ $# -eq 1 ]] || { usage >&2; exit 2; }
-          add_profile "$1"
-          ;;
-        login)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          login_profile "$profile"
-          ;;
-        status)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          exec_for_profile "$profile" false "$claude_bin" auth status
-          ;;
-        path)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          config_dir="$(resolve_profile "$profile")"
-          printf '%s\n' "''${config_dir:-$HOME/.claude}"
-          ;;
-        doctor)
-          [[ $# -eq 0 ]] || { usage >&2; exit 2; }
-          doctor_profiles
-          ;;
-        archive)
-          [[ $# -le 1 ]] || { usage >&2; exit 2; }
-          profile="$(select_profile "''${1:-}")"
-          archive_profile "$profile"
-          ;;
-        run)
-          profile="$(select_profile "''${1:-}")"
-          if [[ $# -gt 0 ]]; then
-            shift
-          fi
-          exec_for_profile "$profile" true "$claude_bin" "$@"
-          ;;
-        gpt)
-          profile="$(select_profile "''${1:-}")"
-          if [[ $# -gt 0 ]]; then
-            shift
-          fi
-          exec_for_profile "$profile" true clgpt "$@"
-          ;;
-        help|-h|--help|"")
-          usage
-          ;;
-        *)
-          echo "Unknown command: $command" >&2
-          usage >&2
-          exit 2
-          ;;
-      esac
-    '';
   };
 in
 {
@@ -529,7 +331,6 @@ in
   # agents/rules/*.md. Claude-specific assets remain editable symlinks.
   home = {
     packages = [
-      claudeProfile
       claudeStatusline
     ];
 
@@ -576,20 +377,25 @@ in
       # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
       # claudeChannel を managed-channel に書き出し、update-all の更新処理へ状態を渡す。
       setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        export PATH="${pkgs.curl}/bin:$PATH"
+        export PATH="${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH"
         channel="${claudeChannel}"
         bin="$HOME/.local/bin/claude"
-        mkdir -p "$HOME/.claude"
+        log="$HOME/.local/state/claude-code/install.log"
+        mkdir -p "$HOME/.claude" "$(dirname "$log")"
         printf '%s\n' "$channel" > "$HOME/.claude/managed-channel"
 
-        if [ ! -x "$bin" ]; then
+        install_claude() {
           if [ "$channel" = "latest" ]; then
-            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash || true
+            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash
           else
-            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+            ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel"
           fi
+        }
+
+        if [ ! -x "$bin" ]; then
+          install_claude >>"$log" 2>&1 || echo "[claude-code] install failed, see $log" >&2
         elif [ "$channel" != "latest" ] && ! "$bin" --version 2>/dev/null | grep -q "$channel"; then
-          ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | bash -s "$channel" || true
+          install_claude >>"$log" 2>&1 || echo "[claude-code] install failed, see $log" >&2
         fi
 
         if command -v npm >/dev/null 2>&1; then

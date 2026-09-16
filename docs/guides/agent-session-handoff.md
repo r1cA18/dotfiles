@@ -12,13 +12,13 @@ tags: [agents, sessions, handoff, profiles]
 
 ## 方法の選択
 
-| 目的                                  | 方法                                      | 引き継ぐもの                       |
-| ------------------------------------- | ----------------------------------------- | ---------------------------------- |
-| 同じCodex accountで再開               | `cxp run <account> resume <session-id>`   | そのhomeに保存されたnative session |
-| 同じClaude accountで再開              | `clp run <account> --resume <session-id>` | そのprofileのnative session        |
-| 現在のagentで別accountの作業を続行    | `session-handoff`で元ログと作業差分を確認 | 読める文脈と検証状態               |
-| Claude Code/CursorからCodexへ取り込み | 対応するlocal CLIの`/import`              | 選択した設定・project・最近のchat  |
-| Mac/Linux間の履歴移送                 | `cct`等で対象sessionをexport/import       | 保存履歴の変換・移送               |
+| 目的                                  | 方法                                      | 引き継ぐもの                                 |
+| ------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| 同じCodex accountで再開               | `cx-<name> resume <session-id>`           | そのlauncherのhomeに保存されたnative session |
+| 同じClaude accountで再開              | `cc-<name> --resume <session-id>`         | そのlauncherのnative session                 |
+| 現在のagentで別accountの作業を続行    | `session-handoff`で元ログと作業差分を確認 | 読める文脈と検証状態                         |
+| Claude Code/CursorからCodexへ取り込み | 対応するlocal CLIの`/import`              | 選択した設定・project・最近のchat            |
+| Mac/Linux間の履歴移送                 | `cct`等で対象sessionをexport/import       | 保存履歴の変換・移送                         |
 
 `codex resume --all`はcwdの絞り込みを外すoptionでありaccount全体の検索ではない。
 `codex -p`はconfig layerでありaccount切り替えではない。
@@ -42,8 +42,8 @@ workspace棚卸しの未完了作業を引き継いで続けてほしい
 ```
 
 ログの場所と抽出方法はskillの[local session lookup](../../agents/skills/session-handoff/references/local-sessions.md)にまとめた。
-`cxp path`と`clp path`でhomeを確認できる。
-account管理の詳細は[profileガイド](agent-profiles.md)を参照。
+launcherごとのhomeは`ccspace list`で確認できる。
+account管理の詳細は[ccspaceガイド](ccspace.md)を参照。
 
 ## 公式Import
 
