@@ -25,10 +25,10 @@ let
     '';
   };
 
-  # ccspace has no built-in "pick a launcher and run it" command (only
+  # ccspace has no built-in "pick an account/launcher and run it" command (only
   # `ccspace launch`, which auto-selects by quota). This restores the old
-  # clp/cxp `run` picker: list this provider's launchers from the manifest,
-  # fzf-select one, exec it. `cl`/`cx` in zsh.nix expand to this.
+  # clp/cxp `run` picker: list this provider's accounts and launchers with
+  # their email addresses, fzf-select one, exec it. `cl`/`cx` in zsh.nix expand to this.
   ccspacePick = pkgs.writeShellApplication {
     name = "ccspace-pick";
     runtimeInputs = with pkgs; [
@@ -37,6 +37,8 @@ let
       coreutils
     ];
     text = ''
+      PATH="$HOME/.local/bin:$PATH"
+      export PATH
       provider="''${1:-}"
       [ $# -gt 0 ] && shift
       case "$provider" in
@@ -48,21 +50,39 @@ let
           ;;
       esac
 
-      manifest="$HOME/.local/share/ccspace/spaces.json"
-      if [ ! -f "$manifest" ]; then
-        echo "ccspace manifest not found; run 'ccspace add' first" >&2
+      candidates=""
+      if command -v ccspace >/dev/null 2>&1; then
+        candidates="$(ccspace workspace list 2>/dev/null | jq -r --arg p "$provider" '
+          def pad(n): tostring | . + " " * ([0, n - length] | max);
+          .[]
+          | select(.provider == $p and ((.launchers | length > 0) or .isDefault))
+          | if .isDefault and (.launchers | length == 0) then
+              "\((.email // "(default)") | pad(30))  (default)\t\($p)"
+            else
+              .launchers[] as $l | "\((.email // $l) | pad(30))  \($l)\t\($l)"
+            end
+        ' 2>/dev/null || true)"
+      fi
+
+      if [ -z "$candidates" ]; then
+        manifest="$HOME/.local/share/ccspace/spaces.json"
+        if [ ! -f "$manifest" ]; then
+          echo "ccspace manifest not found; run 'ccspace add' first" >&2
+          exit 1
+        fi
+        candidates="$(jq -r --arg p "$prefix" '.launchers | keys[] | select(startswith($p)) | "\(.)\t\(.)"' "$manifest" | sort)"
+      fi
+
+      if [ -z "$candidates" ]; then
+        echo "No $provider accounts or launchers registered; run 'ccspace add' first" >&2
         exit 1
       fi
 
-      launchers="$(jq -r --arg p "$prefix" '.launchers | keys[] | select(startswith($p))' "$manifest" | sort)"
-      if [ -z "$launchers" ]; then
-        echo "No $provider launchers registered; run 'ccspace add' first" >&2
-        exit 1
-      fi
-
-      selected="$(printf '%s\n' "$launchers" | fzf --reverse --height=40% --prompt="$provider launcher> ")"
+      selected="$(printf '%s\n' "$candidates" | fzf --delimiter=$'\t' --with-nth=1 --reverse --height=40% --prompt="$provider account> ")"
       [ -n "$selected" ] || exit 1
-      exec "$selected" "$@"
+      target="$(printf '%s' "$selected" | cut -f2)"
+      [ -n "$target" ] || exit 1
+      exec "$target" "$@"
     '';
   };
 
