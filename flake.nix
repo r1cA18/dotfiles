@@ -335,6 +335,7 @@
           hostname = "MBP187-Z";
           username = "mbp187";
           profile = "server";
+          nixEnable = false;
         };
         r1ca18lab = mkDarwinConfig {
           hostname = "r1ca18lab";
