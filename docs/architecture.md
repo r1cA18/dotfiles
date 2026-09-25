@@ -42,6 +42,7 @@ dotfiles/
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
 │   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
+│   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
@@ -385,7 +386,8 @@ in {
 
 - `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
 - `outputs`:
-  - `darwinConfigurations.RMB`: macOS設定
+  - `darwinConfigurations.RMB`: macOS workstation設定
+  - `darwinConfigurations."MBP187-Z"`: SSH中心のmacOS minimal server設定
   - `homeConfigurations."r1ca18@homelab"`: Ubuntu homelab設定
 
 ### プロジェクトごとの開発環境を作る

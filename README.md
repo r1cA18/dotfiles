@@ -29,8 +29,11 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 git clone https://github.com/r1cA18/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
-# macOS (RMB)
+# macOS (RMB / r1ca18)
 nix run nix-darwin -- switch --flake .#RMB
+
+# macOS minimal server (MBP187-Z / mbp187)
+nix run nix-darwin -- switch --flake '.#MBP187-Z'
 
 # macOS (r1ca18lab)
 nix run nix-darwin -- switch --flake .#r1ca18lab

@@ -59,7 +59,7 @@ let
           | if .isDefault and (.launchers | length == 0) then
               "\((.email // "(default)") | pad(30))  (default)\t\($p)"
             else
-              .launchers[] as $l | "\((.email // $l) | pad(30))  \($l)\t\($l)"
+              .launchers[] as $l | "\((.email // $l.name) | pad(30))  \($l.name)\t\($l.name)"
             end
         ' 2>/dev/null || true)"
       fi

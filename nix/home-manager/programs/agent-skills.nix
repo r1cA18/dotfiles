@@ -30,12 +30,6 @@
         subdir = "plugins/property-based-testing/skills";
       };
 
-      # difit スキル
-      difit = {
-        path = inputs.difit-skills;
-        subdir = "skills";
-      };
-
       # App Store screenshot generation
       app-store-screenshots = {
         path = inputs.app-store-screenshots;
@@ -104,13 +98,14 @@
         "forms-archive"
         "x-article-publisher"
         "x-research"
+        "masao-research"
+        "youtube-transcript"
+        "i-have-adhd"
+        "op-api-keys"
         # design (global)
         "frontend-design"
         "baseline-ui"
         "web-design-guidelines"
-        # difit
-        "difit"
-        "difit-review"
         # notebooklm
         "notebooklm-skill"
         # vault (global)

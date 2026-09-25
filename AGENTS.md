@@ -48,6 +48,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | Karabiner設定         | `karabiner/karabiner.json`                                              |
 | Agent Skills管理      | `nix/home-manager/programs/agent-skills.nix`                            |
 | account管理 (ccspace) | `nix/home-manager/programs/ccspace.nix`、詳細は`docs/guides/ccspace.md` |
+| Orca設定/CLI          | `nix/home-manager/programs/orca.nix` + `orca-settings.json`             |
 | スキル追加/編集       | `agents/skills/` ディレクトリ                                           |
 | Claude ルール         | `claude/rules/` ディレクトリ                                            |
 | Claude フック         | `claude/hooks/` ディレクトリ                                            |

@@ -25,6 +25,7 @@
 | Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                    |
 | Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
 | Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
+| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | native installをbootstrapして既存user configへ管理項目をmergeする     |
 
 ## 共有できるもの
 
@@ -156,3 +157,9 @@ Claude Code・Codex・Antigravityの自己更新型CLIは例外として公式na
 Home Managerはbootstrap・PATH・宣言設定を管理し、binary更新は`update-all`に一元化する。
 
 `skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。
+
+外部skill installer(`bunx skills add`や`orca skills install`など)はこのマシンでは使わない。
+これらは`~/.claude/skills`や`~/.codex/skills`へ実体copyを置くため、agent-skillsの
+symlink-tree管理と衝突する。Orcaのskill updaterはhash比較でNix管理のsymlinkを
+「modified / unrecognized」と判定してskipするが、これは想定動作。
+skillの追加・更新はflake inputか`agents/skills/`経由で行い`dr`で配布する。

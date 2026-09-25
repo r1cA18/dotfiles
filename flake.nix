@@ -121,6 +121,7 @@
           username,
           system ? "aarch64-darwin",
           nixEnable ? true,
+          profile ? "workstation",
         }:
         nix-darwin.lib.darwinSystem {
           inherit system;
@@ -131,6 +132,7 @@
               hostname
               system
               nixEnable
+              profile
               ;
           };
           modules = [
@@ -141,7 +143,14 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 backupFileExtension = "hm-backup";
-                extraSpecialArgs = { inherit inputs username hostname; };
+                extraSpecialArgs = {
+                  inherit
+                    inputs
+                    username
+                    hostname
+                    profile
+                    ;
+                };
                 users.${username} = {
                   imports = [
                     agent-skills-nix.homeManagerModules.default
@@ -322,6 +331,11 @@
           hostname = "RMB";
           username = "r1ca18";
         };
+        "MBP187-Z" = mkDarwinConfig {
+          hostname = "MBP187-Z";
+          username = "mbp187";
+          profile = "server";
+        };
         r1ca18lab = mkDarwinConfig {
           hostname = "r1ca18lab";
           username = "r1ca18lab";
@@ -339,6 +353,7 @@
           inherit inputs;
           username = "r1ca18";
           hostname = "homelab";
+          profile = "workstation";
         };
         modules = [
           agent-skills-nix.homeManagerModules.default

@@ -53,6 +53,76 @@ ccspace add cc-work
 cc-work
 ```
 
+## account切り替えとリミット対策
+
+launcherを使えば`~/.claude`/`~/.codex`本体を再ログインで上書きしない。
+リミットが来たら別のlauncherを起動するか、`ccspace launch`でquota最大のaccountを選ぶ。
+
+dotfilesのzsh abbreviationでも同じpickerが使える。
+
+```bash
+cl   # ccspace-pick claude
+cx   # ccspace-pick codex
+```
+
+Orcaを使っている場合は、status barのClaude/Codex chipからaccountをhot-swapできる。
+Settings → Agents → Claude/Codex Accountsでmanaged accountを登録し、"Auto-switch Limited Agents"を有効にすると、リミット検出時に自動で別accountへ切り替わる。
+いずれの方法も再ログインを必要としない。
+
+`~/.claude`などのdefault homeに別accountで手動ログインすると、email名付きspaceのpledge検証に失敗して`ccspace doctor`が`LOGIN≠PLEDGE`を報告する。
+その場合は該当spaceで正しいaccountにログインし直すか、launcher経由で別のspaceを使う。
+
+### Orcaの切り替え方式
+
+Orcaはlogin/logoutの付け替えではなく、ccspaceと同じenv切り替え方式を使う。
+managed accountは `~/Library/Application Support/Orca/claude-accounts/<uuid>/auth`
+(`CLAUDE_CONFIG_DIR`として注入) と `codex-accounts/<uuid>/home` (`CODEX_HOME`として注入)
+に隔離され、切り替えはpaneごとのenv差し替えで行う。`~/.claude`や`~/.codex`本体は
+"System default" を選んだときだけ使われ、managed切り替えでは書き換わらない。
+Claudeのmanaged credentialはkeychainの`Orca Claude Code Managed Credentials`に
+account uuidをkeyとして保持される。`CLAUDE_CONFIG_DIR`だけを指してもdirには
+credentialがないため、ccspace経由でも起動できるよう統一時に`.credentials.json`へexportした。
+
+### 統一レイアウト(2026-09)
+
+primary accountをcanonicalにして、`~/.claude` / `~/.codex` をそのaccount dirと同一にする。
+これで「default homeが特別」という構造をなくし、素のterminal・ccspace default・
+Orca System default・managed accountが同じcredential/session historyを使う。
+
+- Codex: `~/.codex` が実dirのprimary home(personal Gmail)。Orca managed homeと
+  `~/.codex-orca` / `cx-orca` はそこへのsymlink
+- Claude: `~/.claude` が実dirのprimary home。Orca managed auth dirはそこへのsymlink。
+  primary account用launcherも同じdirを指す
+- Nix skills(`agent-skills.nix`)は `~/.claude/skills` / `~/.codex/skills` への
+  symlink-tree。`~/.codex`が実dirなので循環symlinkは起きない。Claudeのmanaged auth dirも
+  `dr` 適用後に同じNix symlinkが中に生成される
+- 各Claude managed auth dirには `Orca Claude Code Managed Credentials` keychain itemから
+  exportした `.credentials.json` を置き、Orca経由でない起動でもlogin済みになる。
+  新account追加後は `orca-export-claude-creds` を実行する
+- dir basenameが`auth`/`home`なのでccspaceのpledge(email名)は効かない。
+  account照合はOrca側の`.orca-managed-*` markerと`oauth-account.json`が担う
+- `ccspace list`の`name≠dir`はこの構成の想定内のinfo表示
+- `.codex-cstyle`はOrca未登録のため従来spaceのまま(`cx-cstyle`)
+- `~/.claude--*`の旧space dirはlauncherを持たないarchive扱い。不要になったら削除してよい
+
+運用ルール:
+
+- account追加はOrca側で`orca account add --agent claude|codex`を行い、その後launcherを
+  `ccspace add cc-<name> --space "<managed auth path>"` で向ける
+- Claudeのprimary accountを切り替えるときは `orca-set-primary-claude [email]` で
+  対象 managed auth dirを `~/.claude` へのsymlinkにし、`.orca-managed-claude-auth` markerを
+  `~/.claude` に書き込む。`~/.claude` は常に実dirを維持する
+- 新しいmanaged accountは`.credentials.json`を同様にexportする
+- どのdirでも手動`login`/`logout`で別accountに変えない
+- Orcaの仕様変更でmanaged dir構造が変わった場合は再調整が必要
+
+### Devinはccspaceの対象外
+
+ccspaceはClaude CodeとCodexしか管理しない。
+Devinは`~/.config/devin/config.json`をuser-wide configとして使い、切り替えは`--config <path>`フラグで行う。
+ccspaceのmanifestやlauncherにDevinを追加する機能はない。
+複数のDevin accountを使う場合は、自前のwrapper scriptまたはzsh functionで`--config`を切り替える。
+
 ## よく使うcommand
 
 ```bash

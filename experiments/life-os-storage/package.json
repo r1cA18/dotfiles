@@ -1,0 +1,13 @@
+{
+  "name": "life-os-storage-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "cli": "bun src/cli.ts",
+    "evaluate": "bun scripts/evaluate.ts"
+  },
+  "engines": {
+    "bun": ">=1.3.13"
+  }
+}

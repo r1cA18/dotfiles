@@ -1,10 +1,12 @@
 {
-  inputs,
   pkgs,
+  lib,
+  profile ? "workstation",
   ...
 }:
 let
   inherit (pkgs.stdenv) isDarwin;
+  isServer = profile == "server";
   mkGithubReleaseApp = pkgs.callPackage ../../lib/github-app.nix { };
   recordlyPackage = pkgs.callPackage ../../pkgs/recordly { inherit mkGithubReleaseApp; };
   agentSkillPath = pkgs.writeShellApplication {
@@ -52,6 +54,32 @@ let
 
       echo "agent-skill-path: skill not found: $skill_name" >&2
       exit 1
+    '';
+  };
+
+  # Jev (TypeSafe System One) CLI wrapper.
+  # The API key is never embedded; it is injected by 1Password `op run`.
+  jev = pkgs.writeShellApplication {
+    name = "jev";
+    runtimeInputs = [
+      pkgs._1password-cli
+      pkgs.python3
+      agentSkillPath
+    ];
+    text = ''
+      set -euo pipefail
+      env_file="''${OP_ENV_FILE:-$HOME/.config/op/env/typesafe.env}"
+      if [[ ! -f "$env_file" ]]; then
+        echo "error: 1Password env file not found: $env_file" >&2
+        echo "Create it with: TYPESAFE_API_KEY=op://<vault>/<item>/<field>" >&2
+        exit 1
+      fi
+      if ! command -v op >/dev/null 2>&1; then
+        echo "error: 1Password CLI (op) is not installed" >&2
+        exit 1
+      fi
+      script_path="$(agent-skill-path op-api-keys scripts/jev.py)"
+      exec op run --env-file "$env_file" -- python3 "$script_path" "$@"
     '';
   };
 
@@ -158,44 +186,39 @@ let
       jq
       ripgrep
       fd
-      mdv
       cloudflared
       tmux
       ffmpeg
       agent-browser
-      inputs.herdr.packages.${pkgs.system}.default
       agentSkillPath
-      difit
       _1password-cli
       updateGithubApps
       updateClaudeCode
+
+      # Research / media ingestion
+      yt-dlp
+      whisper-ctranslate2
+      python313Packages.feedparser
+
+      # API-key-wrapped tools (1Password-injected)
+      jev
     ]
     ++ pkgs.lib.optionals (pkgs ? indexion) [
       pkgs.indexion
       pkgs.workspace
     ];
 
-  # macOS専用パッケージ
-  darwinPackages = with pkgs; [
-    # TeX (重いのでmacOSのみ)
-    texliveFull
-
-    # Fonts (macOS側でレンダリングするので必要)
-    nerd-fonts.jetbrains-mono
-    plemoljp-nf
-
-    # CLI-only macOS tools
+  darwinCliPackages = with pkgs; [
     fastlane
     mas
     xcodegen
-
-    # CLI alternatives for GUI apps
-    # LinuxのTailscaleはAnsibleでapt + systemd管理。Ollamaは未導入。
     ollama
     tailscale
+  ];
 
-    # GUI apps (Homebrew cask / nixpkgs に無いため .dmg を自前パッケージ化)
-    # home-manager が ~/Applications/Home Manager Apps/ に配置する
+  darwinGuiPackages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    plemoljp-nf
     recordlyPackage
   ];
 
@@ -208,13 +231,33 @@ let
 in
 {
   home = {
-    packages = commonPackages ++ (if isDarwin then darwinPackages else linuxPackages);
+    packages =
+      commonPackages
+      ++ (if isDarwin then darwinCliPackages else linuxPackages)
+      ++ lib.optionals (isDarwin && !isServer) darwinGuiPackages;
     sessionPath = [
       "$HOME/.local/bin"
     ];
     sessionVariables = {
       EDITOR = "nvim";
     };
+  };
+
+  # Create a 1Password env-file template on first activation so API keys are
+  # never committed, but the expected path/shape is documented.
+  home.activation = {
+    setupOpApiKeyEnv = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            target="$HOME/.config/op/env"
+            mkdir -p "$target"
+            if [ ! -f "$target/typesafe.env" ]; then
+              cat > "$target/typesafe.env" <<'EOF'
+      # 1Password reference for TypeSafe / Jev API key.
+      # Replace the vault/item/field names with your own 1Password setup.
+      TYPESAFE_API_KEY=op://AI/TypeSafe/api-key
+      EOF
+              echo "[op-api-keys] created $target/typesafe.env template" >&2
+            fi
+    '';
   };
 
   programs.direnv = {

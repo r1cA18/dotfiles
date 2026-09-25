@@ -6,10 +6,14 @@
   username,
   hostname,
   system,
+  profile ? "workstation",
   # Set to false when using Determinate Nix installer
   nixEnable ? true,
   ...
 }:
+let
+  isServer = profile == "server";
+in
 {
   nixpkgs = {
     overlays = [
@@ -53,57 +57,49 @@
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;
-    casks = [
-      "1password"
-      "affinity"
-      "alt-tab"
-      "amical"
-      "arc"
-      "nikitabobko/tap/aerospace"
-      "audacity"
-      "autodesk-fusion"
-      "balenaetcher"
-      "beeper"
-      "bibdesk"
-      "claude"
-      "discord"
-      "figma"
-      "ghostty"
-      "google-chrome"
-      "google-drive"
-      "google-japanese-ime"
-      "karabiner-elements"
-      "keyboardcleantool"
-      "latexit"
-      "linearmouse"
-      "microsoft-excel"
-      "microsoft-outlook"
-      "microsoft-powerpoint"
-      "microsoft-word"
-      "notion"
-      "notunes"
-      "obsidian"
-      "ollama-app"
-      "onedrive"
-      "open-design"
-      "orbstack"
-      "stablyai/orca/orca"
-      "orcaslicer"
-      "raycast"
-      "steam"
-      "stirling-pdf"
-      "superset"
-      "tailscale-app"
-      "tex-live-utility"
-      "texshop"
-      "ultimaker-cura"
-      "utm"
-      "visual-studio-code"
-      "zed"
-      "zoom"
-    ];
-    masApps = {
-      "AirDraw" = 6759186461;
+    casks =
+      lib.optionals (!isServer) [
+        "1password"
+        "affinity"
+        "alt-tab"
+        "amical"
+        "arc"
+        "nikitabobko/tap/aerospace"
+        "audacity"
+        "autodesk-fusion"
+        "balenaetcher"
+        "bambu-studio"
+        "beeper"
+        "chatgpt"
+        "claude"
+        "discord"
+        "figma"
+        "ghostty"
+        "google-chrome"
+        "google-drive"
+        "google-japanese-ime"
+        "karabiner-elements"
+        "keyboardcleantool"
+        "microsoft-excel"
+        "microsoft-outlook"
+        "microsoft-powerpoint"
+        "microsoft-word"
+        "notunes"
+        "ollama-app"
+        "orbstack"
+        "stablyai/orca/orca"
+        "raycast"
+        "steam"
+        "stirling-pdf"
+        "tailscale-app"
+        "utm"
+        "zed"
+      ]
+      ++ lib.optionals isServer [
+        "1password"
+        "tailscale-app"
+      ];
+    masApps = lib.mkIf (!isServer) {
       "Developer" = 640199958;
       "Keynote" = 361285480;
       "Kindle" = 302584613;
@@ -159,6 +155,8 @@
   };
 
   security.pam.services.sudo_local.touchIdAuth = true;
+
+  services.openssh.enable = isServer;
 
   networking.hostName = hostname;
 

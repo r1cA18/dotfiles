@@ -1,8 +1,13 @@
 {
   username,
   pkgs,
+  lib,
+  profile ? "workstation",
   ...
 }:
+let
+  isServer = profile == "server";
+in
 {
   imports = [
     ./programs/nh.nix
@@ -13,18 +18,23 @@
     ./programs/zoxide.nix
     ./programs/neovim.nix
     ./programs/packages.nix
-    ./programs/ghostty.nix
-    ./programs/linux-desktop.nix
-    ./programs/karabiner.nix
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
     ./programs/antigravity.nix
     ./programs/ccspace.nix
+    ./programs/devin.nix
     ./programs/claude-code.nix
     ./programs/claude-code-proxy.nix
     ./programs/codex.nix
-    ./programs/zed.nix
     ./programs/nix-index.nix
+  ]
+  ++ lib.optionals (!isServer) [
+    ./programs/ghostty.nix
+    ./programs/aerospace.nix
+    ./programs/linux-desktop.nix
+    ./programs/karabiner.nix
+    ./programs/orca.nix
+    ./programs/zed.nix
   ];
 
   home = {

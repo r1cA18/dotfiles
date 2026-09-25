@@ -64,6 +64,8 @@ in
       env = {
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
+        # Claude Mods (function hooks) 実験機能を有効化
+        CLAUDE_CODE_ENABLE_FUNCTION_HOOKS = "1";
         # bg 自動更新を切り、更新経路を update-all (update-claude-code) に一元化する。
         DISABLE_AUTOUPDATER = "1";
       };

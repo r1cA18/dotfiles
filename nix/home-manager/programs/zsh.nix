@@ -191,6 +191,35 @@ let
     };
   };
 
+  # Research / media ingestion aliases.
+  researchAliases = {
+    yt-sub = {
+      cmd = "yt-dlp --write-subs --sub-langs 'ja.*,en.*' --convert-subs srt --skip-download -o '%(title)s.%(ext)s'";
+      desc = "Download YouTube subtitles (manual/auto) to SRT";
+      help = "Usage: yt-sub <URL>";
+    };
+    yt-auto-sub = {
+      cmd = "yt-dlp --write-auto-subs --sub-langs 'ja.*,en.*' --convert-subs srt --skip-download -o '%(title)s.%(ext)s'";
+      desc = "Download YouTube auto-generated subtitles to SRT";
+      help = "Usage: yt-auto-sub <URL>";
+    };
+    yt-transcribe = {
+      cmd = "yt-dlp -x --audio-format mp3 -o - '$1' | whisper-ctranslate2 --model large-v3-turbo --language Japanese -";
+      desc = "Transcribe YouTube audio with whisper-ctranslate2";
+      help = "Usage: yt-transcribe <URL> [whisper-args]";
+    };
+    masao-feeds = {
+      cmd = "agent-skill-path masao-research scripts/masao-feeds.py";
+      desc = "List recent posts from まさお's YouTube/note/Zenn feeds";
+      help = "Usage: masao-feeds [--limit N]";
+    };
+    jev = {
+      cmd = "jev";
+      desc = "Run Jev (TypeSafe System One) CLI with 1Password-injected API key";
+      help = "Usage: jev models | jev ask <state> --noul/--choice/--score ...";
+    };
+  };
+
   # Codex abbreviations (primary account). Named model layers are loaded from
   # the default CODEX_HOME as heavy.config.toml / spark.config.toml.
   # Account switching used to go through cxp (archived; see
@@ -361,6 +390,10 @@ let
       };
     }
     {
+      title = "Research";
+      defs = researchAliases;
+    }
+    {
       title = "Claude Code";
       defs = claudeAliases;
     }
@@ -390,6 +423,7 @@ let
     // nixCommonAliases
     // (if isDarwin then nixDarwinAliases else nixLinuxAliases)
     // (if isDarwin then dirDarwinAliases else dirLinuxAliases)
+    // researchAliases
     // claudeAliases
     // codexAliases
     // workspaceAliases;

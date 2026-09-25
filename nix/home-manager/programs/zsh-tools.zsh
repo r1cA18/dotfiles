@@ -101,8 +101,17 @@ wsg() {
     print -u2 -- 'Create one with: ws init ~/Workspaces/product'
     return 1
   fi
-  selected="$(_dotfiles_workspaces "$workspace_root" | fzf --read0 --print0 +m --no-print-query --no-expect --reverse --height 40% \
-    --prompt='Workspace > ' --header='Enter: change directory / Esc: cancel')"
+  # Buffer candidates into a temp file before fzf so arrow-key input is not
+  # interleaved with a slow find stream. NUL delimiters are kept so paths with
+  # newlines remain intact.
+  selected="$(
+    local tmp
+    tmp="$(mktemp "${TMPDIR:-/tmp}/wsg-candidates.XXXXXX")" || exit 2
+    trap 'rm -f -- "$tmp"' EXIT INT TERM
+    _dotfiles_workspaces "$workspace_root" > "$tmp" || exit 1
+    fzf --read0 --print0 +m --no-print-query --no-expect --reverse --height 40% \
+      --prompt='Workspace > ' --header='Enter: change directory / Esc: cancel' < "$tmp"
+  )"
   result=$?
   (( result == 1 || result == 130 )) && return 0
   (( result == 0 )) || return "$result"

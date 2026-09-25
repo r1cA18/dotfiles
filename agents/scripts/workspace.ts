@@ -252,8 +252,9 @@ function init(target: string | undefined) {
   const packageFile = process.env.WORKSPACE_INDEXION_NIX || join(source, "nix/pkgs/indexion/default.nix");
   if (!existsSync(packageFile)) throw new Error("Workspace package source is unavailable");
   mkdirSync(dirname(resolve(target)), { recursive: true });
-  mkdirSync(target); // Exclusive: never merge a template into existing work.
+  if (lstatSync(target, { throwIfNoEntry: false })) throw new Error(`Refusing to replace existing path: ${target}`);
   cpSync(template, target, { recursive: true, force: false, errorOnExist: true });
+  chmodSync(target, statSync(target).mode | 0o200);
   mkdirSync(join(target, "scripts"), { recursive: true });
   cpSync(import.meta.path, join(target, "scripts/workspace.ts"));
   mkdirSync(join(target, "nix"), { recursive: true });
