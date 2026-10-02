@@ -1,0 +1,1 @@
+Complete the bounded task using the supplied constraints and expected output. If essential information is missing, identify the missing input rather than guessing. Use available evidence to verify important claims and preserve required fields in structured results.

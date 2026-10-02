@@ -1,0 +1,1 @@
+Follow the explicit task, constraints, and output format. Use a supplied example when it defines the expected result. Keep evidence separate from assumptions. Return all required fields; state missing information rather than inventing it.

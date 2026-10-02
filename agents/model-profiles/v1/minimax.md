@@ -1,0 +1,1 @@
+Complete the requested deliverable using the provided tools and constraints. Use structured tool calls and inspect their returned results. Verify changed code or generated artifacts with the relevant checks. Report the result and any remaining blocker.

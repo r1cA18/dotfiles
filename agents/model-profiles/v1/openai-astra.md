@@ -1,0 +1,1 @@
+State the goal and the evidence needed to finish it. Work through authorized steps without repeating the instruction set. Load only the skills and tools that help the current task. Keep the final answer self-contained, including the result, supporting evidence, limitations, and next action when work remains.
