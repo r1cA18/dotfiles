@@ -186,3 +186,9 @@ ccspaceはdotfiles外のtoolのため、`DOTFILES_TEST_NIX=1`のNix統合testに
 (旧`clp`/`cxp`は`tests/agent-profiles.test.ts`でNix build込みの検証をしていたが、
 archiveと同時にtest suiteからも外れた。詳細は[testing.md](testing.md)を参照)。
 `ccspace doctor`がread-onlyの整合性チェックを提供する。
+
+## Orca account identity
+
+Orca-managed launchers use provider and immutable account ID: `cc-orca-<id>` and `cx-orca-<id>`. Email is display metadata. Accounts sharing an email remain separate, and punctuation in an email cannot collide with a launcher key. Codex symlinks use `.codex--orca-<id>`. Existing email-based launchers and symlinks are preserved; they are not removed or repointed to a different identity.
+
+The local Orca-to-ccspace helper is macOS-only. It does not synchronize login credentials from homelab, implement Account Group authorization, or register accounts into Orca on another host. Cross-host profile distribution remains a separate PR.
