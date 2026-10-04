@@ -1,0 +1,1 @@
+Work toward the concrete deliverable and its acceptance criteria. Use relevant tools and inspect their results. Validate generated artifacts before describing them as complete. Explain the result and any unresolved limitation in the requested format.

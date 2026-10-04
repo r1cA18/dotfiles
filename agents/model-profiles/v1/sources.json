@@ -1,0 +1,188 @@
+{
+  "openai-models": {
+    "url": "https://developers.openai.com/api/docs/models",
+    "kind": "primary",
+    "note": "Current general text model IDs",
+    "checked_at": "2026-10-02"
+  },
+  "openai-astra": {
+    "url": "https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra",
+    "kind": "primary",
+    "note": "Lean instructions and task-relevant skills",
+    "checked_at": "2026-10-02"
+  },
+  "openai-guide": {
+    "url": "https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra",
+    "kind": "primary",
+    "note": "Autonomy and evidence requirements; page contains older-version sections",
+    "checked_at": "2026-10-02"
+  },
+  "claude-models": {
+    "url": "https://platform.claude.com/docs/en/models/overview",
+    "kind": "primary",
+    "note": "Current Claude API IDs",
+    "checked_at": "2026-10-02"
+  },
+  "fable": {
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1",
+    "kind": "primary",
+    "note": "Progress, batching, scoped completion, history handling",
+    "checked_at": "2026-10-02"
+  },
+  "opus": {
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5",
+    "kind": "primary",
+    "note": "Unattended completion and typed response handling",
+    "checked_at": "2026-10-02"
+  },
+  "sonnet": {
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5",
+    "kind": "primary",
+    "note": "Scope, completion, verification",
+    "checked_at": "2026-10-02"
+  },
+  "claude-general": {
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+    "kind": "primary",
+    "note": "Clear instructions and task-specific examples",
+    "checked_at": "2026-10-02"
+  },
+  "gemini-models": {
+    "url": "https://ai.google.dev/gemini-api/docs/models",
+    "kind": "primary",
+    "note": "Stable and preview model IDs",
+    "checked_at": "2026-10-02"
+  },
+  "gemini-prompt": {
+    "url": "https://ai.google.dev/gemini-api/docs/prompting-strategies",
+    "kind": "primary",
+    "note": "Critical rules first, long context then task, native thinking",
+    "checked_at": "2026-10-02"
+  },
+  "gemini-latest": {
+    "url": "https://ai.google.dev/gemini-api/docs/latest-model",
+    "kind": "primary",
+    "note": "3.8 migration requires parameter revalidation",
+    "checked_at": "2026-10-02"
+  },
+  "grok": {
+    "url": "https://docs.x.ai/developers/grok-4-7",
+    "kind": "primary",
+    "note": "Exact model ID and configurable reasoning",
+    "checked_at": "2026-10-02"
+  },
+  "grok-models": {
+    "url": "https://docs.x.ai/developers/models",
+    "kind": "primary",
+    "note": "Current events require enabled search tools",
+    "checked_at": "2026-10-02"
+  },
+  "deepseek": {
+    "url": "https://api-docs.deepseek.com/updates/",
+    "kind": "primary",
+    "note": "V4.1 Flash release and continued V4 Pro availability",
+    "checked_at": "2026-10-02"
+  },
+  "deepseek-thinking": {
+    "url": "https://api-docs.deepseek.com/guides/thinking_mode/",
+    "kind": "primary-search-excerpt",
+    "note": "Thinking configuration; full page retrieval failed",
+    "checked_at": "2026-10-02"
+  },
+  "qwen": {
+    "url": "https://huggingface.co/Qwen/Qwen3.5-397B-A17B",
+    "kind": "primary",
+    "note": "Sampling, templates, historical thinking removal",
+    "checked_at": "2026-10-02"
+  },
+  "glm": {
+    "url": "https://docs.z.ai/guides/llm/glm-5.3",
+    "kind": "primary",
+    "note": "Always-on reasoning and protocol limitations",
+    "checked_at": "2026-10-02"
+  },
+  "kimi": {
+    "url": "https://huggingface.co/moonshotai/Kimi-K2.6",
+    "kind": "primary",
+    "note": "Thinking/instant parameters and deployment verification",
+    "checked_at": "2026-10-02"
+  },
+  "minimax": {
+    "url": "https://huggingface.co/MiniMaxAI/MiniMax-M2.7",
+    "kind": "primary",
+    "note": "Default minimal identity and sampling",
+    "checked_at": "2026-10-02"
+  },
+  "minimax-tools": {
+    "url": "https://huggingface.co/MiniMaxAI/MiniMax-M2.7/blob/main/docs/tool_calling_guide.md",
+    "kind": "primary",
+    "note": "Structured tool calling through native engine parsers",
+    "checked_at": "2026-10-02"
+  },
+  "mistral-models": {
+    "url": "https://docs.mistral.ai/models",
+    "kind": "primary",
+    "note": "Current model inventory",
+    "checked_at": "2026-10-02"
+  },
+  "mistral-prompt": {
+    "url": "https://docs.mistral.ai/inference/prompting",
+    "kind": "primary",
+    "note": "Explicit structure and schemas",
+    "checked_at": "2026-10-02"
+  },
+  "codex-runtime": {
+    "url": "https://developers.openai.com/codex/config-reference",
+    "kind": "primary",
+    "note": "Additional developer instructions; fetched separately",
+    "checked_at": "2026-10-02"
+  },
+  "claude-runtime": {
+    "url": "https://code.claude.com/docs/en/cli-reference",
+    "kind": "primary",
+    "note": "Append instruction flags; fetched separately",
+    "checked_at": "2026-10-02"
+  },
+  "opencode": {
+    "url": "https://github.com/anomalyco/opencode/blob/dev/packages/opencode/src/session/system.ts",
+    "kind": "maintainer-oss",
+    "note": "Model prompt dispatch; observation from a mutable branch",
+    "checked_at": "2026-10-02"
+  },
+  "pi": {
+    "url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/core/system-prompt.ts",
+    "kind": "maintainer-oss",
+    "note": "Prompt sections and explicit project context",
+    "checked_at": "2026-10-02"
+  },
+  "context-engineering": {
+    "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+    "kind": "primary",
+    "note": "Task-relevant context and compaction",
+    "checked_at": "2026-10-02"
+  },
+  "reddit-sonnet": {
+    "url": "https://www.reddit.com/r/ClaudeAI/comments/1wspcmd/claudemd_for_sonnet_55_based_on_anthropics/",
+    "kind": "community",
+    "note": "Hypothesis about excessive effort; not adopted as measured fact",
+    "checked_at": "2026-10-02"
+  },
+  "reddit-grok": {
+    "url": "https://www.reddit.com/r/cursor/comments/1wp9mhm/uh_is_grok_47_really_6x_more_expensive_and_8x/",
+    "kind": "community",
+    "note": "Per-task cost hypothesis requiring local measurement",
+    "checked_at": "2026-10-02"
+  },
+  "x-boris": {
+    "url": "https://x.com/bcherny/status/2007179832300581177",
+    "kind": "unretrieved",
+    "note": "Located via secondary references; direct X retrieval failed; no rule derived",
+    "checked_at": "2026-10-02"
+  },
+  "simon": {
+    "url": "https://simonwillison.net/2026/Sep/29/",
+    "kind": "author-blog",
+    "note": "Current release observations and artifacts, not comparative prompt proof",
+    "checked_at": "2026-10-02"
+  }
+}

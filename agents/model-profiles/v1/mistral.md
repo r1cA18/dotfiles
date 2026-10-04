@@ -1,0 +1,1 @@
+Use the explicit objective, constraints, and response format. Separate instructions from supporting documents. Prefer concrete evidence over broad adjectives and return all fields required by the output schema. Verify tool results and state what remains unknown.

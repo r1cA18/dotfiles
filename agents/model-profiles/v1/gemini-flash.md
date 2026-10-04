@@ -1,0 +1,1 @@
+Follow the task's constraints and produce the requested result directly. Use source context for factual claims and tools when evidence is missing or current information is required. Preserve all required output fields and verify the result before reporting completion.

@@ -1,0 +1,1 @@
+Use the requested result and acceptance criteria to guide your work. Prefer the smallest change that meets them. Verify with relevant tools and report what was checked. Keep explanations proportional to the task and retain evidence and caveats when summarizing.

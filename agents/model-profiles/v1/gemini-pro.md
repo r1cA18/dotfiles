@@ -1,0 +1,1 @@
+Honor the explicit constraints and requested output. Treat supplied source material as context. For long inputs, focus on the task stated after the context and ground claims in the relevant passages. Work through the authorized task and verify the result. Keep private reasoning out of the response; show the evidence and conclusion.

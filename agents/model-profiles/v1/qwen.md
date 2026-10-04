@@ -1,0 +1,1 @@
+Follow the specified task and output format. Use native structured tool calls when tools are available. Keep the final result distinct from intermediate reasoning. Include the evidence required to check the answer and identify unsupported assumptions.

@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "release": "2026-10-02.1",
+  "status": "candidate",
+  "reviewed_at": "2026-10-02",
+  "review_due": "2026-11-02",
+  "common": "common.md",
+  "profiles": [
+    {
+      "id": "openai-astra",
+      "revision": 1,
+      "provider": "openai",
+      "models": [
+        "gpt-6-astra"
+      ],
+      "prompt": "openai-astra.md",
+      "sources": [
+        "openai-models",
+        "openai-astra"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Do not transplant old GPT-5 reasoning or caching settings into GPT-6 without validating the current API."
+      ]
+    },
+    {
+      "id": "openai-sol",
+      "revision": 1,
+      "provider": "openai",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "prompt": "openai-sol.md",
+      "sources": [
+        "openai-models",
+        "openai-astra"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Family-level prompt candidate; no Sol-specific performance claim or automatic effort setting."
+      ]
+    },
+    {
+      "id": "openai-luna",
+      "revision": 1,
+      "provider": "openai",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "prompt": "openai-luna.md",
+      "sources": [
+        "openai-models",
+        "openai-astra"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Family-level candidate for bounded tasks; escalation is a runtime policy decision."
+      ]
+    },
+    {
+      "id": "claude-fable",
+      "revision": 1,
+      "provider": "anthropic",
+      "models": [
+        "claude-fable-5-1"
+      ],
+      "prompt": "claude-fable.md",
+      "sources": [
+        "claude-models",
+        "fable"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Preserve assistant history and signed reasoning blocks exactly. Progress thinking blocks require supported display settings; prompt alone does not enable them."
+      ]
+    },
+    {
+      "id": "claude-opus",
+      "revision": 1,
+      "provider": "anthropic",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "prompt": "claude-opus.md",
+      "sources": [
+        "claude-models",
+        "opus"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Adaptive reasoning always on; parse responses by block type. The orchestrator must independently track completion and bound continuations."
+      ]
+    },
+    {
+      "id": "claude-sonnet",
+      "revision": 1,
+      "provider": "anthropic",
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "prompt": "claude-sonnet.md",
+      "sources": [
+        "claude-models",
+        "sonnet"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Effort is an API/runtime setting; medium/high are evaluation candidates, not automatic defaults. Validate JSON and exact tool names in code."
+      ]
+    },
+    {
+      "id": "claude-haiku",
+      "revision": 1,
+      "provider": "anthropic",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-haiku-4-5-20251001"
+      ],
+      "prompt": "claude-haiku.md",
+      "sources": [
+        "claude-models",
+        "claude-general"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "No adaptive-effort settings inherited from larger Claude models. Check model lifecycle before deployment."
+      ]
+    },
+    {
+      "id": "gemini-pro",
+      "revision": 1,
+      "provider": "google",
+      "models": [
+        "gemini-3.1-pro-preview"
+      ],
+      "prompt": "gemini-pro.md",
+      "sources": [
+        "gemini-models",
+        "gemini-prompt"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Preview ID is explicit; do not silently upgrade. Context ordering belongs to the adapter."
+      ]
+    },
+    {
+      "id": "gemini-flash",
+      "revision": 1,
+      "provider": "google",
+      "models": [
+        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite"
+      ],
+      "prompt": "gemini-flash.md",
+      "sources": [
+        "gemini-models",
+        "gemini-prompt",
+        "gemini-latest"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "3.8 and Flash-Lite request parameters must be validated independently. No temperature or thinking value is automatically injected."
+      ]
+    },
+    {
+      "id": "grok",
+      "revision": 1,
+      "provider": "xai",
+      "models": [
+        "grok-4.7"
+      ],
+      "prompt": "grok.md",
+      "sources": [
+        "grok",
+        "grok-models"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Web/X search must be enabled by the adapter; the prompt cannot enable it. Preserve encrypted reasoning items per the native Responses protocol."
+      ]
+    },
+    {
+      "id": "deepseek",
+      "revision": 1,
+      "provider": "deepseek",
+      "models": [
+        "deepseek-flash",
+        "deepseek-v4-pro"
+      ],
+      "prompt": "deepseek.md",
+      "sources": [
+        "deepseek",
+        "deepseek-thinking"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Conservative candidate: thinking-guide full retrieval failed. Verify the actual model behind deepseek-flash and thinking tool-choice behavior before deployment."
+      ]
+    },
+    {
+      "id": "qwen",
+      "revision": 1,
+      "provider": "qwen",
+      "models": [
+        "Qwen/Qwen3.5-397B-A17B",
+        "Qwen/Qwen3.5-35B-A3B",
+        "Qwen/Qwen3.5-9B"
+      ],
+      "prompt": "qwen.md",
+      "sources": [
+        "qwen"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Use the model chat template/tool parser. Historical thinking removal differs from Claude; do not share a history normalizer across providers. Sampling is deployment/mode-specific."
+      ]
+    },
+    {
+      "id": "glm",
+      "revision": 1,
+      "provider": "zai",
+      "models": [
+        "glm-5.3"
+      ],
+      "prompt": "glm.md",
+      "sources": [
+        "glm"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Reasoning cannot be disabled. Model support differs by endpoint and subscription; no generic OpenAI-compatibility assumption."
+      ]
+    },
+    {
+      "id": "kimi",
+      "revision": 1,
+      "provider": "moonshot",
+      "models": [
+        "kimi-k2.6",
+        "moonshotai/Kimi-K2.6"
+      ],
+      "prompt": "kimi.md",
+      "sources": [
+        "kimi"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Thinking versus instant and hosted versus local parameters differ. Native multi-agent capability does not grant delegation permission."
+      ]
+    },
+    {
+      "id": "minimax",
+      "revision": 1,
+      "provider": "minimax",
+      "models": [
+        "MiniMax-M2.7",
+        "MiniMaxAI/MiniMax-M2.7"
+      ],
+      "prompt": "minimax.md",
+      "sources": [
+        "minimax",
+        "minimax-tools"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Use native inference-engine tool parsing. No regex execution of model-produced XML."
+      ]
+    },
+    {
+      "id": "mistral",
+      "revision": 1,
+      "provider": "mistral",
+      "models": [
+        "mistral-medium-3-5",
+        "mistral-small-2603"
+      ],
+      "prompt": "mistral.md",
+      "sources": [
+        "mistral-models",
+        "mistral-prompt"
+      ],
+      "behavior_validation": "not_run",
+      "runtime_notes": [
+        "Explicit model IDs must be checked against the serving endpoint; no latest alias resolution or automatic reasoning settings."
+      ]
+    }
+  ]
+}

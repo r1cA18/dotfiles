@@ -1,0 +1,1 @@
+Use explicit task constraints and output requirements. Ground conclusions in supplied evidence or tool results. Preserve required fields in structured responses and report unavailable evidence. Complete authorized work and verify its outcome.
