@@ -79,6 +79,12 @@ Codex の custom prompt は deprecated なので、`codex/prompts/` は skill �
 
 必要な宣言的設定だけ repo 内に切り出して、runtime state へ merge する。
 
+Orcaのlive settingsはOrca自身が`profile-state.db`で管理する。Home Managerは
+旧`orca-data.json`へのsettings mergeやSQLiteへの直接書き込みを行わない。
+`nix/home-manager/programs/orca-settings.json`は未適用の参照snapshotとして保持する。
+Orca 1.4.219のCLI helpにはsettings更新commandがないため、設定変更はOrca UIで行う。
+CLI symlinkとcredential helpersは`nix/home-manager/programs/orca.nix`で管理する。
+
 ### 4. Orchestrationは役割と製品設定を分離
 
 `agents/rules/orchestration.md`を共有し、独立して進められる仕事だけを委譲する。担当file・完了条件・根拠を明示し、親agentが統合と最終検証を担当する。小さい変更や密接に依存する判断を機械的に分割しない。

@@ -93,6 +93,8 @@ in
 lib.mkIf pkgs.stdenv.isDarwin {
   # Orca GUI is installed via the homebrew cask in nix/darwin/configuration.nix.
   # Orca skills come from the orca-skills flake input via agent-skills.nix.
+  # Orca owns live settings in profile-state.db. Do not patch legacy
+  # orca-data.json or write the database from Home Manager activation.
   home = {
     file = {
       # /usr/local/bin/orca is a dangling symlink (empty target). ~/.local/bin
@@ -108,23 +110,5 @@ lib.mkIf pkgs.stdenv.isDarwin {
       orcaExportClaudeCreds
       orcaSetPrimaryClaude
     ];
-
-    activation.orcaSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      orca_settings=${./orca-settings.json}
-      profiles_dir="$HOME/Library/Application Support/Orca/profiles"
-      if [ -d "$profiles_dir" ]; then
-        for data in "$profiles_dir"/*/orca-data.json; do
-          [ -f "$data" ] || continue
-          cp "$data" "$data.orca-nix-backup"
-          if ${pkgs.jq}/bin/jq --slurpfile managed "$orca_settings" \
-              '.settings = (((.settings // {})) * $managed[0])' "$data" > "$data.orca-nix-tmp"; then
-            mv "$data.orca-nix-tmp" "$data"
-          else
-            rm -f "$data.orca-nix-tmp"
-            echo "orca-settings: skipped $data (jq failed)" >&2
-          fi
-        done
-      fi
-    '';
   };
 }
