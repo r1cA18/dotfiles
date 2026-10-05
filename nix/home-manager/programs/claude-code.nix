@@ -379,7 +379,18 @@ in
       # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
       # claudeChannel を managed-channel に書き出し、update-all の更新処理へ状態を渡す。
       setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        export PATH="${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH"
+        export PATH="${
+          lib.makeBinPath (
+            with pkgs;
+            [
+              curl
+              gnutar
+              gzip
+              coreutils
+              bash
+            ]
+          )
+        }:$PATH:/usr/bin:/bin"
         channel="${claudeChannel}"
         bin="$HOME/.local/bin/claude"
         log="$HOME/.local/state/claude-code/install.log"

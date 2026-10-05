@@ -23,19 +23,19 @@
       4 = ['^Pixio PX277P$', 'main']
 
       [mode.main.binding]
-      # Workspace切り替え（ZMK Lower層 右手上段 F13-F17）
-      f13 = "workspace 1"
-      f14 = "workspace 2"
-      f15 = "workspace 3"
-      f16 = "workspace 4"
-      f17 = "workspace 5"
+      # Workspace切り替え（ZMK Window層 右手上段）
+      alt-1 = "workspace 1"
+      alt-2 = "workspace 2"
+      alt-3 = "workspace 3"
+      alt-4 = "workspace 4"
+      alt-5 = "workspace 5"
 
-      # フォーカス中のwindowをworkspaceへ移動（Shift + F13-F17）
-      shift-f13 = "move-node-to-workspace 1"
-      shift-f14 = "move-node-to-workspace 2"
-      shift-f15 = "move-node-to-workspace 3"
-      shift-f16 = "move-node-to-workspace 4"
-      shift-f17 = "move-node-to-workspace 5"
+      # フォーカス中のwindowをworkspaceへ移動してfocusも追従（ZMK Window層 右手下段）
+      alt-shift-1 = "move-node-to-workspace --focus-follows-window 1"
+      alt-shift-2 = "move-node-to-workspace --focus-follows-window 2"
+      alt-shift-3 = "move-node-to-workspace --focus-follows-window 3"
+      alt-shift-4 = "move-node-to-workspace --focus-follows-window 4"
+      alt-shift-5 = "move-node-to-workspace --focus-follows-window 5"
 
       # Focus移動
       alt-h = "focus left"

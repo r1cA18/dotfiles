@@ -20,7 +20,19 @@ in
     sessionVariables.DEVIN_PERMISSION_MODE = "bypass";
 
     activation.setupDevin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      export PATH="${pkgs.curl}/bin:${pkgs.jq}/bin:${pkgs.coreutils}/bin:$PATH"
+      export PATH="${
+        lib.makeBinPath (
+          with pkgs;
+          [
+            curl
+            jq
+            coreutils
+            gnutar
+            gzip
+            bash
+          ]
+        )
+      }:$PATH:/usr/bin:/bin"
       bin="$HOME/.local/bin/devin"
       config_dir="$HOME/.config/devin"
       config_file="$config_dir/config.json"
@@ -28,10 +40,16 @@ in
 
       if [ ! -x "$bin" ]; then
         mkdir -p "$(dirname "$log")"
-        if ! ${pkgs.curl}/bin/curl -fsSL https://cli.devin.ai/install.sh \
-          | ${pkgs.bash}/bin/bash >>"$log" 2>&1; then
-          echo "[devin] install failed, see $log" >&2
+        installer=$(${pkgs.coreutils}/bin/mktemp)
+        if ! ${pkgs.curl}/bin/curl -fsSL https://cli.devin.ai/install.sh -o "$installer" \
+          || ! ${pkgs.bash}/bin/bash "$installer" </dev/null >>"$log" 2>&1; then
+          if [ -x "$bin" ]; then
+            echo "[devin] installed; interactive login remains" >&2
+          else
+            echo "[devin] install failed, see $log" >&2
+          fi
         fi
+        rm -f "$installer"
       fi
 
       mkdir -p "$config_dir"

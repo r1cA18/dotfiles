@@ -216,9 +216,12 @@ let
     tailscale
   ];
 
-  darwinGuiPackages = with pkgs; [
+  darwinFontPackages = with pkgs; [
     nerd-fonts.jetbrains-mono
     plemoljp-nf
+  ];
+
+  darwinGuiPackages = with pkgs; [
     recordlyPackage
   ];
 
@@ -234,6 +237,7 @@ in
     packages =
       commonPackages
       ++ (if isDarwin then darwinCliPackages else linuxPackages)
+      ++ lib.optionals isDarwin darwinFontPackages
       ++ lib.optionals (isDarwin && !isServer) darwinGuiPackages;
     sessionPath = [
       "$HOME/.local/bin"

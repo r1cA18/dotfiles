@@ -48,7 +48,18 @@ in
       # Antigravity CLI (agy) native 版の自動導入。
       # 更新は update-all の update-antigravity (または agy update) が担う。
       setupAntigravity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        export PATH="${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH"
+        export PATH="${
+          lib.makeBinPath (
+            with pkgs;
+            [
+              curl
+              gnutar
+              gzip
+              coreutils
+              bash
+            ]
+          )
+        }:$PATH:/usr/bin:/bin"
         bin="$HOME/.local/bin/agy"
         log="$HOME/.local/state/antigravity/install.log"
         if [ ! -x "$bin" ]; then
