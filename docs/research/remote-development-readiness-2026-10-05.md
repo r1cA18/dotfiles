@@ -11,19 +11,19 @@ tags: [harness, workspace, remote-development, homelab]
 
 # 実装済みと未実装
 
-| 項目 | 現状 |
-| --- | --- |
-| repoを必要分だけclone | workspace CLIのrepos.jsonとsyncで可能 |
-| hostをまたいだ同じ配置 | portable modeのrepos/aliasなら同じ相対構造を再現可能 |
-| ghq配置 | host側のghq rootを使用。絶対pathの一致は不要 |
-| repo revision確認 | snapshot/verifyがある。dirty checkoutを上書きしない |
-| host内のaccount選択 | workspaceのlocal Git configでlauncherを選択 |
-| remote workspace自動生成 | host指定で配置を生成する統合CLI/APIは未実装 |
-| accountのhost間同期 | local Orcaからccspaceへの投影のみ。credential転送は未実装 |
-| homelab Orca server | Nix packageとsystemd設定が未統合差分にある |
-| Task/Attempt復旧 | CoreのCLIで実装・ローカル検証済み |
-| native session再接続 | Orca側のruntime機能に依存。実機縦断は未検証 |
-| Mac停止中の継続 | homelabで実行する構成なら可能な見込み。現在の運用で確認済みとは言えない |
+| 項目                     | 現状                                                                    |
+| ------------------------ | ----------------------------------------------------------------------- |
+| repoを必要分だけclone    | workspace CLIのrepos.jsonとsyncで可能                                   |
+| hostをまたいだ同じ配置   | portable modeのrepos/aliasなら同じ相対構造を再現可能                    |
+| ghq配置                  | host側のghq rootを使用。絶対pathの一致は不要                            |
+| repo revision確認        | snapshot/verifyがある。dirty checkoutを上書きしない                     |
+| host内のaccount選択      | workspaceのlocal Git configでlauncherを選択                             |
+| remote workspace自動生成 | host指定で配置を生成する統合CLI/APIは未実装                             |
+| accountのhost間同期      | local Orcaからccspaceへの投影のみ。credential転送は未実装               |
+| homelab Orca server      | Nix packageとsystemd設定が未統合差分にある                              |
+| Task/Attempt復旧         | CoreのCLIで実装・ローカル検証済み                                       |
+| native session再接続     | Orca側のruntime機能に依存。実機縦断は未検証                             |
+| Mac停止中の継続          | homelabで実行する構成なら可能な見込み。現在の運用で確認済みとは言えない |
 
 Coreのenvironment registryはhost登録と退役と観測を扱う。登録だけでrepoやprocessを作らない。CoreのWorkspaceはpolicy境界でありdotfilesのファイル配置workspaceとは別。両者を明示的な配置参照で結ぶ。
 

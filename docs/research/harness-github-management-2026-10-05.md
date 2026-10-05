@@ -9,12 +9,12 @@ tags: [harness, github, environment]
 
 小さなdesktop/installer修正をmainへ反映する。ハーネスと検証と環境管理は別feature branchのDraft PRへまとめる。既にmainへmergeされたmodel profileとaccount identityは重複させない。作業中の元checkoutは変更を保持する。
 
-| 区分 | 変更 |
-| --- | --- |
-| main | Aerospace shortcutとDarwin font配置とAntigravity/Claude/Devin installer修正 |
+| 区分                                   | 変更                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| main                                   | Aerospace shortcutとDarwin font配置とAntigravity/Claude/Devin installer修正              |
 | feature/harness-environment-management | Nix flake構成整理とlock更新とhomelab/Orca runtimeとaccount/workspace設定と進捗・調査記録 |
-| 既存main | model-profile compilerとimmutable account identityとOrca SQLite authority維持 |
-| 調査のみ | Olympus UI改修とTask/Attempt接続とremote workspace/sessionの不足 |
+| 既存main                               | model-profile compilerとimmutable account identityとOrca SQLite authority維持            |
+| 調査のみ                               | Olympus UI改修とTask/Attempt接続とremote workspace/sessionの不足                         |
 
 # 確認結果
 
@@ -49,3 +49,7 @@ tags: [harness, github, environment]
 ブランチ側の回帰テストは69 passと4 skip。変更したNixのformat/deadnixとshell構文検査も成功。ローカル署名は1Password agentの応答失敗で実行できなかった。公開はGitHubのcreateCommitOnBranchによる署名付きcommitで行う。設定と秘密鍵は変更しない。
 
 GitHub署名仕様: https://docs.github.com/en/graphql/reference/commits 。Mainとfeature branchの公開にexpectedHeadOidを指定して他の変更を上書きしない。server scriptのshellcheckも成功。Ansible実行とLinux buildと実機適用は未検証。
+
+# CI修正
+
+PRのregressionとsecret scanは成功。format失敗をPrettierで修正。Linux buildはlock更新で入ったtorchcodecのMP3比較テスト8件の失敗。nixpkgsのみmainでbuild成功済みのrevisionへ戻した。依存テストの無効化は行わない。修正後のCIで環境構成を確認する。

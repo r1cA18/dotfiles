@@ -23,15 +23,15 @@ Olympus main `acf0bc8`とHarness Core main `4dd4beb`の実装を確認した。O
 
 # 接続候補と不足
 
-| 接続先 | 再利用できる実装 | 追加するもの |
-| --- | --- | --- |
-| Timesから仕事を依頼 | 投稿IDとTask候補と承認receipt | source IDからCore Contractへの参照と冪等な受付 |
-| Inboxに人間の判断を集める | candidate承認とsnoozeとWeb Push | request IDで一意化したCore承認投影と完了条件 |
-| Todayに進行状況を表示 | DashboardのTaskとCalendarとInbox | 実行中・判断待ち・結果不明・予算待ち・成果確認待ちのTask単位カード |
-| Calendar/Week | Taskの週表示と予定参照 | Schedule occurrenceと実績の投影。会議とagent実行を区別 |
-| Portalで成果を開く | 公開ページcatalog | Artifact IDとdigestとsource Task。生成HTMLの別origin表示 |
-| Knowledgeへ経験を返す | 知識の検索と保存 | Evidence/findingから出典付きobservationへ変換するadapter |
-| Workspaceを選択 | CoreのWorkspace/group/environment/budget API | Olympusには必要な境界情報だけ表示。管理操作は別画面 |
+| 接続先                    | 再利用できる実装                             | 追加するもの                                                       |
+| ------------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| Timesから仕事を依頼       | 投稿IDとTask候補と承認receipt                | source IDからCore Contractへの参照と冪等な受付                     |
+| Inboxに人間の判断を集める | candidate承認とsnoozeとWeb Push              | request IDで一意化したCore承認投影と完了条件                       |
+| Todayに進行状況を表示     | DashboardのTaskとCalendarとInbox             | 実行中・判断待ち・結果不明・予算待ち・成果確認待ちのTask単位カード |
+| Calendar/Week             | Taskの週表示と予定参照                       | Schedule occurrenceと実績の投影。会議とagent実行を区別             |
+| Portalで成果を開く        | 公開ページcatalog                            | Artifact IDとdigestとsource Task。生成HTMLの別origin表示           |
+| Knowledgeへ経験を返す     | 知識の検索と保存                             | Evidence/findingから出典付きobservationへ変換するadapter           |
+| Workspaceを選択           | CoreのWorkspace/group/environment/budget API | Olympusには必要な境界情報だけ表示。管理操作は別画面                |
 
 CoreのOpenAPIにはTask/Attempt操作が載っているがHTTP transportは未実装の項目が多い。`x-harness-service-status: implemented`だけで呼び出し可能と判定しない。`x-harness-transport-status`を必ず確認する。Contract一覧とAttempt取得はservice実装済みでもHTTPはplannedである。OlympusからTaskの一覧・詳細を表示する前にCoreの読み取りHTTP projectionを追加する必要がある。
 
@@ -78,13 +78,13 @@ GitHub mainには`olympus_post_observation`がない。ローカル未commitのt
 
 # 実装順と受入条件
 
-| 順 | 成果 | 受入条件 |
-| --- | --- | --- |
-| 1 | Core接続の実機確認 | Mac停止中もhomelabの購読が継続し再接続で欠落を検知できる |
-| 2 | Core読み取りHTTP projection | planned metadataをimplementedへ変更し最新契約をclientへ取り込む |
-| 3 | Inbox承認投影 | 既読でもpendingを保持。消費・却下・期限切れを区別。再送で二重通知なし |
-| 4 | TodayとTask詳細 | Task単位で結果と次の人間行動を表示。stale/unknownを明示 |
-| 5 | 成果とKnowledge | source IDとdigestを追跡可能。HTMLを認証originで直接実行しない |
-| 6 | Schedule統合 | 単一正本とtimezoneと取消とcatch-upをADRで確定してから実行を接続 |
+| 順  | 成果                        | 受入条件                                                              |
+| --- | --------------------------- | --------------------------------------------------------------------- |
+| 1   | Core接続の実機確認          | Mac停止中もhomelabの購読が継続し再接続で欠落を検知できる              |
+| 2   | Core読み取りHTTP projection | planned metadataをimplementedへ変更し最新契約をclientへ取り込む       |
+| 3   | Inbox承認投影               | 既読でもpendingを保持。消費・却下・期限切れを区別。再送で二重通知なし |
+| 4   | TodayとTask詳細             | Task単位で結果と次の人間行動を表示。stale/unknownを明示               |
+| 5   | 成果とKnowledge             | source IDとdigestを追跡可能。HTMLを認証originで直接実行しない         |
+| 6   | Schedule統合                | 単一正本とtimezoneと取消とcatch-upをADRで確定してから実行を接続       |
 
 既存[Olympus #2](https://github.com/r1cA18/olympus/issues/2)と[Core #27](https://github.com/r1cA18/harness-core/issues/27)を全体の追跡先として利用する。今回UIコードと本番設定は変更しない。

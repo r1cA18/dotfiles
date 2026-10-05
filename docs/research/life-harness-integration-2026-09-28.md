@@ -19,44 +19,44 @@ tags: [harness, life-os, integration]
 
 ## 既存の生活・秘書系基盤から採るもの
 
-| 基盤 | 確認した強み | この構想への採用 | 足りない境界 |
-| --- | --- | --- | --- |
-| OpenClaw | 複数channel、mobile node、skill/plugin、agent routing、automationを一つのGatewayで扱う | 入力adapter、能力の段階導入、automation UIの比較対象 | Harness固有のContract、Account Group、署名承認、成果証拠は別途必要 |
-| Reclaim | 頻度、長さ、許容時間、優先度から柔軟なcalendar枠を置き直す | `weekly_quota`と時間窓のUX参考 | agentの作業結果と承認の正本にはならない |
-| Home Assistant | 時刻、calendar、機器状態など多様なtriggerからdevice actionを起こす | 家電・機器の状態と操作を任せる | 自由な依頼、モデル成果、Workspace ledgerの正本にはしない |
-| Omi | 会話とmemoryのimport/readをアプリ連携として公開 | 将来の音声・生活入力adapterの参考 | 現在のTimes正本を移さない |
-| Olympus | Times、判断、知識、振り返り、Portal、Inboxの設計と一部実装 | 人間の生活画面と知識正本 | 汎用Workerの権限・実行証拠を重複実装しない |
+| 基盤           | 確認した強み                                                                           | この構想への採用                                     | 足りない境界                                                       |
+| -------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| OpenClaw       | 複数channel、mobile node、skill/plugin、agent routing、automationを一つのGatewayで扱う | 入力adapter、能力の段階導入、automation UIの比較対象 | Harness固有のContract、Account Group、署名承認、成果証拠は別途必要 |
+| Reclaim        | 頻度、長さ、許容時間、優先度から柔軟なcalendar枠を置き直す                             | `weekly_quota`と時間窓のUX参考                       | agentの作業結果と承認の正本にはならない                            |
+| Home Assistant | 時刻、calendar、機器状態など多様なtriggerからdevice actionを起こす                     | 家電・機器の状態と操作を任せる                       | 自由な依頼、モデル成果、Workspace ledgerの正本にはしない           |
+| Omi            | 会話とmemoryのimport/readをアプリ連携として公開                                        | 将来の音声・生活入力adapterの参考                    | 現在のTimes正本を移さない                                          |
+| Olympus        | Times、判断、知識、振り返り、Portal、Inboxの設計と一部実装                             | 人間の生活画面と知識正本                             | 汎用Workerの権限・実行証拠を重複実装しない                         |
 
 この比較は各製品の公開機能の確認であり、ローカルへの導入や実環境での互換性試験ではない。特にOpenClaw全体への移行は現行のOrca、ccspace、Olympusを置き換える範囲が大きい。まず必要な接続面と意味論を借り、既存資産の上で一本の通し体験を実装する。
 
 ## 日常の通し体験と受入条件
 
-| 入力 | 人間に見える結果 | 契約・境界 | 最初の受入条件 |
-| --- | --- | --- | --- |
-| Timesに「思いついた」と投稿 | Timesに残り、提案がInboxへ出る | 記録はOlympus。Task化は出典IDつきで提案 | 投稿を再送しても二重Taskにならない |
-| 「今夜このアイデアを調べて」 | 軽い依頼カードと成果報告 | OlympusからTaskを起票。HarnessがWorkspaceと予算を選ぶ | セッションを閉じても依頼と結果を追える |
-| 「平日朝にニュースを読んで」 | カレンダーの予定と完了報告 | Schedule定義とOccurrenceを一意化。記事・出典をArtifactへ | 週・時刻・timezoneを編集でき、二重実行しない |
-| 「毎週1時間で2回確認」 | 週の二つの枠と実績 | 回数目標を持つflexible window。具体時刻は別途配置 | 未配置、予定、実行、見送りを区別できる |
-| 「この日時にやって」 | 予定と結果が同じ日付へ表示 | 固定時刻のone-shot。遅延・中止を明示 | 日時とtimezoneの解釈を事前に確認できる |
-| 「HTMLで報告して」 | 成果物一覧から安全に閲覧 | HarnessがArtifact metadataを記録。Olympus Portalが表示 | 生成HTMLはOlympusの認証originで直接動かさない |
-| 「3Dモデルを作り印刷して」 | 設計、preview、承認、機器状態、完了写真 | device adapterを追加。印刷開始は外部効果として別承認 | 機種と接続方式が確定するまで自動印刷しない |
+| 入力                         | 人間に見える結果                        | 契約・境界                                               | 最初の受入条件                                |
+| ---------------------------- | --------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| Timesに「思いついた」と投稿  | Timesに残り、提案がInboxへ出る          | 記録はOlympus。Task化は出典IDつきで提案                  | 投稿を再送しても二重Taskにならない            |
+| 「今夜このアイデアを調べて」 | 軽い依頼カードと成果報告                | OlympusからTaskを起票。HarnessがWorkspaceと予算を選ぶ    | セッションを閉じても依頼と結果を追える        |
+| 「平日朝にニュースを読んで」 | カレンダーの予定と完了報告              | Schedule定義とOccurrenceを一意化。記事・出典をArtifactへ | 週・時刻・timezoneを編集でき、二重実行しない  |
+| 「毎週1時間で2回確認」       | 週の二つの枠と実績                      | 回数目標を持つflexible window。具体時刻は別途配置        | 未配置、予定、実行、見送りを区別できる        |
+| 「この日時にやって」         | 予定と結果が同じ日付へ表示              | 固定時刻のone-shot。遅延・中止を明示                     | 日時とtimezoneの解釈を事前に確認できる        |
+| 「HTMLで報告して」           | 成果物一覧から安全に閲覧                | HarnessがArtifact metadataを記録。Olympus Portalが表示   | 生成HTMLはOlympusの認証originで直接動かさない |
+| 「3Dモデルを作り印刷して」   | 設計、preview、承認、機器状態、完了写真 | device adapterを追加。印刷開始は外部効果として別承認     | 機種と接続方式が確定するまで自動印刷しない    |
 
 カレンダーは主導線と1日単位の投影画面にする。ただしすべてを「予定」という一種類のレコードへ押し込まない。Times、Task、会議、反省、Schedule occurrence、Attempt resultは異なる状態遷移を持つ。Day viewはこれらをIDと時間で束ねるread modelであり、元データは各所有者が保持する。
 
 ## 所有者とスキーマの最小単位
 
-| 概念 | 正本 | 最小フィールド・意味 |
-| --- | --- | --- |
-| Workspace | Harness operator/workspace ledger | `id`, `charter`, `account_group`, `allowed_capabilities`, `assurance_floor`, `budget`, `default_profile` |
-| Task | Harness workspace ledger | `id`, `workspace_id`, `intent`, `source_ref`, `contract_revision`, `status`, `dedupe_key` |
-| Attempt | Harness workspace ledger | `id`, `task_id`, `worker_ref`, `account_group`, `state`, `started_at`, `ended_at`, `evidence_refs` |
-| Artifact | Harness metadata + immutable blob/URL | `id`, `task_id`, `attempt_id`, `kind`, `mime`, `digest`, `storage_ref`, `created_at`, `visibility`, `retention`, `review_state` |
-| Schedule | 推奨はHarnessのTask trigger定義 | `id`, `workspace_id`, `intent`, `kind`, `timezone`, `rule`, `window`, `policy_revision`, `enabled` |
-| Occurrence | Harness ledger | `id`, `schedule_id`, `due_at`, `window_end`, `state`, `task_id?`, `dedupe_key` |
-| Calendar event | Google Calendar等の外部正本 | `provider`, `external_id`, `start`, `end`, `timezone`。読み取り参照 |
-| Times・Review・Knowledge | Olympus | 既存のULIDと出典参照。Harnessへ原文の重複保存をしない |
-| Inbox request | Olympus projection | 元の承認・質問・成果確認への参照と完了条件 |
-| Capability | Harness registry | `id`, `version`, `source`, `digest`, `adapter`, `operations`, `required_grants`, `hosts`, `verification_state` |
+| 概念                     | 正本                                  | 最小フィールド・意味                                                                                                            |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Workspace                | Harness operator/workspace ledger     | `id`, `charter`, `account_group`, `allowed_capabilities`, `assurance_floor`, `budget`, `default_profile`                        |
+| Task                     | Harness workspace ledger              | `id`, `workspace_id`, `intent`, `source_ref`, `contract_revision`, `status`, `dedupe_key`                                       |
+| Attempt                  | Harness workspace ledger              | `id`, `task_id`, `worker_ref`, `account_group`, `state`, `started_at`, `ended_at`, `evidence_refs`                              |
+| Artifact                 | Harness metadata + immutable blob/URL | `id`, `task_id`, `attempt_id`, `kind`, `mime`, `digest`, `storage_ref`, `created_at`, `visibility`, `retention`, `review_state` |
+| Schedule                 | 推奨はHarnessのTask trigger定義       | `id`, `workspace_id`, `intent`, `kind`, `timezone`, `rule`, `window`, `policy_revision`, `enabled`                              |
+| Occurrence               | Harness ledger                        | `id`, `schedule_id`, `due_at`, `window_end`, `state`, `task_id?`, `dedupe_key`                                                  |
+| Calendar event           | Google Calendar等の外部正本           | `provider`, `external_id`, `start`, `end`, `timezone`。読み取り参照                                                             |
+| Times・Review・Knowledge | Olympus                               | 既存のULIDと出典参照。Harnessへ原文の重複保存をしない                                                                           |
+| Inbox request            | Olympus projection                    | 元の承認・質問・成果確認への参照と完了条件                                                                                      |
+| Capability               | Harness registry                      | `id`, `version`, `source`, `digest`, `adapter`, `operations`, `required_grants`, `hosts`, `verification_state`                  |
 
 `Artifact`はファイル一覧ではなく「何の仕事で作られ、どの確認を経て、どこで安全に開けるか」の目録である。HTML以外に文書、画像、モデル、G-code、ログ、PRも同じ参照型で表す。保存先や表示方法はkindに応じる。Orcaの成果報告とOlympusの成果物一覧は同じArtifact IDを参照できる。
 
