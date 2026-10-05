@@ -25,11 +25,19 @@ in
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
+    # config.local は repo に載せない host 設定 (仕事の機体など) 用の未管理ファイル
     # OrbStack は macOS 専用
-    includes = lib.optionals (isDarwin && !isServer) [ "~/.orbstack/ssh/config" ];
+    includes = [
+      "~/.ssh/config.local"
+    ]
+    ++ lib.optionals (isDarwin && !isServer) [ "~/.orbstack/ssh/config" ];
     settings = {
       "*".IdentityAgent = "\"~/${agentSockRel}\"";
       homelab.User = "r1ca18";
+      "mbp187-z" = {
+        HostName = "100.118.19.51";
+        User = "mbp187";
+      };
       rlc.SetEnv.TERM = "xterm-256color";
     };
   };

@@ -23,7 +23,19 @@ let
   installCodex = ''
     ${pkgs.coreutils}/bin/install -d "$HOME/.codex" "$HOME/.local/bin"
     ${pkgs.curl}/bin/curl -fsSL https://chatgpt.com/codex/install.sh \
-      | PATH="$HOME/.local/bin:${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH" \
+      | PATH="$HOME/.local/bin:${
+        lib.makeBinPath (
+          with pkgs;
+          [
+            curl
+            gnutar
+            gzip
+            gawk
+            coreutils
+            bash
+          ]
+        )
+      }:$PATH:/usr/bin:/bin" \
         CODEX_HOME="$HOME/.codex" \
         CODEX_INSTALL_DIR="$HOME/.local/bin" \
         CODEX_NON_INTERACTIVE=1 \
@@ -64,7 +76,8 @@ let
   codexSettings = {
     # Top-level model is the default. Named config layers are generated as
     # $CODEX_HOME/<name>.config.toml below.
-    model = "gpt-5.5";
+    # Do not pin the default model here; let Codex use its own default or the
+    # runtime /model selection.
     model_reasoning_effort = "medium";
 
     # Account profiles rely on CODEX_HOME isolation. Force file storage so
@@ -143,11 +156,9 @@ let
 
   codexConfigProfiles = {
     heavy = {
-      model = "gpt-5.5";
       model_reasoning_effort = "high";
     };
     spark = {
-      model = "gpt-5.3-codex-spark";
       model_reasoning_effort = "medium";
     };
   };

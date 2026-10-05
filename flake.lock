@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789145426,
-        "narHash": "sha256-Wf+7Qzt8+nz4TXPCbWnMjOAdzbVM6blW9J6JP+YhSy8=",
+        "lastModified": 1790154098,
+        "narHash": "sha256-SviEpvFefXCPOmQ2b41c4ujE7BzWYJ/h8p/HZNxD2B8=",
         "owner": "Kyure-A",
         "repo": "agent-skills-nix",
-        "rev": "5133c874553c6c295654d8de4e3f62c95736b9c6",
+        "rev": "dc122af897ab9a685c20ae54c639021619dbbb52",
         "type": "github"
       },
       "original": {
@@ -23,11 +23,11 @@
     "anthropic-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1789069448,
-        "narHash": "sha256-tI4bTTBfI1ylltklGyiyA7pLoKXEWtrT6lrmwrpLbCw=",
+        "lastModified": 1790648403,
+        "narHash": "sha256-PRBkTEGNwT73EFCvuTprzIBGiG+UGSYiaCkY7Ji13us=",
         "owner": "anthropics",
         "repo": "skills",
-        "rev": "34040c9c568585f6929bedeaad110ad08f079624",
+        "rev": "8a1541c4a3ffa5a20a5a91de0dcf3f0bab1d1ef4",
         "type": "github"
       },
       "original": {
@@ -39,11 +39,11 @@
     "app-store-screenshots": {
       "flake": false,
       "locked": {
-        "lastModified": 1788596084,
-        "narHash": "sha256-VumbGM8WVHhiuB4Kvqs68icVcaZ+hvlaTrqOBbObyh4=",
+        "lastModified": 1790660621,
+        "narHash": "sha256-qlONEJeRPFflU84XUBATCStQ2bIOanr6dGwRWNkd4t8=",
         "owner": "ParthJadhav",
         "repo": "app-store-screenshots",
-        "rev": "18951ddc4e06c53a3d34207732c16d9568f88d11",
+        "rev": "8bd752043f33c54e69c2e77dd169fc3fbca8a4e4",
         "type": "github"
       },
       "original": {
@@ -129,11 +129,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790091288,
-        "narHash": "sha256-2dUuLTiQrf2gUFVLlayDq/hgluitplAMv6Y9bYwQQ+c=",
+        "lastModified": 1790500375,
+        "narHash": "sha256-XN3sDtn8TU9hAc9xqZ+SqRB/HHm2wjxM6aSWYLJU+oo=",
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "0d3997c4d3253505f77c9bcea63904bb575da3c5",
+        "rev": "a0e4241b51206fbcbf52fd322eb5f0cd80f153c4",
         "type": "github"
       },
       "original": {
@@ -171,11 +171,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790128814,
-        "narHash": "sha256-6Gm9q+wW3E4Ey4F6wEbJAwaMsEK6hvCYfTW7yY64ZfA=",
+        "lastModified": 1790911008,
+        "narHash": "sha256-r7KBcjLlw7LzuvCYUU1V50L81uf+0YgHTCnhymTwwpw=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "0b2f1129177f70c5f0f5d88bb53c49ca47d0bfc0",
+        "rev": "a439f71e75b94c88300022045713c790c79ba007",
         "type": "github"
       },
       "original": {
@@ -228,11 +228,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789892076,
-        "narHash": "sha256-Dkg4VKPmDPqTwaiw2WH5br73tXoL1qrOO0xJnR4TlcA=",
+        "lastModified": 1790499302,
+        "narHash": "sha256-Gbf/U9ptJhQh0qnDnJ/+a8MAcq1HXunbArUTHR2wNYk=",
         "owner": "nix-community",
         "repo": "nix-index-database",
-        "rev": "9ad722673ab3b3f91f02135e53775825b240b869",
+        "rev": "161d7c91accd93034bb3c295224d9d895a778573",
         "type": "github"
       },
       "original": {
@@ -292,11 +292,11 @@
     "orca-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1790140081,
-        "narHash": "sha256-9fmn6CrUQuYUrveAk+4r8M/pd3fFTekXWd0Fq+zrqU8=",
+        "lastModified": 1790913231,
+        "narHash": "sha256-DcsWGZnSuEnnxv67SYILEJCcaz4UJ9WQSobQDyvGl9M=",
         "owner": "stablyai",
         "repo": "orca",
-        "rev": "0afc66ebd3b93624e090f4ea0911e79baf6e442c",
+        "rev": "444f1952c771e08134d490145ca6c756487ad163",
         "type": "github"
       },
       "original": {
@@ -353,11 +353,11 @@
     "taste-skill": {
       "flake": false,
       "locked": {
-        "lastModified": 1790107187,
-        "narHash": "sha256-4ApQ49CDAj35LpZ6G6VrCi7PkzilntCmBwqgxUK+gLM=",
+        "lastModified": 1790413310,
+        "narHash": "sha256-1X7XrXi2mivzmrqa9+zkIHs0uFUoXaqhOXQIHqK8lV0=",
         "owner": "Leonxlnx",
         "repo": "taste-skill",
-        "rev": "a6153b39e495b8d62666f33f6a7019fcba3b777f",
+        "rev": "ce26fc25c0e5e8cab638f883de62d9a86ee5e45b",
         "type": "github"
       },
       "original": {
@@ -369,11 +369,11 @@
     "trailofbits-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1790024381,
-        "narHash": "sha256-ujaD5H89JdhYLeqJuSPGsFTYttYDbwLoHBD422w/I1k=",
+        "lastModified": 1790618797,
+        "narHash": "sha256-Nf+IdkTpsB9oFemTMOr45ZJeHb+aesgIHpOD9mVKo6M=",
         "owner": "trailofbits",
         "repo": "skills",
-        "rev": "32e34f8173796e3566a51aee877dc96bc5191f64",
+        "rev": "82fe8226252622fa807643bdca1710901198553a",
         "type": "github"
       },
       "original": {

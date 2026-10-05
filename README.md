@@ -34,9 +34,6 @@ nix run nix-darwin -- switch --flake .#RMB
 
 # macOS minimal server (MBP187-Z / mbp187)
 nix run nix-darwin -- switch --flake '.#MBP187-Z'
-
-# macOS (r1ca18lab)
-nix run nix-darwin -- switch --flake .#r1ca18lab
 ```
 
 ### Ubuntu homelab
@@ -82,6 +79,7 @@ dotfiles/
 ├── flake.nix                     # flake エントリポイント
 ├── flake.lock                    # 依存ロック
 ├── nix/
+│   ├── flake/                    # host構成・開発環境・app定義
 │   ├── darwin/configuration.nix  # macOS設定、Homebrew
 │   └── home-manager/
 │       ├── home.nix              # ユーザー設定

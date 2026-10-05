@@ -107,12 +107,16 @@ Orca System default・managed accountが同じcredential/session historyを使�
 
 運用ルール:
 
-- account追加はOrca側で`orca account add --agent claude|codex`を行い、その後launcherを
-  `ccspace add cc-<name> --space "<managed auth path>"` で向ける
+- account追加はOrca側で`orca account add --agent claude|codex`を行う
+- `cl`/`cx`の起動時に`ccspace-sync-orca`がOrca accountをccspaceへ自動同期する
+- launcher identityはproviderと不変のOrca account IDで決まる
+- pickerはemailとaccount IDを表示する
+- 同じemailの複数accountも別のlauncherとして保持する
+- Codexは`~/.codex--orca-<id>` symlinkをmanaged homeへ作る
+- Claude credentialのexportも同期時に自動実行する
 - Claudeのprimary accountを切り替えるときは `orca-set-primary-claude [email]` で
   対象 managed auth dirを `~/.claude` へのsymlinkにし、`.orca-managed-claude-auth` markerを
   `~/.claude` に書き込む。`~/.claude` は常に実dirを維持する
-- 新しいmanaged accountは`.credentials.json`を同様にexportする
 - どのdirでも手動`login`/`logout`で別accountに変えない
 - Orcaの仕様変更でmanaged dir構造が変わった場合は再調整が必要
 
@@ -126,9 +130,10 @@ ccspaceのmanifestやlauncherにDevinを追加する機能はない。
 ## よく使うcommand
 
 ```bash
-ccspace list             # 登録済みlauncher一覧
-ccspace add cc-work       # launcher + spaceを作成
-ccspace doctor            # 整合性チェック(read-only)
+ccspace-sync-orca         # Orca accountをIDベースlauncherへ同期
+ccspace list              # 登録済みlauncher一覧
+ccspace add cc-work        # Orca外のlauncher + spaceを手動作成
+ccspace doctor             # 整合性チェック(read-only)
 ccspace usage             # quota確認
 ccspace launch            # quota最大のaccountで起動
 ```
@@ -159,7 +164,7 @@ ws claude
 `ws profile <agent> --clear`で解除すると環境変数継承へ戻る。
 `ws codex`/`ws claude`は保存済みlauncherがあればそれを、なければ通常の`codex`/`claude`を起動する。
 
-launcherが未登録の場合は`ccspace add`を先に実行する必要がある。
+`ws profile`も選択前にOrca accountを自動同期する。Orca外のspaceは`ccspace add`で手動登録する。
 
 ## Nix側のsource of truth
 
