@@ -226,8 +226,10 @@ let
 
       export ANTHROPIC_BASE_URL="http://127.0.0.1:18765"
       export ANTHROPIC_AUTH_TOKEN="unused"
-      export ANTHROPIC_MODEL="''${CLGPT_MODEL:-gpt-5.6-sol[1m]}"
-      export ANTHROPIC_SMALL_FAST_MODEL="''${CLGPT_FAST_MODEL:-gpt-5.6-luna[1m]}"
+      # Do not pin models here. If you want to override the proxy default, set
+      # CLGPT_MODEL and/or CLGPT_FAST_MODEL before invoking clgpt.
+      [[ -n "''${CLGPT_MODEL:-}" ]] && export ANTHROPIC_MODEL="$CLGPT_MODEL"
+      [[ -n "''${CLGPT_FAST_MODEL:-}" ]] && export ANTHROPIC_SMALL_FAST_MODEL="$CLGPT_FAST_MODEL"
       export CLAUDE_CODE_AUTO_COMPACT_WINDOW="272000"
       export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
       export CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK="1"

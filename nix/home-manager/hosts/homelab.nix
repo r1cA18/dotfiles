@@ -1,6 +1,42 @@
 { config, pkgs, ... }:
+let
+  # homelab's Tailscale IPv4. UFW only admits tailscale0, so this is the
+  # address advertised to paired phones.
+  orcaPairingAddress = "100.91.25.40";
+
+  # Restart orca-serve and render its mobile pairing offer as a terminal QR.
+  # An unclaimed offer is reused across restarts; a claimed one is replaced.
+  orcaPair = pkgs.writeShellApplication {
+    name = "orca-pair";
+    runtimeInputs = [ pkgs.qrencode ];
+    text = ''
+      since=$(date '+%Y-%m-%d %H:%M:%S')
+      systemctl --user restart orca-serve.service
+      url=""
+      for _ in $(seq 60); do
+        url=$(journalctl --user -t orca-ide --since "$since" -o cat --no-pager \
+          | grep -ao 'orca://pair?code=[A-Za-z0-9_=-]*' | tail -n 1 || true)
+        [ -n "$url" ] && break
+        sleep 1
+      done
+      if [ -z "$url" ]; then
+        echo "orca-serve printed no pairing URL; see: journalctl --user -t orca-ide" >&2
+        exit 1
+      fi
+      qrencode -t ANSIUTF8 "$url"
+      echo "$url"
+    '';
+  };
+in
 {
   imports = [ ../home.nix ];
+
+  # Headless Orca runtime for mobile pairing.
+  # The binary is not named `orca` because that resolves to GNOME's screen reader.
+  home.packages = [
+    pkgs.orca-ide
+    orcaPair
+  ];
 
   # Keep Codex available to SSH-driven ChatGPT clients even when no graphical
   # session is logged in. homelab/ansible/playbook.yml enables linger for this
@@ -16,6 +52,36 @@
           ExecStart = "${pkgs.codex}/bin/codex app-server --listen unix://";
           WorkingDirectory = config.home.homeDirectory;
           Restart = "always";
+          RestartSec = 5;
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+
+      # Paired devices live in ~/.config/orca and survive restarts. Orca moves its
+      # main process and terminal daemon into app-orca-*.scope units, so logs are
+      # under `journalctl --user -t orca-ide` and restarts keep live terminals.
+      # Run `orca-pair` to show a QR for pairing another phone.
+      orca-serve = {
+        Unit = {
+          Description = "Orca headless runtime server";
+          StartLimitIntervalSec = 300;
+          StartLimitBurst = 5;
+        };
+        Service = {
+          ExecStart = "${pkgs.orca-ide}/bin/orca-ide serve --port 6768 --pairing-address ${orcaPairingAddress} --mobile-pairing";
+          WorkingDirectory = config.home.homeDirectory;
+          Environment = [ "LIBGL_ALWAYS_SOFTWARE=1" ];
+          # The user manager may carry an xrdp/GNOME display; Orca must start its
+          # own Xvfb instead of depending on a desktop session.
+          UnsetEnvironment = [
+            "DISPLAY"
+            "WAYLAND_DISPLAY"
+            "GNOME_SETUP_DISPLAY"
+          ];
+          KillMode = "mixed";
+          Restart = "on-failure";
+          # Exit 3: another Orca instance already owns the profile.
+          RestartPreventExitStatus = 3;
           RestartSec = 5;
         };
         Install.WantedBy = [ "default.target" ];

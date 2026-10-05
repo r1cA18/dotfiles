@@ -24,6 +24,10 @@ dotfiles/
 ├── tests/                   # workspaceとaccount profileの回帰test
 │
 ├── nix/                      # Nix設定（メイン）
+│   ├── flake/                # flake outputの責務別定義
+│   │   ├── configurations.nix # host構成とHome Managerの組み立て
+│   │   ├── development.nix   # formatter・checks・devShell共通定義
+│   │   └── apps.nix          # formatterとLinux server workflow
 │   ├── darwin/               # macOS専用 (nix-darwin)
 │   │   └── configuration.nix # システム設定、Homebrew管理
 │   │
@@ -111,7 +115,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 
 Claude・Codexのaccount切り替えは外部tool `ccspace`で管理する。
 `nix/home-manager/programs/ccspace.nix`のactivationが導入と更新経路を管理し、
-launcher(`cc-<name>`・`cx-<name>`)ごとにconfig homeを分離する。
+Orca managed accountをIDベースのlauncherへ自動同期してconfig homeを分離する。
 詳細は[ccspaceガイド](guides/ccspace.md)を参照。
 
 ## Agent 運用の基本方針
@@ -385,7 +389,12 @@ in {
 ## flake.nixの構造
 
 - `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
-- `outputs`:
+- `outputs`: `nix/flake/`の定義を各systemへ配布する
+- hostの追加・削除とprofile選択: `nix/flake/configurations.nix`
+- formatter・check・開発shell: `nix/flake/development.nix`
+- app entrypoint: `nix/flake/apps.nix`
+- custom package一覧: `nix/pkgs/default.nix`。実装は`nix/pkgs/<name>/default.nix`
+- host output:
   - `darwinConfigurations.RMB`: macOS workstation設定
   - `darwinConfigurations."MBP187-Z"`: SSH中心のmacOS minimal server設定
   - `homeConfigurations."r1ca18@homelab"`: Ubuntu homelab設定

@@ -28,13 +28,13 @@ in
     ./programs/claude-code-proxy.nix
     ./programs/codex.nix
     ./programs/nix-index.nix
+    ./programs/ghostty.nix
+    ./programs/orca.nix
   ]
   ++ lib.optionals (!isServer) [
-    ./programs/ghostty.nix
     ./programs/aerospace.nix
     ./programs/linux-desktop.nix
     ./programs/karabiner.nix
-    ./programs/orca.nix
     ./programs/zed.nix
   ];
 

@@ -57,6 +57,9 @@ in
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;
+    taps = [
+      "stablyai/orca"
+    ];
     casks =
       lib.optionals (!isServer) [
         "1password"
@@ -96,7 +99,8 @@ in
         "zed"
       ]
       ++ lib.optionals isServer [
-        "1password"
+        "ghostty"
+        "stablyai/orca/orca"
         "tailscale-app"
       ];
     masApps = lib.mkIf (!isServer) {
@@ -158,11 +162,42 @@ in
 
   services.openssh.enable = isServer;
 
+  launchd.daemons.orca-server = lib.mkIf isServer {
+    serviceConfig = {
+      Label = "com.r1ca18.orca-server";
+      UserName = username;
+      GroupName = "staff";
+      ProgramArguments = [
+        "/Applications/Orca.app/Contents/Resources/bin/orca"
+        "serve"
+        "--pairing-address"
+        "100.118.19.51"
+        "--mobile-pairing"
+      ];
+      EnvironmentVariables = {
+        HOME = "/Users/${username}";
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+      };
+      WorkingDirectory = "/Users/${username}";
+      RunAtLoad = true;
+      KeepAlive = true;
+      ProcessType = "Background";
+      StandardOutPath = "/Users/${username}/Library/Logs/Orca/server.log";
+      StandardErrorPath = "/Users/${username}/Library/Logs/Orca/server.log";
+    };
+  };
+
   networking.hostName = hostname;
 
   users.users.${username} = {
     home = "/Users/${username}";
     shell = pkgs.zsh;
+    openssh.authorizedKeys.keys = lib.optionals isServer [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILNxnu47vU4SYsjtsnToaCeOZSarXXRiJkIxQ7NJJ9i5"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEDYx2wE/80gbRnZBXJgHKTacQTIFrvrpcBfy6PKoZ9x"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKPp1TXz+Ypy+kIDNWRMVOKtY6PWPJP+R/u9e9Q/pqw"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOqtfY/qQhM1LSHkFZwV+KPlKG1QC0ixkG3OpVHDMQ+5 access-to-mbp187"
+    ];
   };
 
   programs.zsh.enable = true;

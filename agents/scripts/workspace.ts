@@ -67,6 +67,11 @@ type Agent = "codex" | "claude";
 const launcherPrefixes = { codex: "cx-", claude: "cc-" };
 
 function ccspaceLaunchers(agent: Agent): string[] {
+  const sync = Bun.which("ccspace-sync-orca");
+  if (sync) {
+    const result = Bun.spawnSync([sync], { env: process.env, stdout: "inherit", stderr: "inherit" });
+    if (result.exitCode !== 0) console.error("Orca account sync failed; using existing ccspace launchers");
+  }
   const manifestPath = join(process.env.HOME ?? "", ".local/share/ccspace/spaces.json");
   if (!existsSync(manifestPath)) return [];
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));

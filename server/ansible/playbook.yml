@@ -270,6 +270,71 @@
         - gdm.service
         - gnome-remote-desktop.service
 
+    - name: Install the separate XFCE and xrdp session
+      ansible.builtin.apt:
+        name:
+          - dbus-x11
+          - xfce4
+          - xfce4-terminal
+          - xorgxrdp
+          - xrdp
+        state: present
+        policy_rc_d: 101
+
+    - name: Create the xrdp systemd override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/xrdp.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Prepare xrdp socket directories before starting the service
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/xrdp.service.d/socksetup.conf
+        content: "[Service]\nExecStartPre=/bin/sh /usr/share/xrdp/socksetup\n"
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - Restart xrdp session manager
+        - Restart xrdp
+
+    - name: Set the separate xrdp listener port
+      ansible.builtin.lineinfile:
+        path: /etc/xrdp/xrdp.ini
+        regexp: "^port=(3389|3390)$"
+        line: port=3390
+      notify: Restart xrdp
+
+    - name: Require TLS for xrdp
+      ansible.builtin.lineinfile:
+        path: /etc/xrdp/xrdp.ini
+        regexp: "^security_layer=.*$"
+        line: security_layer=tls
+      notify: Restart xrdp
+
+    - name: Allow xrdp to read its TLS key
+      ansible.builtin.user:
+        name: xrdp
+        groups: ssl-cert
+        append: true
+      notify: Restart xrdp
+
+    - name: Start XFCE for xrdp sessions
+      ansible.builtin.copy:
+        dest: "{{ homelab_home }}/.xsession"
+        content: "#!/bin/sh\nunset WAYLAND_DISPLAY\nexec startxfce4\n"
+        owner: "{{ homelab_user }}"
+        group: "{{ homelab_user }}"
+        mode: "0755"
+
+    - name: Enable xrdp at boot
+      ansible.builtin.systemd_service:
+        name: xrdp.service
+        enabled: true
+        state: started
+
     - name: Disable sleep states for server operation
       ansible.builtin.systemd_service:
         name: "{{ item }}"
@@ -293,6 +358,15 @@
         group: root
         mode: "0644"
       notify: Reload Codex AppArmor profile
+
+    - name: Allow the Nix-managed Orca sandbox to create user namespaces
+      ansible.builtin.template:
+        src: orca-ide.apparmor.j2
+        dest: /etc/apparmor.d/orca-ide
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload Orca AppArmor profile
 
     - name: Add the homelab user to hardware access groups
       ansible.builtin.user:
@@ -660,6 +734,17 @@
         (homelab_tailscale_status.stdout | from_json).BackendState != "Running"
 
   handlers:
+    - name: Restart xrdp session manager
+      ansible.builtin.systemd_service:
+        name: xrdp-sesman.service
+        daemon_reload: true
+        state: restarted
+
+    - name: Restart xrdp
+      ansible.builtin.systemd_service:
+        name: xrdp.service
+        state: restarted
+
     - name: Restart Nix daemon
       ansible.builtin.systemd_service:
         name: nix-daemon.service
@@ -683,6 +768,14 @@
           - apparmor_parser
           - --replace
           - /etc/apparmor.d/codex-app-server
+      changed_when: true
+
+    - name: Reload Orca AppArmor profile
+      ansible.builtin.command:
+        argv:
+          - apparmor_parser
+          - --replace
+          - /etc/apparmor.d/orca-ide
       changed_when: true
 
     - name: Restart homelab services
