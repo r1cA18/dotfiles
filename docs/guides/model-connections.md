@@ -19,13 +19,13 @@ CLIはJSONを返す。共通処理は同じscriptのloadCatalogとresolveConnect
 明示groupに属さないprofileと未知の設定と未対応runtimeは拒否する。
 profile未指定の自動実行は行わない。default_runtimeはdsh。
 
-| 要素 | 管理対象 |
-| --- | --- |
-| runtime | 実行commandと正確なversion |
-| connection | providerとaccount_refとgroupとbillingとgateway origin |
-| models | mainと任意のsmallのIDと容量 |
-| profile | runtimeとconnectionの選択 |
-| fingerprint | 解決した選択全体のSHA-256 |
+| 要素        | 管理対象                                              |
+| ----------- | ----------------------------------------------------- |
+| runtime     | 実行commandと正確なversion                            |
+| connection  | providerとaccount_refとgroupとbillingとgateway origin |
+| models      | mainと任意のsmallのIDと容量                           |
+| profile     | runtimeとconnectionの選択                             |
+| fingerprint | 解決した選択全体のSHA-256                             |
 
 接続はloopbackのAnthropic Messages gatewayに限定する。
 API形式を揃えるだけでtool呼び出しとreasoningとusageが互換になるとは扱わない。
