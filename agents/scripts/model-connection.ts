@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-export type Runtime = 'dsh' | 'claude-code';
+export type Runtime = 'dsh' | 'claude-code' | 'codex';
+export const runtimeCommands: Record<Runtime, string> = { dsh: 'dsh', 'claude-code': 'claude', codex: 'codex' };
 export interface Model { id: string; context_window: number; max_output_tokens: number }
 export interface Connection {
   id: string;
@@ -13,14 +14,25 @@ export interface Connection {
   base_url: string;
   models: { main: Model; small?: Model };
 }
+// Capability checks belong to the selected transport. A declaration does not
+// authorize importing another application's subscription credentials.
+export function gatewayIssue(connection: Pick<Connection, 'billing' | 'provider'>, runtime: string) {
+  if (runtime === 'codex') return { code: 'transport_unsupported', message: 'Codex does not support Anthropic Messages gateway transport; explicitly select native Codex separately' };
+  if (connection.billing === 'subscription') return connection.provider === 'anthropic'
+    ? { code: 'subscription_route_unsupported', message: 'Claude subscription credentials are reserved for native Anthropic applications; explicitly select unmodified Claude Code separately' }
+    : connection.provider === 'openai'
+      ? { code: 'subscription_adapter_unimplemented', message: 'ChatGPT plan usage requires app-specific official sign-in and a compatible Responses adapter; native Codex credentials are not imported' }
+      : { code: 'subscription_route_unsupported', message: 'This provider has no supported subscription gateway adapter' };
+  return undefined;
+}
 export interface Catalog {
   schema_version: 1;
   default_runtime: Runtime;
-  runtimes: Record<Runtime, { command: string; version: string }>;
+  runtimes: Partial<Record<Runtime, { command: string; version: string }>>;
   connections: Connection[];
   profiles: { id: string; connection: string; runtime?: Runtime }[];
 }
-const runtimes = ['dsh', 'claude-code'];
+const runtimes = Object.keys(runtimeCommands) as Runtime[];
 const identifier = /^[a-z][a-z0-9-]{0,63}$/;
 const plain = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
 function object(value: unknown, keys: string[], required = keys): Record<string, unknown> {
@@ -51,11 +63,12 @@ function model(value: unknown): Model {
 export function validateCatalog(input: unknown): Catalog {
   const c = object(input, ['schema_version', 'default_runtime', 'runtimes', 'connections', 'profiles']);
   if (c.schema_version !== 1 || !runtimes.includes(String(c.default_runtime))) throw new Error('Unsupported catalog');
-  const engines = object(c.runtimes, runtimes);
-  for (const runtime of runtimes) {
+  const engines = object(c.runtimes, runtimes, []);
+  if (!Object.hasOwn(engines, String(c.default_runtime))) throw new Error('Default runtime is not configured');
+  for (const runtime of Object.keys(engines) as Runtime[]) {
     const engine = object(engines[runtime], ['command', 'version']);
     const command = text(engine.command);
-    if (!(command === 'dsh' || command === 'claude' || command.startsWith('/'))) throw new Error('Use a native command or absolute executable path');
+    if (!(command === runtimeCommands[runtime] || command.startsWith('/'))) throw new Error('Use a native command or absolute executable path');
     if (!/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(text(engine.version))) throw new Error('Pin an exact runtime version');
   }
   if (!Array.isArray(c.connections) || !c.connections.length || !Array.isArray(c.profiles) || !c.profiles.length) throw new Error('Empty catalog');
@@ -83,7 +96,7 @@ export function validateCatalog(input: unknown): Catalog {
   for (const value of c.profiles) {
     const p = object(value, ['id', 'connection', 'runtime'], ['id', 'connection']);
     const key = id(p.id);
-    if (profiles.has(key) || !connections.has(id(p.connection)) || (p.runtime !== undefined && !runtimes.includes(String(p.runtime)))) throw new Error('Invalid profile reference');
+    if (profiles.has(key) || !connections.has(id(p.connection)) || (p.runtime !== undefined && !Object.hasOwn(engines, String(p.runtime)))) throw new Error('Invalid profile reference');
     profiles.add(key);
   }
   // Own the parsed data: later caller mutations must not alter a resolved plan.
@@ -101,10 +114,10 @@ export function resolveConnection(catalog: Catalog, options: { profile: string; 
   const connection = c.connections.find(item => item.id === profile.connection)!;
   if (connection.group !== options.group) throw new Error('Profile is outside the requested account group');
   const runtime = options.runtime ?? profile.runtime ?? c.default_runtime;
-  if (!runtimes.includes(runtime)) throw new Error('Unsupported runtime');
+  if (!runtimes.includes(runtime as Runtime) || !c.runtimes[runtime as Runtime]) throw new Error('Unsupported runtime');
   const selection = {
     schema_version: 1 as const, profile: profile.id, runtime: runtime as Runtime,
-    engine: c.runtimes[runtime as Runtime], connection,
+    engine: c.runtimes[runtime as Runtime]!, connection,
     on_limit: 'stop' as const, automatic_fallback: false as const,
   };
   const fingerprint = createHash('sha256').update(JSON.stringify(selection)).digest('hex');
@@ -133,7 +146,7 @@ if (import.meta.main) {
       console.log(JSON.stringify(catalog.profiles.filter(p => catalog.connections.find(c => c.id === p.connection)?.group === flags.group), null, 2));
     } else if (command === 'resolve' && flags.profile && flags.group) {
       console.log(JSON.stringify(resolveConnection(catalog, { profile: flags.profile, group: flags.group, runtime: flags.runtime }), null, 2));
-    } else throw new Error('Usage: model-connection.ts list|resolve --config <file> --group <group> [--profile <id>] [--runtime dsh|claude-code]');
+    } else throw new Error('Usage: model-connection.ts list|resolve --config <file> --group <group> [--profile <id>] [--runtime dsh|claude-code|codex]');
   } catch (error) {
     console.error((error as Error).message);
     process.exitCode = 2;

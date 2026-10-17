@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from 'bun:test';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSync, existsSync, mkdirSync, readlinkSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { launch, launchEnvironment, renderRuntime } from '../agents/scripts/harness-runtime';
@@ -11,7 +11,7 @@ function fixture(runtime: Runtime = 'dsh', body = '') {
   const root = mkdtempSync(join(tmpdir(), 'harness-launch-')); roots.push(root);
   const capture = join(root, 'capture.json'); const command = join(root, 'fake-native');
   writeFileSync(command, `#!${process.execPath}\nimport {writeFileSync} from 'node:fs';\nif (process.argv[2] === '--version') { console.log('1.2.3'); process.exit(0); }\nwriteFileSync(${JSON.stringify(capture)}, JSON.stringify({args:process.argv.slice(2),env:process.env,cwd:process.cwd()}));\n${body}\n`, { mode: 0o755 });
-  const catalog = validateCatalog(example); catalog.runtimes[runtime] = { command, version: '1.2.3' };
+  const catalog = validateCatalog(example); catalog.connections[0].billing = 'api'; catalog.runtimes[runtime] = { command, version: '1.2.3' };
   const selection = resolveConnection(catalog, { profile: 'development', group: 'personal', runtime });
   const options = { cwd: root, state: join(root, 'state'), task: '--dangerously-skip-permissions $(touch SHOULD_NOT_EXIST)', env: {
     PATH: process.env.PATH, HOME: root, OPENAI_API_KEY: 'ambient-secret', ANTHROPIC_API_KEY: 'ambient-secret',
@@ -100,5 +100,26 @@ test('empty tasks and invalid execution limits fail before any state is written'
 test('a mutated selection cannot reuse a previous fingerprint', async () => {
   const f = fixture(); f.selection.connection.account_ref = 'another';
   await expect(launch(f.selection, f.options)).rejects.toThrow('fingerprint');
+  expect(existsSync(f.options.state)).toBe(false);
+});
+
+for (const runtime of ['dsh', 'claude-code'] as const) {
+  test(`${runtime} receives only explicitly supplied shared instructions and skills`, async () => {
+    const f = fixture(runtime);
+    const instructions = join(f.root, 'shared.md'); const skills = join(f.root, 'shared-skills');
+    writeFileSync(instructions, 'Shared instruction fixture'); mkdirSync(skills);
+    const result = await launch(f.selection, { ...f.options, assets: { instructionsFile: instructions, skillsDirectory: skills } });
+    const native = join(result.directory, runtime === 'dsh' ? 'dsh' : 'claude');
+    expect(readFileSync(join(native, runtime === 'dsh' ? 'AGENTS.md' : 'CLAUDE.md'), 'utf8')).toBe('Shared instruction fixture');
+    expect(readlinkSync(join(native, 'skills'))).toBe(realpathSync(skills));
+    expect(JSON.parse(readFileSync(join(result.directory, 'binding.json'), 'utf8')).assets.instructions_sha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+}
+
+test('legacy catalogs cannot bypass subscription support checks', async () => {
+  const f = fixture(); f.catalog.connections[0].billing = 'subscription';
+  const selection = resolveConnection(f.catalog, { profile: 'development', group: 'personal' });
+  expect(() => renderRuntime(selection)).toThrow('subscription_adapter_unimplemented');
+  await expect(launch(selection, f.options)).rejects.toThrow('subscription_adapter_unimplemented');
   expect(existsSync(f.options.state)).toBe(false);
 });

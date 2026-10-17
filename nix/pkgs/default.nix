@@ -52,6 +52,7 @@ in
 {
   agent-browser = pkgs.callPackage ./agent-browser { };
   difit = pkgs.callPackage ./difit { };
+  deepseek-harness = pkgs.callPackage ./deepseek-harness { };
   inherit mdv;
 }
 //

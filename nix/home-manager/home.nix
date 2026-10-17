@@ -21,6 +21,7 @@ in
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
     ./programs/model-profiles.nix
+    ./programs/harness-runtime.nix
     ./programs/antigravity.nix
     ./programs/ccspace.nix
     ./programs/devin.nix
@@ -46,4 +47,9 @@ in
   };
 
   programs.home-manager.enable = true;
+
+  dotfiles.harnessRuntime = {
+    enable = true;
+    dsh.enable = true;
+  };
 }
