@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "default_runtime": "dsh",
+  "runtimes": {
+    "dsh": { "version": "0.2.1-rc.2" }
+  },
+  "connections": [
+    {
+      "id": "personal-chatgpt",
+      "group": "personal",
+      "provider": "openai",
+      "account_ref": "personal-chatgpt",
+      "billing": "subscription",
+      "transport": "anthropic-messages",
+      "models": {
+        "main": { "id": "replace-with-verified-model", "context_window": 32000, "max_output_tokens": 1024 }
+      }
+    }
+  ],
+  "profiles": [
+    { "id": "development", "connection": "personal-chatgpt" }
+  ]
+}

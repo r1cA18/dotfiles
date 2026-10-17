@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { argumentsFor, loadCatalog, resolveConnection, type Selection } from './model-connection';
+import { argumentsFor, gatewayIssue, loadCatalog, resolveConnection, type Selection } from './model-connection';
+import { loadProfileSelection } from './harness-profile';
 
 export function renderRuntime(selection: Selection) {
   const { connection: c } = selection;
+  const unsupported = gatewayIssue(c, selection.runtime);
+  if (unsupported) throw new Error(`${unsupported.code}: ${unsupported.message}`);
   const common = { fingerprint: selection.fingerprint, runtime: selection.runtime, engine: selection.engine };
   if (selection.runtime === 'claude-code') {
     return {
@@ -62,7 +65,32 @@ export function checkVersion(command: string, expected: string, env: NodeJS.Proc
   if (!versions.includes(expected)) throw new Error('Runtime version does not match the selected pin');
 }
 
-export async function launch(selection: Selection, options: { cwd: string; state: string; task: string; env?: NodeJS.ProcessEnv; timeoutMs?: number }) {
+export interface SharedAssets { instructionsFile?: string; skillsDirectory?: string }
+
+async function prepareAssets(assets: SharedAssets, directory: string, runtime: Selection['runtime']) {
+  const configDirectory = join(directory, runtime === 'dsh' ? 'dsh' : 'claude');
+  const binding: Record<string, string> = {};
+  if (assets.instructionsFile) {
+    if (!assets.instructionsFile.startsWith('/')) throw new Error('Shared instruction file must be absolute');
+    const info = await stat(assets.instructionsFile);
+    if (!info.isFile() || info.size > 1_048_576) throw new Error('Invalid shared instruction file');
+    const instructions = await readFile(assets.instructionsFile);
+    await mkdir(configDirectory, { recursive: true, mode: 0o700 });
+    await writeFile(join(configDirectory, runtime === 'dsh' ? 'AGENTS.md' : 'CLAUDE.md'), instructions, { mode: 0o600, flag: 'wx' });
+    binding.instructions_sha256 = createHash('sha256').update(instructions).digest('hex');
+  }
+  if (assets.skillsDirectory) {
+    if (!assets.skillsDirectory.startsWith('/')) throw new Error('Shared skills directory must be absolute');
+    const skills = await realpath(assets.skillsDirectory);
+    if (!(await stat(skills)).isDirectory()) throw new Error('Invalid shared skills directory');
+    await mkdir(configDirectory, { recursive: true, mode: 0o700 });
+    await symlink(skills, join(configDirectory, 'skills'));
+    binding.skills_directory = skills;
+  }
+  return binding;
+}
+
+export async function launch(selection: Selection, options: { cwd: string; state: string; task: string; env?: NodeJS.ProcessEnv; timeoutMs?: number; assets?: SharedAssets }) {
   selection = structuredClone(selection);
   const { fingerprint, ...binding } = selection;
   const actual = `sha256:${createHash('sha256').update(JSON.stringify(binding)).digest('hex')}`;
@@ -87,6 +115,7 @@ export async function launch(selection: Selection, options: { cwd: string; state
   env.DSH_HOME = join(directory, 'dsh');
   env.CLAUDE_CONFIG_DIR = join(directory, 'claude');
   checkVersion(rendered.engine.command, rendered.engine.version, env);
+  const assets = await prepareAssets(options.assets ?? {}, directory, selection.runtime);
   Object.assign(env, rendered.env);
   let args = [...rendered.args];
   if (rendered.patch) {
@@ -94,7 +123,7 @@ export async function launch(selection: Selection, options: { cwd: string; state
     await writeFile(patch, JSON.stringify(rendered.patch, null, 2), { mode: 0o600, flag: 'wx' });
     args = ['--patch', patch, ...args];
   }
-  await writeFile(join(directory, 'binding.json'), JSON.stringify({ ...selection, cwd, timeout_ms: timeoutMs, status: 'prepared' }, null, 2), { mode: 0o600, flag: 'wx' });
+  await writeFile(join(directory, 'binding.json'), JSON.stringify({ ...selection, cwd, assets, timeout_ms: timeoutMs, status: 'prepared' }, null, 2), { mode: 0o600, flag: 'wx' });
   // New native sessions only. No arbitrary native flags can bypass the route.
   args.push('--', options.task);
   const code = await new Promise<number>((accept, reject) => {
@@ -135,13 +164,17 @@ export async function launch(selection: Selection, options: { cwd: string; state
 if (import.meta.main) {
   try {
     const [command, ...args] = process.argv.slice(2);
-    const flags = argumentsFor(args, ['config', 'profile', 'group', 'runtime', 'cwd', 'state', 'task-file', 'execute']);
-    if (!flags.config || !flags.profile || !flags.group) throw new Error('Explicit config, profile and group are required');
-    const selection = resolveConnection(await loadCatalog(flags.config), { profile: flags.profile, group: flags.group, runtime: flags.runtime });
+    const flags = argumentsFor(args, ['config', 'manifest', 'bindings', 'profile', 'group', 'runtime', 'cwd', 'state', 'task-file', 'execute', 'instructions-file', 'skills-directory']);
+    if (!flags.profile || !flags.group || (flags.config ? !!(flags.manifest || flags.bindings) : !(flags.manifest && flags.bindings))) throw new Error('Use explicit config OR manifest with device bindings, plus profile and group');
+    const options = { profile: flags.profile, group: flags.group, runtime: flags.runtime };
+    const selection = flags.config
+      ? resolveConnection(await loadCatalog(flags.config), options)
+      : await loadProfileSelection(flags.manifest, flags.bindings, options);
+    const assets: SharedAssets = { instructionsFile: flags['instructions-file'] ?? process.env.HARNESS_SHARED_INSTRUCTIONS, skillsDirectory: flags['skills-directory'] ?? process.env.HARNESS_SHARED_SKILLS };
     if (command === 'plan' && !flags.execute && !flags.state && !flags['task-file']) {
-      console.log(JSON.stringify({ ...renderRuntime(selection), cwd: resolve(flags.cwd ?? '.'), execution: 'not_started', timeout_seconds: 600 }, null, 2));
+      console.log(JSON.stringify({ ...renderRuntime(selection), cwd: resolve(flags.cwd ?? '.'), execution: 'not_started', timeout_seconds: 600, assets }, null, 2));
     } else if (command === 'run' && flags.execute === 'true' && flags.state && flags['task-file']) {
-      const result = await launch(selection, { cwd: flags.cwd ?? '.', state: flags.state, task: await readFile(flags['task-file'], 'utf8') });
+      const result = await launch(selection, { cwd: flags.cwd ?? '.', state: flags.state, task: await readFile(flags['task-file'], 'utf8'), assets });
       console.error(JSON.stringify({ fingerprint: selection.fingerprint, ...result }));
       process.exitCode = result.code;
     } else throw new Error('Use plan, or run --execute true --state <absolute-dir> --task-file <file>');

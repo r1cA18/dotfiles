@@ -28,6 +28,12 @@ jobs:
             nixpkgs#ghq nixpkgs#ripgrep nixpkgs#jq nixpkgs#python3 \
             nixpkgs#zsh nixpkgs#fzf \
             --command bash scripts/test.sh all
+      - name: Test pinned DeepSeek Harness
+        run: |
+          dsh_package=$(nix build --no-write-lock-file .#deepseek-harness --no-link --print-out-paths)
+          HARNESS_TEST_DSH_BINARY="$dsh_package/bin/dsh" \
+            nix shell --no-write-lock-file --inputs-from . nixpkgs#bun \
+            --command bun test tests/harness-runtime-native.test.ts
 
   secret-scan:
     runs-on: ubuntu-latest
