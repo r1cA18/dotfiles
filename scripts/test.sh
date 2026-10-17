@@ -24,7 +24,7 @@ require_commands() {
 unit() {
   bash scripts/lint-doc-paths.sh
   DOTFILES_TEST_NIX=0 WORKSPACE_BIN= INDEXION_BIN= \
-    bun test tests agents/hooks claude/hooks agents/skills
+    bun test tests agents/hooks claude/hooks agents/skills agents/scripts/asset-catalog.test.ts
 }
 
 integration() {

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Shared agent asset discovery catalog",
+  "description": "Repository-local discovery metadata. Categories never grant permissions or activate assets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "taxonomy", "assets"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "taxonomy": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/category" }
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "category": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$"
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "title", "summary", "path", "categories"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(rule|skill|knowledge|tool|plugin|stack-pack):[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "kind": {
+          "enum": ["rule", "skill", "knowledge", "tool", "plugin", "stack-pack"]
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repository-relative file path with no empty, dot or parent segments. The validator also checks realpath containment and file existence."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/category" }
+        }
+      }
+    }
+  }
+}
