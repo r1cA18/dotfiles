@@ -1,0 +1,96 @@
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "taxonomy": [
+    "engineering",
+    "engineering/quality",
+    "engineering/ui",
+    "engineering/ui/web",
+    "engineering/ios",
+    "engineering/workflow",
+    "knowledge",
+    "knowledge/architecture"
+  ],
+  "assets": [
+    {
+      "id": "rule:engineering",
+      "kind": "rule",
+      "title": "Engineering behavior",
+      "summary": "Shared constraints for minimal changes and verifiable completion.",
+      "path": "agents/rules/engineering.md",
+      "categories": ["engineering/quality"]
+    },
+    {
+      "id": "skill:agent-browser",
+      "kind": "skill",
+      "title": "Browser UI automation",
+      "summary": "Inspect rendered interfaces and capture browser screenshots.",
+      "path": "agents/skills/agent-browser/SKILL.md",
+      "categories": ["engineering/ui/web"]
+    },
+    {
+      "id": "skill:baseline-ui",
+      "kind": "skill",
+      "title": "UI baseline",
+      "summary": "Apply interface constraints to frontend implementation and review.",
+      "path": "agents/skills/baseline-ui/SKILL.md",
+      "categories": ["engineering/ui/web", "engineering/quality"]
+    },
+    {
+      "id": "skill:web-design-guidelines",
+      "kind": "skill",
+      "title": "Web interface review",
+      "summary": "Review UI code for accessibility and web interface guidelines.",
+      "path": "agents/skills/web-design-guidelines/SKILL.md",
+      "categories": ["engineering/ui/web", "engineering/quality"]
+    },
+    {
+      "id": "skill:swift-dev-toolkit",
+      "kind": "skill",
+      "title": "Swift development router",
+      "summary": "Find Swift build, profiling, project and deployment procedures.",
+      "path": "agents/skills/swift-dev-toolkit/SKILL.md",
+      "categories": ["engineering/ios"]
+    },
+    {
+      "id": "skill:post-review",
+      "kind": "skill",
+      "title": "Post implementation review",
+      "summary": "Inspect a completed diff and resolve actionable review findings.",
+      "path": "agents/skills/post-review/SKILL.md",
+      "categories": ["engineering/quality"]
+    },
+    {
+      "id": "skill:session-handoff",
+      "kind": "skill",
+      "title": "Session handoff",
+      "summary": "Save and recover unfinished work across agent sessions.",
+      "path": "agents/skills/session-handoff/SKILL.md",
+      "categories": ["engineering/workflow"]
+    },
+    {
+      "id": "skill:indexion-workspace",
+      "kind": "skill",
+      "title": "Cross repository exploration",
+      "summary": "Locate related repositories and shared project knowledge.",
+      "path": "agents/skills/indexion-workspace/SKILL.md",
+      "categories": ["engineering/workflow", "knowledge"]
+    },
+    {
+      "id": "skill:knowledge-extract",
+      "kind": "skill",
+      "title": "Knowledge extraction",
+      "summary": "Turn explicit requests to retain session learning into knowledge notes.",
+      "path": "agents/skills/knowledge-extract/SKILL.md",
+      "categories": ["knowledge"]
+    },
+    {
+      "id": "knowledge:shared-foundation-skills-2026-09",
+      "kind": "knowledge",
+      "title": "Shared foundation skill investigation",
+      "summary": "Dated source selection and validation notes for shared skills.",
+      "path": "docs/research/shared-foundation-skills-2026-09.md",
+      "categories": ["knowledge/architecture"]
+    }
+  ]
+}
