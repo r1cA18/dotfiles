@@ -6,14 +6,14 @@ catalogへの登録はassetの有効化や承認を意味しない。Nixの配�
 
 ## 種類と責務
 
-| kind | 内容 | 正本または実行境界 |
-| --- | --- | --- |
-| `rule` | 常に守る制約と方針 | 共有instructionと製品固有のenforcement |
-| `skill` | 必要なときに読む作業手順 | Agent Skills形式のSKILL.mdと同梱resource |
-| `knowledge` | 出典付きの知識と決定と調査 | project docsまたは認可されたknowledge service |
-| `tool` | 実行できる操作の契約 | MCP/API/CLIとserver側の認可 |
-| `plugin` | skillやtoolやhookの配布bundle | 製品ごとのmanifestと固定source revision |
-| `stack-pack` | 実行可能な構築と検証の定義 | Harness Packと対象snapshotに結ぶEvidence |
+| kind         | 内容                          | 正本または実行境界                            |
+| ------------ | ----------------------------- | --------------------------------------------- |
+| `rule`       | 常に守る制約と方針            | 共有instructionと製品固有のenforcement        |
+| `skill`      | 必要なときに読む作業手順      | Agent Skills形式のSKILL.mdと同梱resource      |
+| `knowledge`  | 出典付きの知識と決定と調査    | project docsまたは認可されたknowledge service |
+| `tool`       | 実行できる操作の契約          | MCP/API/CLIとserver側の認可                   |
+| `plugin`     | skillやtoolやhookの配布bundle | 製品ごとのmanifestと固定source revision       |
+| `stack-pack` | 実行可能な構築と検証の定義    | Harness Packと対象snapshotに結ぶEvidence      |
 
 Git命名とPR書式の常時制約はruleへ置く。PR作成と検証証拠の添付手順はskillへ置く。実際のlintとtest commandはstack packへ置き証拠をAttemptへ結ぶ。スクリーンショット撮影はUI変更の検証手順に含める。全作業に撮影を強制しない。
 
