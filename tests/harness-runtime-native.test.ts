@@ -65,3 +65,35 @@ test.skipIf(!binary)('pinned dsh cancels a pending synthetic inference at the la
     expect(result.code).toBe(3); expect(requests).toBe(1);
   } finally { server.stop(true); await rm(root, { recursive: true, force: true }); }
 }, 15_000);
+
+test.skipIf(!binary)('pinned dsh improvement adapter writes a structured response through its real write tool', async () => {
+  const { createHash } = await import('node:crypto');
+  const { runStage } = await import('../agents/scripts/harness-improvement-runtime');
+  const { validateManifest } = await import('../agents/scripts/harness-profile');
+  const root = await mkdtemp(join(tmpdir(), 'dsh-improvement-native-'));
+  const requests: any[] = [];
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
+    const body = await request.json(); requests.push(body);
+    const write = body.tools?.find((tool: any) => tool.name === 'write');
+    if (requests.length === 1 && write) return response([{ type: 'tool_use', id: 'write_fixture', name: write.name,
+      input: { file_path: join(root, 'native-response.json'), content: '{"answer":85}' } }], 'tool_use');
+    return response([{ type: 'text', text: 'Structured fixture saved' }], 'end_turn');
+  } });
+  try {
+    const manifest = validateManifest({ schema_version: 1, default_runtime: 'dsh', runtimes: { dsh: { version: pin } },
+      connections: [{ id: 'synthetic', group: 'testing', provider: 'synthetic', account_ref: 'synthetic', billing: 'api', transport: 'anthropic-messages',
+        models: { main: { id: 'synthetic-model', context_window: 32000, max_output_tokens: 1024 } } }], profiles: [{ id: 'synthetic', connection: 'synthetic' }] });
+    const manifestPath = join(root, 'manifest.json'); const bindingsPath = join(root, 'bindings.json');
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    await writeFile(bindingsPath, JSON.stringify({ schema_version: 1, commands: { dsh: binary },
+      accounts: [{ connection: 'synthetic', group: 'testing', account_ref: 'synthetic', base_url: server.url.origin }] }));
+    const file_pins = Object.fromEntries(await Promise.all([binary!, manifestPath, bindingsPath].map(async path => [path, `sha256:${createHash('sha256').update(await readFile(path)).digest('hex')}`])));
+    const result = await runStage({ schema_version: 1, stage: 'solve', runtime: 'dsh', runtime_version: pin,
+      account: 'synthetic', group: 'testing', timeout_ms: 25_000, file_pins, editable_paths: ['AGENTS.md'],
+      input: { task: 'Sum signed ledger amounts', assets: { 'AGENTS.md': 'include-debits' } } },
+    { kind: 'gateway', runtime: 'dsh', manifest: manifestPath, bindings: bindingsPath, profile: 'synthetic', group: 'testing' }, root);
+    expect(result).toEqual({ answer: 85 });
+    expect(requests).toHaveLength(2);
+    expect(JSON.stringify(requests[0])).toContain('include-debits');
+  } finally { server.stop(true); await rm(root, { recursive: true, force: true }); }
+});
