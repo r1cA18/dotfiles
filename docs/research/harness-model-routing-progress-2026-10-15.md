@@ -39,3 +39,26 @@ Review fixes: device bindings reject raw URL whitespace/control characters befor
 The Linux regression workflow builds the pinned package and explicitly enables both synthetic native tests, so the default skip cannot hide a future native startup regression.
 
 Next: review the stacked PR before any apply. Core/Orca integration, native resume, official ChatGPT sign-in/Responses support, runtime sandboxing and provider account attestation remain separate unfinished work.
+
+## Bounded improvement adapter: 2026-10-18
+
+Issue #24 adds an opt-in Core JSON protocol adapter on the portable-profile
+foundation. It supports gateway dsh/Claude and native Claude/Codex account-home
+references without credential copying. Referenced executables and profile files
+must be pinned by Core. Shared process-group lifecycle code keeps the existing
+launcher and the new adapter on the same deadline/cancel behavior.
+
+Mac validation: unit 99 pass / 7 skip / 0 fail; Nix integration 77 pass / 3 skip /
+0 fail; pinned dsh native tests 3 pass / 0 fail. The native tests use synthetic
+loopback responses and real read/write tools. The unit suite's four additional
+configuration/indexion skips are exercised in Nix integration; the other three
+skips are exercised by the explicit native suite. Nix flake checks passed.
+The joint Core adoption script passed in 47.551 seconds on Darwin arm64.
+These measurements do not claim provider inference or homelab deployment.
+
+The owner's local/cloud and runtime/model/group handoff requirements are in
+[workflow alignment](harness-workflow-alignment-2026-10-18.md); the actual
+adapter setup and account boundaries are in the
+[runtime guide](../guides/harness-improvement.md). Remote migration, slash
+commands and Console remain separate implementations. The owner deferred
+unlocking the SSH agent, so homelab execution is not part of these results.

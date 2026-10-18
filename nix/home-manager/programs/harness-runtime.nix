@@ -15,6 +15,8 @@ let
     cp ${../../../agents/scripts/model-connection.ts} "$out/model-connection.ts"
     cp ${../../../agents/scripts/harness-profile.ts} "$out/harness-profile.ts"
     cp ${../../../agents/scripts/harness-runtime.ts} "$out/harness-runtime.ts"
+    cp ${../../../agents/scripts/runtime-process.ts} "$out/runtime-process.ts"
+    cp ${../../../agents/scripts/harness-improvement-runtime.ts} "$out/harness-improvement-runtime.ts"
   '';
   command =
     name: script:
@@ -50,6 +52,7 @@ in
           (command "harness-connection" "model-connection.ts")
           (command "harness-profile" "harness-profile.ts")
           (command "harness-runtime" "harness-runtime.ts")
+          (command "harness-improvement-runtime" "harness-improvement-runtime.ts")
         ];
       }
       (lib.mkIf cfg.dsh.enable (

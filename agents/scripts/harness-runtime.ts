@@ -1,5 +1,6 @@
+import { runCommand } from './runtime-process';
 import { createHash } from 'node:crypto';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { argumentsFor, gatewayIssue, loadCatalog, resolveConnection, type Selection } from './model-connection';
@@ -90,7 +91,7 @@ async function prepareAssets(assets: SharedAssets, directory: string, runtime: S
   return binding;
 }
 
-export async function launch(selection: Selection, options: { cwd: string; state: string; task: string; env?: NodeJS.ProcessEnv; timeoutMs?: number; assets?: SharedAssets }) {
+export async function launch(selection: Selection, options: { cwd: string; state: string; task: string; env?: NodeJS.ProcessEnv; timeoutMs?: number; assets?: SharedAssets; fileResponse?: boolean }) {
   selection = structuredClone(selection);
   const { fingerprint, ...binding } = selection;
   const actual = `sha256:${createHash('sha256').update(JSON.stringify(binding)).digest('hex')}`;
@@ -124,38 +125,10 @@ export async function launch(selection: Selection, options: { cwd: string; state
     args = ['--patch', patch, ...args];
   }
   await writeFile(join(directory, 'binding.json'), JSON.stringify({ ...selection, cwd, assets, timeout_ms: timeoutMs, status: 'prepared' }, null, 2), { mode: 0o600, flag: 'wx' });
+  if (options.fileResponse && selection.runtime === 'claude-code') args.push('--allowedTools', 'Read,Write', '--tools', 'Read,Write', '--strict-mcp-config', '--setting-sources', '');
   // New native sessions only. No arbitrary native flags can bypass the route.
   args.push('--', options.task);
-  const code = await new Promise<number>((accept, reject) => {
-    const child = spawn(rendered.engine.command, args, { env, cwd, stdio: 'inherit', detached: process.platform !== 'win32' });
-    let escalation: ReturnType<typeof setTimeout> | undefined;
-    let cancelled = false;
-    const signalGroup = (signal: NodeJS.Signals) => {
-      try {
-        if (child.pid && process.platform !== 'win32') process.kill(-child.pid, signal);
-        else child.kill(signal);
-      } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error; }
-    };
-    const cancel = () => {
-      if (cancelled) return;
-      cancelled = true;
-      signalGroup('SIGTERM');
-      escalation = setTimeout(() => signalGroup('SIGKILL'), 2000);
-    };
-    const deadline = setTimeout(cancel, timeoutMs);
-    process.on('SIGINT', cancel); process.on('SIGTERM', cancel);
-    const dispose = () => {
-      clearTimeout(deadline);
-      if (escalation) clearTimeout(escalation);
-      process.off('SIGINT', cancel); process.off('SIGTERM', cancel);
-    };
-    child.once('error', error => { dispose(); reject(error); });
-    child.once('close', (exit, signal) => {
-      // Also reap descendants if the parent exits before the grace period.
-      signalGroup('SIGKILL');
-      dispose(); accept(cancelled || signal ? 3 : exit ?? 3);
-    });
-  });
+  const code = await runCommand(rendered.engine.command, args, { env, cwd, timeoutMs });
   await writeFile(join(directory, 'outcome.json'), JSON.stringify({ exit_code: code, task_success: 'unverified' }), { mode: 0o600, flag: 'wx' });
   // Native exit 0 is not Core Evidence, Human Gate approval, or publication.
   return { code, directory };
