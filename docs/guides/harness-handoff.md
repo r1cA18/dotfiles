@@ -42,6 +42,6 @@ checkpointは複数repoのHEADとstaged/unstaged差分と指定した未追跡�
 
 Skill validatorはerror/warningともに0。Mac/Linux両方のHome Manager評価で配布対象への追加を確認した。Nix bundleをbuildしてSkill本文とreferenceがsourceと一致することも確認した。Macはunit99 pass / 7 skipとintegration77 pass / 3 skip。Linuxもunit99 pass / 7 skipとintegration77 pass / 3 skipを確認した。Linux integrationの初回は変更外の既存fzf testが一時pathのfuzzy matchで1件失敗し再実行で成功した。通常suiteのnative dsh 3 skipはMacで別実行し3 pass / 0 failとなった。
 
-CoreはMacとLinuxで各388 testsとfmtとClippyが成功。導入用`harness-core/scripts/validate-checkpoint.py`によるMac→homelab→Macの合成fixture往復は4.237秒で成功した。Orca 1.4.215の隔離runtimeでもGit repo登録とshell terminal作成とworkspace全体の停止が成功した。一時displayとnative config homeを用意し試験後にserverとdisplayを停止した。
+CoreはMacとLinuxで各389 testsとfmtとClippyが成功。導入用`harness-core/scripts/validate-checkpoint.py`によるMac→homelab→Macの合成fixture往復も成功した。Orca 1.4.215の隔離runtimeでもGit repo登録とshell terminal作成とworkspace全体の停止が成功した。一時displayとnative config homeを用意し試験後にserverとdisplayを停止した。
 
 SkillのFormat・参照・依存と失敗時手順を自己reviewした。context復旧のみを扱うsession-handoffとは役割を分けた。LLMによるSkill選択は未評価。Macからpaired runtimeへのRPCと生きたagentの自動移動と実subscription推論は未検証。UI変更はない。
