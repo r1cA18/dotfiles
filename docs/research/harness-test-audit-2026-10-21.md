@@ -9,12 +9,12 @@ every public API in every related repository is used.
 
 ## Findings and changes
 
-| Finding | Change | Evidence |
-| --- | --- | --- |
-| `all` reruns shared tests in both unit and integration modes | Build the Nix fixtures and execute the union once | 73 repeated passing cases removed while retaining generated-package checks |
-| Tests in `agents/scripts` are omitted from the common entrypoint | Include that directory in unit and all | 7 existing model-profile/account-launcher tests now execute |
-| Fuzzy `no-match` can match the temporary workspace path | Anchor the filter and make the fixture contain `no-match` | Old assertion fails deterministically; fixed case passes on both OSes |
-| Core branch push and PR trigger the same expensive workflow | Core follow-up restricts push to main and cancels superseded PR runs | Pull requests and post-merge main verification remain enabled |
+| Finding                                                          | Change                                                               | Evidence                                                                   |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `all` reruns shared tests in both unit and integration modes     | Build the Nix fixtures and execute the union once                    | 73 repeated passing cases removed while retaining generated-package checks |
+| Tests in `agents/scripts` are omitted from the common entrypoint | Include that directory in unit and all                               | 7 existing model-profile/account-launcher tests now execute                |
+| Fuzzy `no-match` can match the temporary workspace path          | Anchor the filter and make the fixture contain `no-match`            | Old assertion fails deterministically; fixed case passes on both OSes      |
+| Core branch push and PR trigger the same expensive workflow      | Core follow-up restricts push to main and cancels superseded PR runs | Pull requests and post-merge main verification remain enabled              |
 
 The old all entrypoint reports 99 unit passes plus 77 integration passes. Their
 union contains 103 distinct passing cases. The new entrypoint runs those 103 plus
