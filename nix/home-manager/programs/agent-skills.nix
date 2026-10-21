@@ -93,6 +93,7 @@
         "remotion-best-practices"
         "session-documentation"
         "session-handoff"
+        "harness"
         "indexion-workspace"
         "design-capture"
         "forms-archive"
