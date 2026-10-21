@@ -24,7 +24,7 @@ require_commands() {
 unit() {
   bash scripts/lint-doc-paths.sh
   DOTFILES_TEST_NIX=0 WORKSPACE_BIN= INDEXION_BIN= \
-    bun test tests agents/hooks claude/hooks agents/skills
+    bun test tests agents/hooks claude/hooks agents/skills agents/scripts
 }
 
 integration() {
@@ -41,7 +41,7 @@ integration() {
   indexion_package=$(nix build --no-write-lock-file "path:$PWD#indexion" --no-link --print-out-paths)
   DOTFILES_TEST_NIX=1 WORKSPACE_BIN="$workspace_package/bin/workspace" \
     INDEXION_BIN="$indexion_package/bin/indexion" \
-    bun test tests
+    bun test "$@"
 }
 
 case "$suite" in
@@ -49,11 +49,12 @@ unit)
   require_commands bash bun git ghq rg jq python3 zsh fzf find awk grep sed
   unit
   ;;
-integration) integration ;;
+integration) integration tests ;;
 all)
   require_commands bash bun git ghq rg jq python3 zsh fzf find awk grep sed
-  unit
-  integration
+  bash scripts/lint-doc-paths.sh
+  # Enable generated-package coverage in the same pass as all shared tests.
+  integration tests agents/hooks claude/hooks agents/skills agents/scripts
   ;;
 *)
   printf 'Usage: bash scripts/test.sh [unit|integration|all]\n' >&2
