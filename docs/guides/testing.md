@@ -15,7 +15,7 @@ bash scripts/test.sh
 
 既定の`unit`はNixを呼び出さずに文書の参照先とBunの回帰テストを実行する。Bun・Git・ghq・ripgrep・jq・Python 3・Zsh・fzf・標準Unix toolsが必要。開始時に依存commandを確認し不足していれば終了する。対話UIの選択結果はfixtureで供給するため実際のterminal操作は不要。
 
-`tests/`・`agents/hooks/`・`claude/hooks/`・`agents/skills/`配下の`*.test.ts`は自動収集する。新しい回帰テストを追加したときにCIのfile一覧を手で更新する必要はない。Nix生成物を使うテストは`DOTFILES_TEST_NIX=1`で有効にし通常のunit実行ではskipする。
+`tests/`・`agents/hooks/`・`claude/hooks/`・`agents/skills/`・`agents/scripts/`配下の`*.test.ts`は自動収集する。新しい回帰テストを追加したときにCIのfile一覧を手で更新する必要はない。Nix生成物を使うテストは`DOTFILES_TEST_NIX=1`で有効にし通常のunit実行ではskipする。
 
 ## Nix生成物を含む検証
 
@@ -23,7 +23,7 @@ bash scripts/test.sh
 bash scripts/test.sh all
 ```
 
-`all`はunitの後に`integration`を実行する。workspaceとindexionのNix packageをbuildし実indexionによる検索と配布用workspaceの操作を確認する。生成されたClaude・Gemini・Codexのglobal instructionも実fileで比較し、共通ruleの順序とCodex専用routingの境界を確認する。integrationの対象はApple Silicon macOSとx86_64 Linux。
+`all`はworkspaceとindexionのNix packageをbuildしたうえで全対象を1回実行する。unitとintegrationで同じテストを二重に実行しない。実indexionによる検索と配布用workspaceの操作を確認する。生成されたClaude・Gemini・Codexのglobal instructionも実fileで比較し、共通ruleの順序とCodex専用routingの境界を確認する。integrationの対象はApple Silicon macOSとx86_64 Linux。
 
 依存ツールが揃っていない環境ではCIと同じくこのrepoの`flake.lock`から供給できる。
 

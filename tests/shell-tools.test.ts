@@ -82,11 +82,12 @@ test("workspace discovery prunes child repos and metadata and preserves unusual 
 
 test("workspace picker supports a root argument, missing root, no matches and cancellation", () => {
   const { run, root, workspace } = fixture();
-  const selected = workspace("custom/project");
+  // A fuzzy "no-match" query must collide so this exercises exact exclusion.
+  const selected = workspace("custom/no-match/project");
   expect(run(`wsg ${quote(join(root, "Workspaces/custom"))}; pwd`, { FZF_DEFAULT_OPTS: "--filter=project" }).out).toBe(selected + "\n");
   expect(run("wsg /path/that/does/not/exist").code).toBe(1);
   expect(run("wsg a b").code).toBe(2);
-  expect(run("wsg; pwd", { FZF_DEFAULT_OPTS: "--filter=no-match" }).out).toBe(root + "\n");
+  expect(run("wsg; pwd", { FZF_DEFAULT_OPTS: "--filter=^no-match$" }).out).toBe(root + "\n");
   const cancelled = run("fzf() { return 130; }; wsg; result=$?; print -r -- $result:$PWD");
   expect(cancelled.out).toBe(`0:${root}\n`);
   expect(run("fzf() { return 2; }; wsg").code).toBe(2);
