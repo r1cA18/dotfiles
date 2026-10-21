@@ -7,7 +7,8 @@ description: Allocate work, reconnect, branch, or move unfinished work between l
 
 Manage development sessions through Orca MCP when its operations are available.
 Otherwise load the installed `orca-cli` skill and use its version-matched CLI.
-Use Core checkpoints for portable source and context. Do not build a scheduler,
+Use Core's external `handoff capture` controller for stop-and-capture and
+checkpoints for portable source and context. Do not build a scheduler,
 terminal UI, second task ledger, or OS-name routing policy.
 
 Respect the active product's delegation policy. This skill does not authorize
@@ -69,7 +70,7 @@ For `handoff`, read [checkpoint handoff](references/checkpoint-handoff.md).
 Use the same sequence for both directions and for a runtime/group change on the
 same host. Continue only after confirmed source termination and verified restore.
 If the source is the terminal running this agent, arrange an already-authorized
-controller outside that worktree before requesting workspace-wide close. Without one save
+controller outside that worktree before calling `handoff capture`. Without one save
 the context and checkpoint and report `prepared`; do not kill the only controller
 or claim a completed live handoff. No receiving agent may start in that state.
 
@@ -89,3 +90,9 @@ according to actual receipts. A checkpoint is an artifact, not an ownership
 lease. Source stop confirmation is not permanent publication fencing. Do not
 claim outage-safe migration, native-session cloning or exclusive ownership until
 the corresponding Core dispatch and Publisher enforce those properties.
+
+A capture receipt of `captured` means the source was stopped before that artifact
+was made. It does not mean restored or resumed. Repeating a completed capture
+only verifies its existing artifact. For any incomplete receipt inspect
+`handoff show` and reconcile manually; never retry by selecting a fresh operation
+directory automatically.

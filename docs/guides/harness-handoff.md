@@ -17,7 +17,7 @@
 
 ## 導入前の確認
 
-1. Coreのcheckpoint対応revisionを隔離checkoutでbuildする
+1. Coreの`handoff capture`とcheckpoint対応revisionを隔離checkoutでbuildする
 2. 移動元と移動先のCore実行fileを確認する
 3. Orcaのreadyなproject host setupまたはpaired runtimeを確認する
 4. 移動先のprofileとdevice-local account bindingを確認する
@@ -25,6 +25,8 @@
 6. 必要なPRを依存順にmergeした後に既存のNix運用でSkillを配布する
 
 Skillの正本は[agents/skills/harness](../../agents/skills/harness/SKILL.md)。配布対象へ追加済み。Claude・Codexへの配布には既存agent-skills moduleを使う。dshには既存のopt-in `dotfiles.harnessRuntime.dsh.shareSkills`を使う。本変更はHome Managerや既存accountへ適用していない。
+
+capture requestとCLI引数と復旧手順は[Coreのcontroller guide](https://github.com/r1cA18/harness-core/blob/0e672c139656aee7929ccb432039e0c6dbb51849/docs/handoff-controller.md)にまとめた。profileの中央catalogとdevice bindingは[model connections guide](model-connections.md)を使う。doctorの`ready`は定義の整合性を示す。native loginと実推論の成功は別に確認する。
 
 SSHで接続できるだけではOrcaのremote terminalを作成できるとは限らない。登録済みSSH targetとpaired runtimeは別の接続種別。installed APIで操作できる接続を確認する。Orca 1.4.219のMac CLIとhomelabの1.4.215で機能範囲を調査した。現状のhomelabはSSH試験が可能だがpaired runtimeの設定は未完了。
 
@@ -34,14 +36,18 @@ checkpointは複数repoのHEADとstaged/unstaged差分と指定した未追跡�
 
 `prepared`は準備完了。`source_stopped`はOrcaが停止を確認した状態。`restored`はartifactの復元完了。`input_accepted`と`turn_started`も区別する。いずれもtask完了や公開承認を意味しない。
 
-移動元が操作中agent自身のterminalなら停止対象worktreeの外にいるcontrollerが必要になる。同じworktreeの別terminalもworkspace全体の停止対象になる。controllerがなければcontextとcheckpointを保存して`prepared`まで進める。自分を停止した後に処理が続くとは仮定しない。新しい受信agentを起動してこの制限を回避することもしない。
+移動元が操作中agent自身のterminalなら停止対象worktreeの外にいるcontrollerが必要になる。同じworktreeの別terminalもworkspace全体の停止対象になる。外部controllerはsource hostで`harness-core --json handoff capture`を実行する。SSH経由でも同じCLIを使う。controllerがなければcontextとcheckpointを保存して`prepared`まで進める。
+
+`handoff capture`は停止intentを保存してからOrcaの停止receiptを確認しcheckpointを作る。`captured`になればoperation directory内の`checkpoint/`と独立して保持した`checkpoint_digest`を使う。完成済み要求の再実行はartifactを検証するだけで新しいterminalを停止しない。未完了の場合は`handoff show`で確認して手動で整合させる。自動で別directoryを選んで再試行しない。確認済みversionはOrca 1.4.215と1.4.219。
+
+controllerは自身のcwdとOrca terminalのworktree identityを検査する。同じterminalで`cd`しただけでは外部controllerにならない。`captured`はsource側の停止後保存が終わった状態でありdestinationの復元やagent再開や権限移譲は意味しない。
 
 停止確認だけでは復帰した旧workerの二重公開を永続的に防止できない。Coreのgeneric dispatchとPublisher gateは別の未完了項目。profileの中央catalogとdevice bindingは既存の基盤を使うが実subscription推論とcredentialの中央配布を本変更の完成範囲へ含めない。
 
 ## 検証範囲
 
-Skill validatorはerror/warningともに0。Mac/Linux両方のHome Manager評価で配布対象への追加を確認した。Nix bundleをbuildしてSkill本文とreferenceがsourceと一致することも確認した。Macはunit99 pass / 7 skipとintegration77 pass / 3 skip。Linuxもunit99 pass / 7 skipとintegration77 pass / 3 skipを確認した。Linux integrationの初回は変更外の既存fzf testが一時pathのfuzzy matchで1件失敗し再実行で成功した。通常suiteのnative dsh 3 skipはMacで別実行し3 pass / 0 failとなった。
+Skill validatorはerror/warningともに0。配布定義は既存PR #27でMac/Linux両方のHome Manager評価とNix bundle buildを確認済み。今回もMacでbundleをbuildし本文とreferenceがsourceと一致した。配布先とoptionの変更はない。テスト整理PRを基準にMac/Linuxのallは各110 pass / 3 native-dsh skip / 0 fail。fzf試験の不安定さは再現して修正済み。native dshはCIが固定packageを指定して別途検証する。
 
-CoreはMacとLinuxで各389 testsとfmtとClippyが成功。導入用`harness-core/scripts/validate-checkpoint.py`によるMac→homelab→Macの合成fixture往復も成功した。Orca 1.4.215の隔離runtimeでもGit repo登録とshell terminal作成とworkspace全体の停止が成功した。一時displayとnative config homeを用意し試験後にserverとdisplayを停止した。
+CoreはMacとLinuxで各397 testsとfmtとClippyが成功。`harness-core/scripts/validate-checkpoint.py`による2 repoとassetのMac→homelab→Macの往復も成功した。`harness-core/scripts/validate-handoff-controller.py`はLinuxの隔離Orca 1.4.215で実terminalの停止→capture→復元を確認し新しいterminalを再実行が閉じないことも確認した。一時displayとnative config homeを用意し所有するserverとdisplayを試験後に停止した。
 
-SkillのFormat・参照・依存と失敗時手順を自己reviewした。context復旧のみを扱うsession-handoffとは役割を分けた。LLMによるSkill選択は未評価。Macからpaired runtimeへのRPCと生きたagentの自動移動と実subscription推論は未検証。UI変更はない。
+SkillのFormat・参照・依存と失敗時手順を自己reviewした。Single＋Referencesの構成を保ち決定的な停止・保存をCoreへ任せる。context復旧のみを扱うsession-handoffとは役割を分けた。手動fixture導入に向けた判定はReady。LLMによるSkill選択は未評価。Macの実terminal停止とpaired runtimeへのRPCと生きたagentの自動移動と実subscription推論は未検証。UI変更はない。

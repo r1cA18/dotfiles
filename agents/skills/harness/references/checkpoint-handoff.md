@@ -1,7 +1,10 @@
 # Checkpoint handoff
 
 Dependencies: Orca MCP or the installed Orca CLI; a built `harness-core` containing
-`checkpoint create|verify|restore`; Git; an authorized artifact transfer path.
+`handoff capture|show` and `checkpoint create|verify|restore`; Git; an authorized
+artifact transfer path. The source-side controller supports the observed local
+workspace-close protocol on Orca 1.4.215 and 1.4.219. Other versions need adapter
+revalidation rather than an automatic fallback to raw terminal close.
 Use the operator-provided Core executable on each host. Do not install global
 packages or assume identical executable paths, repositories or account homes.
 
@@ -10,11 +13,19 @@ packages or assume identical executable paths, repositories or account homes.
 1. Read source and destination terminal state from the correct Orca host
 2. Save a concise context: objective, decisions, constraints, tests, remaining work
 3. Resolve destination capability and runtime/profile/group before stopping work
-4. From a controller outside the source workspace request Orca's workspace-wide
-   terminal close and require its confirmed-success result. A timeout, disconnected
-   host or `unverifiable` result is `outcome_unknown`. Do not start a successor
-5. Run `harness-core --json checkpoint create --input <request.json> --destination <new-package>` on the source host after stopping all writers
-6. Retain the returned digest independently of the transferred package
+   using `harness-profile doctor --manifest <catalog> --bindings <device-file>
+   --group <group> --profile <profile>` on that host. Doctor validates declarations;
+   `ready` does not prove native login or inference. Confirm those separately
+4. From a controller outside the source workspace and its terminals run
+   `harness-core --json handoff capture --input <capture-request.json> --destination <new-operation> --orca <absolute-source-cli>`
+   on the source host. This can be invoked over SSH. Use `orca-ide` on Linux
+5. Require `state: captured`. Core records the stop intent, confirms Orca's
+   workspace-wide close and then creates `<new-operation>/checkpoint`. A timeout,
+   disconnected host or unverifiable receipt never permits successor start
+6. Retain `checkpoint_digest` independently of that package. Use
+   `harness-core --json handoff show --source <operation>` to inspect an incomplete receipt. Exact completed replay
+   verifies the artifact without stopping newly created terminals. Incomplete
+   operations need manual reconciliation; do not pick a fresh directory to retry
 7. Transfer the package through an authorized private path. Copy only
    `manifest.json` and its referenced `blobs/<sha256>` objects. Never copy account
    homes, SSH keys, ignored files, live databases or raw transcripts
@@ -37,16 +48,22 @@ Use version 1 JSON. Source paths are host-local and do not enter the portable
 manifest. Always list required untracked paths explicitly; do not select all
 untracked paths as a convenience. Assets support work without a repository.
 
+For `handoff capture`, wrap this request as
+`{"source_worktree":"/absolute/source/worktree","checkpoint":<request>}`. All
+selected inputs must be within that one stopped Orca worktree. Keep the operation
+directory outside it. The private capture receipt is not a portable artifact.
+For a branch use `checkpoint create` directly and preserve the source terminals.
+
 ```json
 {
   "schema_version": 1,
   "selection": {"runtime": "dsh", "profile": "personal.default", "group": "personal"},
   "context": "Continue the current task. The failing check and next action are ...",
   "repositories": [
-    {"name": "app", "path": "/absolute/source/repo", "untracked": ["notes/task.md"]}
+    {"name": "app", "path": "/absolute/source/worktree/repo", "untracked": ["notes/task.md"]}
   ],
   "assets": [
-    {"path": "input/sample.json", "source": "/absolute/input/sample.json"}
+    {"path": "input/sample.json", "source": "/absolute/source/worktree/input/sample.json"}
   ]
 }
 ```
