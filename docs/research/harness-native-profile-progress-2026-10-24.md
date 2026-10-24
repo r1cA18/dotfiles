@@ -105,3 +105,23 @@ Linux full/joint/TLS CI 40062334641 passed all 469 tests on clean checkout
 e956afab6a14b24b71fdeaa74ec4bb8fe3b9950b. The adoption guide now pins
 this cumulative candidate and distinguishes issuance from dispatch-time token
 delivery. No runtime configuration, account, Skill or service was changed.
+
+## Real Orca synthetic destination acceptance
+
+Core #74 signed head b64c2b86419e66323b46cf4d601a3447af6c961e connects source
+capture/restoration with the actual 1.4.219 destination and the public dispatch
+CLI. Mac full 469 tests and required gates passed. Linux fmt, 19 dispatch
+regressions and the explicit native gate passed in an isolated amd64 container
+under emulation. The candidate's exact synthetic dsh config-home binding,
+staged/unstaged/untracked/binary inputs, result collection to Verifying, budget
+settlement and replay were checked. No dsh/model inference or actual login.
+
+The adoption guide now pins #74 and links the optional gate. Keep Mac native
+startup, cross-host live-agent moves and real profile acceptance unverified.
+This is a documentation-only follow-up. Use targeted Markdown/path validation;
+the existing PR checks retain their normal scope without an added CI job.
+
+Owner decision: continue implementation with synthetic group/profile/model
+registrations in isolated test ledgers and empty account homes. Register real
+identities and perform subscription acceptance together after implementation.
+Real profile names are deferred adoption inputs, not an implementation blocker.
