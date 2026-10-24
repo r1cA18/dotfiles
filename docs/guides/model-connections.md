@@ -1,6 +1,6 @@
 # ハーネスとモデル接続の選択
 
-同じモデル接続をdshとClaude Codeから選ぶためのopt-in設定。
+dsh・Claude Code・Codexのruntimeとモデル接続を明示選択するopt-in設定。
 既存の`claude`・`clgpt`・account設定を変更しない。
 
 ## 共通設定
@@ -20,15 +20,16 @@ CLIはJSONを返す。共通処理は同じscriptのloadCatalogとresolveConnect
 明示groupに属さないprofileと未知の設定と未対応runtimeは拒否する。
 profile未指定の自動実行は行わない。default_runtimeはdsh。
 
-| 要素        | 管理対象                                              |
-| ----------- | ----------------------------------------------------- |
-| runtime     | 実行commandと正確なversion                            |
-| connection  | providerとaccount_refとgroupとbillingとgateway origin |
-| models      | mainと任意のsmallのIDと容量                           |
-| profile     | runtimeとconnectionの選択                             |
-| fingerprint | 解決した選択全体のSHA-256                             |
+| 要素        | 管理対象                                                   |
+| ----------- | ---------------------------------------------------------- |
+| runtime     | 実行commandと正確なversion                                 |
+| connection  | provider・account_ref・group・billingとtransport固有の参照 |
+| models      | mainと任意のsmallのIDと容量                                |
+| profile     | runtimeとconnectionの選択                                  |
+| fingerprint | 解決した選択全体のSHA-256                                  |
 
-接続はloopbackのAnthropic Messages gatewayに限定する。
+gateway transportはloopbackのAnthropic Messagesへ限定する。
+native transportは後述の既存login参照を使用する。
 API形式を揃えるだけでtool呼び出しとreasoningとusageが互換になるとは扱わない。
 同じgateway originへ異なるaccount scopeを宣言する設定は拒否する。
 
@@ -36,7 +37,8 @@ API形式を揃えるだけでtool呼び出しとreasoningとusageが互換に�
 
 これは認証済みのpolicy authorityではなく信頼する設定のresolver。
 呼び出し側が指定するgroup自体を人間の認証と見なさない。
-Coreの認可済みgroupを渡す接続は別工程。
+`resolve-core`はCoreの現在のaccount割当とhost登録を照合する。
+実行の認可はCore dispatchの署名済みContractとpolicyが担う。
 
 現在のclaude-code-proxyはclient authを検証せずproxy側のcredentialを使う。
 account_refが実際のupstream accountと一致することは別途確認が必要。
@@ -77,8 +79,10 @@ Anthropic Messagesで接続するためCodex Chat Completionsのtool非対応経
 bun agents/scripts/harness-runtime.ts run --execute true --config /path/to/connections.json --group personal --profile development --cwd /path/to/repo --state /path/to/private-state --task-file /path/to/task.txt
 ```
 
-起動ごとにstate配下へprivate directoryを作りnative HOMEとXDGとDSH_HOMEと
-CLAUDE_CONFIG_DIRを分離する。既存のnative設定とcredentialは複製しない。
+起動ごとにstate配下へprivate directoryを作りHOMEとXDGを分離する。
+version probeではDSH_HOMEとCLAUDE_CONFIG_DIRとCODEX_HOMEも分離する。
+gateway起動はこのprivate設定を使用する。native起動はprobe後に選択したconfig-homeを参照する。
+既存のnative設定とcredentialを複製しない。
 共有instructionと選択済skillsは後述の明示したasset接続で渡す。
 repo内のinstructionはruntime自身が読み込む。credentialも引き継がない。
 実行planのfingerprintとcwdをbinding.jsonへ保存する。
@@ -115,11 +119,11 @@ bun test tests/model-connection.test.ts tests/harness-runtime.test.ts
 `portable.example.json`は宣言例でありsubscription gatewayの起動例ではない。
 model IDと容量は利用前に確認する。
 
-| 文書                 | 内容                                                   | 配布                  |
-| -------------------- | ------------------------------------------------------ | --------------------- |
-| portable manifest    | runtime version・model・group・account_ref・profile    | 秘密を含めずGitで共有 |
-| device binding       | executable commandとaccount専用loopback gateway origin | 各deviceのprivate設定 |
-| native account state | OAuth token・refresh token・session・plugin cache      | 各製品のloginで管理   |
+| 文書                 | 内容                                                                 | 配布                  |
+| -------------------- | -------------------------------------------------------------------- | --------------------- |
+| portable manifest    | runtime version・model・group・account_ref・profile                  | 秘密を含めずGitで共有 |
+| device binding       | executable・gateway originまたはnative config-home・Core account参照 | 各deviceのprivate設定 |
+| native account state | OAuth token・refresh token・session・plugin cache                    | 各製品のloginで管理   |
 
 manifestは既存connection catalogと同じ契約を再利用する。
 実行pathやportやcredential homeを共有profileへ入れない。
@@ -154,8 +158,56 @@ ChatGPTの経路は[公式Sign in with ChatGPT](https://developers.openai.com/si
 
 subscription gatewayは旧catalogを直接指定した場合もlauncherで拒否する。
 API課金・別account・native runtimeへの自動fallbackは生成しない。
-Codexはruntimeとしてversionとcommandを宣言できるがAnthropic Messages gatewayを受け付けないためこのlauncherからの起動は拒否する。
-native CodexやClaude Codeを使う場合は既存ccspaceのlauncherを本人が明示的に選択する。
+CodexはAnthropic Messages gatewayを受け付けない。
+native CodexとClaude Codeは次のnative transportを明示選択する。ccspaceで管理するhomeも参照できる。
+
+## Native loginのdevice binding
+
+`native.portable.example.json`と`native.bindings.example.json`を別fileへコピーして使用する。
+modelとversionは実際に利用可能なものへ置き換える。例の容量はnative CLIへ上限として適用しない。
+manifestは中央catalogとして共有する。各hostのbindingはprivateに保存してGitへ入れない。
+各hostでは対象製品の正式なloginを別途済ませておく。
+このlauncherはloginとtoken配布とaccount自動作成を行わない。
+
+- `openai`のnative接続は`codex`を使用する
+- `anthropic`のnative接続は`claude-code`を使用する
+- `config_home`は既存の専用homeの絶対pathを指定する
+- `core_account.host`はCore環境登録の`spec.name`を指定する
+- `core_account.id`はそのhost上の検証済みaccountの`sha256:`IDを指定する
+- Core参照は通常のplan/runでは任意。`resolve-core`では必須
+- native接続のmodel指定は`main`のみ。small modelの暗黙置換は行わない
+
+同じmanifestをMacとLinuxへ置き各deviceのbindingだけを変更する。
+profileとgroupとmodelは共通のままexecutableとlogin参照とCoreのhost/accountだけを切り替えられる。
+同一pathの正規化で検出できる異なるscopeの共有は拒否する。symlinkの同一性はdoctorで検査しない。
+
+まず`doctor`と`plan`で選択を確認する。
+これらはcredentialの内容とlogin状態とmodel entitlementを検査しない。
+
+```bash
+harness-profile doctor --manifest /path/to/native.json --bindings /path/to/private-bindings.json --group personal
+harness-runtime plan --manifest /path/to/native.json --bindings /path/to/private-bindings.json --group personal --profile development-chatgpt
+harness-profile resolve-core --manifest /path/to/native.json --bindings /path/to/private-bindings.json --group personal --profile development-chatgpt --core /path/to/harness-core --operator-ledger /path/to/operator-ledger
+```
+
+`resolve-core`はCoreのaccount showとenvironment listだけを呼ぶ。
+検証済みidentity・provider・group・hostが一致しhostがactiveであることを要求する。
+失効とquarantineと未登録hostは拒否する。ledgerの更新とruntimeの起動は行わない。
+返却する`dispatch`は署名前の入力候補であり署名済みDispatchPlan全体ではない。
+CLIは機微な表示情報を除き必要な参照だけを返す。
+config-homeとaccountの対応はoperatorの明示宣言でありlogin照合の証拠ではない。
+Core dispatchは実行直前に最新policyを再検査する。
+
+明示的なtask実行では既存の`harness-runtime run --execute true`を使用する。
+launcherはpinしたversionをprivate homeで確認してから選択したnative homeを渡す。
+Codexは`exec --json --model`を使用する。Claude Codeは`--print --model`を使用する。
+wrapperは既存homeへ書き込まないがnative製品自体は認証更新やsession保存を行い得る。
+native設定内のhookとprovider設定は信頼するoperator管理設定として扱う。
+外部から渡す共有assetはnative接続では拒否する。既存homeへ配布済みのinstructionとskillsを利用する。
+packaged launcherのdsh向け共有asset既定値はnative接続には適用しない。
+
+実loginによる推論とnative resumeは未検証。config-homeの存在だけではlogin成功と見なさない。
+このresolverはhost割振りと停止・転送・復元・後続Attempt作成を自動化しない。
 
 ## DeepSeek Harnessの固定導入
 

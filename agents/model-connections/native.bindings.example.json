@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "commands": {
+    "codex": "codex",
+    "claude-code": "claude"
+  },
+  "accounts": [
+    {
+      "connection": "personal-chatgpt",
+      "group": "personal",
+      "account_ref": "personal-chatgpt",
+      "config_home": "/path/to/chatgpt-home",
+      "core_account": {
+        "host": "replace-with-registered-host",
+        "id": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "connection": "personal-claude",
+      "group": "personal",
+      "account_ref": "personal-claude",
+      "config_home": "/path/to/claude-home",
+      "core_account": {
+        "host": "replace-with-registered-host",
+        "id": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ]
+}

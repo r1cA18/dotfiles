@@ -1,19 +1,29 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 export type Runtime = 'dsh' | 'claude-code' | 'codex';
 export const runtimeCommands: Record<Runtime, string> = { dsh: 'dsh', 'claude-code': 'claude', codex: 'codex' };
 export interface Model { id: string; context_window: number; max_output_tokens: number }
-export interface Connection {
+interface ConnectionScope {
   id: string;
   group: string;
   provider: string;
   account_ref: string;
   billing: 'subscription' | 'api';
-  transport: 'anthropic-messages';
-  base_url: string;
   models: { main: Model; small?: Model };
 }
+export interface GatewayConnection extends ConnectionScope {
+  transport: 'anthropic-messages';
+  base_url: string;
+}
+export interface NativeConnection extends ConnectionScope {
+  transport: 'native';
+  config_home: string;
+  core_account?: CoreAccountReference;
+}
+export interface CoreAccountReference { host: string; id: string }
+export type Connection = GatewayConnection | NativeConnection;
 // Capability checks belong to the selected transport. A declaration does not
 // authorize importing another application's subscription credentials.
 export function gatewayIssue(connection: Pick<Connection, 'billing' | 'provider'>, runtime: string) {
@@ -24,6 +34,11 @@ export function gatewayIssue(connection: Pick<Connection, 'billing' | 'provider'
       ? { code: 'subscription_adapter_unimplemented', message: 'ChatGPT plan usage requires app-specific official sign-in and a compatible Responses adapter; native Codex credentials are not imported' }
       : { code: 'subscription_route_unsupported', message: 'This provider has no supported subscription gateway adapter' };
   return undefined;
+}
+export function connectionIssue(connection: Pick<Connection, 'billing' | 'provider' | 'transport'>, runtime: string) {
+  if (connection.transport !== 'native') return gatewayIssue(connection, runtime);
+  if (runtime === 'codex' && connection.provider === 'openai' || runtime === 'claude-code' && connection.provider === 'anthropic') return undefined;
+  return { code: 'native_route_unsupported', message: 'Select the native runtime matching this provider; native credentials are not shared with another runtime' };
 }
 export interface Catalog {
   schema_version: 1;
@@ -50,6 +65,18 @@ function id(value: unknown): string {
   if (!identifier.test(result)) throw new Error('Invalid identifier');
   return result;
 }
+export function validateConfigHome(value: unknown): string {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.length > 1024 || /[\x00-\x1f\x7f]/u.test(value)
+    || value.includes('://') || value.includes('=') || value.toLowerCase().split(/[/ ._-]/u).some(part => part.length >= 32)
+    || value.toLowerCase().split('/').some(part => /^(sk-|ghp_|gho_|github_pat_|xox|akia|eyj)/u.test(part))) throw new Error('Use an absolute config-home reference without credential values');
+  return value;
+}
+export function validateCoreAccount(value: unknown): CoreAccountReference {
+  const reference = object(value, ['host', 'id']);
+  id(reference.host);
+  if (typeof reference.id !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(reference.id)) throw new Error('Use the host-scoped Core account ID');
+  return reference as unknown as CoreAccountReference;
+}
 function model(value: unknown): Model {
   const m = object(value, ['id', 'context_window', 'max_output_tokens']);
   text(m.id);
@@ -75,19 +102,27 @@ export function validateCatalog(input: unknown): Catalog {
   const connections = new Map<string, Connection>();
   const endpoints = new Map<string, string>();
   for (const value of c.connections) {
-    const v = object(value, ['id', 'group', 'provider', 'account_ref', 'billing', 'transport', 'base_url', 'models']);
+    const native = plain(value) && value.transport === 'native';
+    const fields = ['id', 'group', 'provider', 'account_ref', 'billing', 'transport', native ? 'config_home' : 'base_url', 'models'];
+    const v = object(value, native ? [...fields, 'core_account'] : fields, fields);
     const key = id(v.id);
     if (connections.has(key)) throw new Error('Duplicate connection');
     id(v.group); id(v.provider); id(v.account_ref);
-    if (!['subscription', 'api'].includes(String(v.billing)) || v.transport !== 'anthropic-messages') throw new Error('Unsupported connection');
-    const url = new URL(text(v.base_url));
-    if (url.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(url.hostname) || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
-      throw new Error('Use an unauthenticated loopback gateway origin');
-    }
+    if (!['subscription', 'api'].includes(String(v.billing)) || !['anthropic-messages', 'native'].includes(String(v.transport))) throw new Error('Unsupported connection');
     const owner = `${v.group}:${v.account_ref}:${v.provider}:${v.billing}`;
-    if (endpoints.has(url.origin) && endpoints.get(url.origin) !== owner) throw new Error('A gateway cannot represent different account scopes');
-    endpoints.set(url.origin, owner);
-    const models = object(v.models, ['main', 'small'], ['main']);
+    if (native) {
+      const home = resolve(validateConfigHome(v.config_home));
+      if (v.core_account !== undefined) validateCoreAccount(v.core_account);
+      if (endpoints.has(home) && endpoints.get(home) !== owner) throw new Error('A native config home cannot represent different account scopes');
+      endpoints.set(home, owner);
+    }
+    else {
+      const url = new URL(text(v.base_url));
+      if (url.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(url.hostname) || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error('Use an unauthenticated loopback gateway origin');
+      if (endpoints.has(url.origin) && endpoints.get(url.origin) !== owner) throw new Error('A gateway cannot represent different account scopes');
+      endpoints.set(url.origin, owner);
+    }
+    const models = object(v.models, native ? ['main'] : ['main', 'small'], ['main']);
     model(models.main);
     if (Object.hasOwn(models, 'small')) model(models.small);
     connections.set(key, v as unknown as Connection);
@@ -124,6 +159,12 @@ export function resolveConnection(catalog: Catalog, options: { profile: string; 
   return { ...selection, fingerprint: `sha256:${fingerprint}` };
 }
 export type Selection = ReturnType<typeof resolveConnection>;
+
+export function nativeArguments(connection: NativeConnection, runtime: Runtime): string[] {
+  const issue = connectionIssue(connection, runtime);
+  if (issue) throw new Error(`${issue.code}: ${issue.message}`);
+  return runtime === 'codex' ? ['exec', '--json', '--model', connection.models.main.id] : ['--print', '--model', connection.models.main.id];
+}
 
 export function argumentsFor(args: string[], allowed: string[]) {
   const result: Record<string, string> = {};

@@ -3,14 +3,22 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { argumentsFor, gatewayIssue, loadCatalog, resolveConnection, type Selection } from './model-connection';
+import { argumentsFor, connectionIssue, loadCatalog, nativeArguments, resolveConnection, type Selection } from './model-connection';
 import { loadProfileSelection } from './harness-profile';
 
 export function renderRuntime(selection: Selection) {
   const { connection: c } = selection;
-  const unsupported = gatewayIssue(c, selection.runtime);
+  const unsupported = connectionIssue(c, selection.runtime);
   if (unsupported) throw new Error(`${unsupported.code}: ${unsupported.message}`);
   const common = { fingerprint: selection.fingerprint, runtime: selection.runtime, engine: selection.engine };
+  if (c.transport === 'native') {
+    return {
+      ...common,
+      args: nativeArguments(c, selection.runtime),
+      env: { [selection.runtime === 'codex' ? 'CODEX_HOME' : 'CLAUDE_CONFIG_DIR']: c.config_home },
+      patch: null,
+    };
+  }
   if (selection.runtime === 'claude-code') {
     return {
       ...common,
@@ -100,6 +108,12 @@ export async function launch(selection: Selection, options: { cwd: string; state
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 3_600_000) throw new Error('Invalid execution timeout');
   if (!options.task.trim()) throw new Error('Task must not be empty');
   if (!options.state.startsWith('/')) throw new Error('State directory must be absolute');
+  const native = selection.connection.transport === 'native';
+  if (native && (options.assets?.instructionsFile || options.assets?.skillsDirectory)) throw new Error('Native profiles load shared assets from their existing config home');
+  if (selection.connection.transport === 'native') {
+    const home = await realpath(selection.connection.config_home);
+    if (!(await stat(home)).isDirectory()) throw new Error('Native config home is not a directory');
+  }
   const cwd = await realpath(options.cwd);
   const rendered = renderRuntime(selection);
   const env = launchEnvironment(options.env ?? process.env);
@@ -115,6 +129,7 @@ export async function launch(selection: Selection, options: { cwd: string; state
   env.XDG_CACHE_HOME = join(directory, 'cache');
   env.DSH_HOME = join(directory, 'dsh');
   env.CLAUDE_CONFIG_DIR = join(directory, 'claude');
+  env.CODEX_HOME = join(directory, 'codex');
   checkVersion(rendered.engine.command, rendered.engine.version, env);
   const assets = await prepareAssets(options.assets ?? {}, directory, selection.runtime);
   Object.assign(env, rendered.env);
@@ -143,7 +158,9 @@ if (import.meta.main) {
     const selection = flags.config
       ? resolveConnection(await loadCatalog(flags.config), options)
       : await loadProfileSelection(flags.manifest, flags.bindings, options);
-    const assets: SharedAssets = { instructionsFile: flags['instructions-file'] ?? process.env.HARNESS_SHARED_INSTRUCTIONS, skillsDirectory: flags['skills-directory'] ?? process.env.HARNESS_SHARED_SKILLS };
+    const native = selection.connection.transport === 'native';
+    const assets: SharedAssets = { instructionsFile: flags['instructions-file'] ?? (native ? undefined : process.env.HARNESS_SHARED_INSTRUCTIONS), skillsDirectory: flags['skills-directory'] ?? (native ? undefined : process.env.HARNESS_SHARED_SKILLS) };
+    if (native && (assets.instructionsFile || assets.skillsDirectory)) throw new Error('Native profiles load shared assets from their existing config home');
     if (command === 'plan' && !flags.execute && !flags.state && !flags['task-file']) {
       console.log(JSON.stringify({ ...renderRuntime(selection), cwd: resolve(flags.cwd ?? '.'), execution: 'not_started', timeout_seconds: 600, assets }, null, 2));
     } else if (command === 'run' && flags.execute === 'true' && flags.state && flags['task-file']) {

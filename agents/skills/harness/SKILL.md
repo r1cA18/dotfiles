@@ -35,6 +35,12 @@ them. A profile selects model and connection; a runtime selects the harness.
 Resolve the profile against the destination's device binding. Never silently
 change group, model, billing route or runtime because a binding is unavailable.
 Check the current group and destination account assignment before sending work.
+For native Codex/Claude profiles use `harness-profile resolve-core` with the
+selected destination's private binding and operator ledger. Follow
+[profile setup](../../../docs/guides/model-connections.md) for its explicit
+references. Its result is advisory plan input, not an execution approval or proof
+of login. For Core-managed execution use the approved `DispatchPlan` and
+`dispatch run`; never convert `registry_checked` into start authority.
 A group override requires the existing policy to permit the source data there.
 Missing authority blocks execution, not preparation of a private local artifact.
 
