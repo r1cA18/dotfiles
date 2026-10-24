@@ -183,3 +183,25 @@ The adoption guide pins #77 and consolidates the current evidence; this progress
 record retains earlier results. Full one-operation handoff, hard deadlines and
 cross-host live-agent acceptance remain separate. Real registration stays deferred
 to joint adoption. This follow-up changes documentation only.
+
+## Guarded successor creation
+
+Core #78 signed head 6e9ae252e381f5aa1ed115056cc16faa83a73338 adds
+`attempt create --predecessor`. The Task transaction compares the expected
+latest closed predecessor before creating its successor. A stale controller
+cannot silently attach to a different Attempt. Exact replay returns its recorded
+successor after later work; a changed predecessor conflicts. Existing creation
+policy, current signed Contract approval and Attempt budgets remain in force.
+
+Mac all 499 tests, fmt, warnings-denied Clippy, OpenAPI comparison and fixed-commit
+fixture verification passed. Linux's 83 related regressions passed. The official
+Orca 1.4.219 gate passed in 117.809 seconds under isolated amd64 Linux emulation:
+confirmed parent/child stop, bound capture, dirty-work restoration, guarded
+successor and replay. Owned server/display and disposable container exited.
+No actual account/model or service change. Hosted full/joint/TLS evidence is on
+the implementation PR. The guide pins #78 and explains the precondition.
+
+No automatic transport, new execution authority or daemon is introduced.
+One-operation handoff, hard deadlines and cross-host live-agent acceptance remain
+separate. Real registration stays deferred to joint adoption. This follow-up
+changes documentation only.
