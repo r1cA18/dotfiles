@@ -92,3 +92,16 @@ The first documentation CI rejected four Core script names written as inline
 relative paths in the dotfiles guide. Replaced them with pinned Core links;
 kept the existing path checker unchanged and reran it locally. No runtime or
 configuration correction was needed.
+
+## Attempt-scoped Gateway candidate
+
+Core #72 Linux CI 40060286426 passed full, pinned joint and synthetic TLS gates.
+Core #73 signed head 4f6755f56c230cd50fb19ff571a963ddc8194bf5 adds optional
+Task/Attempt/Contract-bound grants with live lifecycle and approval checks.
+Mac full 469 tests, fmt, warnings-denied Clippy, OpenAPI comparison, committed
+fixture verification and the separate actual CLI/curl/TLS synthetic gate passed.
+Linux full/joint/TLS CI 40062334641 passed all 469 tests on clean checkout
+6561996abaedd3b5d768d650e02dc93842a825bb. Mac and Linux source tree both match
+e956afab6a14b24b71fdeaa74ec4bb8fe3b9950b. The adoption guide now pins
+this cumulative candidate and distinguishes issuance from dispatch-time token
+delivery. No runtime configuration, account, Skill or service was changed.
