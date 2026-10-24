@@ -1,0 +1,72 @@
+# Native profile bindings
+
+## Objective
+
+Use one portable profile catalog for explicitly selected native Codex/Claude
+logins and existing gateway routes. Keep config-home paths and host-scoped Core
+account IDs in private device bindings. Preserve runtime, model, group and
+logical account intent across devices without copying credentials.
+
+## Design
+
+- Extend the connection transport with an explicit native variant; retain the
+  existing gateway format and its subscription restrictions.
+- Resolve native config-home references without reading credential contents.
+- Use existing read-only Core account/environment operations to check an
+  explicit device binding. Core dispatch remains the authority for execution.
+- Do not infer login validity from a directory, create accounts, assign groups,
+  pick fallback accounts or launch a worker during doctor/resolve operations.
+- Native runs use the selected existing config home. Gateway runs retain their
+  private generated homes. The operator chooses every runtime and exact model.
+
+## Verification plan
+
+Baseline gateway/profile/runtime tests, transport/provider/runtime matrix,
+cross-device resolution, binding mismatch/revocation and invalid-input cases,
+CLI read-only behavior and synthetic native commands. Follow with the real Core
+CLI over a signed synthetic registry. No subscription inference or activation.
+
+Installed CLI help was observed in disposable homes: Codex 0.163.0 supports
+`exec --json --model`; Claude Code 2.1.310 supports `--print --model`. No model
+was run. Real account/model acceptance remains pending owner selection.
+
+## State
+
+Implemented above dotfiles #29; Core dispatch #67 is the integration target.
+The legacy gateway format remains accepted and subscription gateway restrictions
+remain enforced. New native examples contain synthetic references only.
+
+## Completed checks
+
+- Eleven Bun regressions passed with 84 assertions using fake native commands.
+  These cover both providers, cross-device identity, JSON roundtrips, the finite
+  runtime/provider capability matrix, literal task/model arguments, private
+  version probes, retained config-home contents, startup refusal, registry
+  identity/revocation and read failures.
+- The real Core CLI resolved a signed synthetic registry through the actual Bun
+  CLI. The operator-ledger record count remained unchanged and no Orca worker
+  was created. A signed account unassignment was rejected on the next read.
+- A first real-Core test failed because its test Bun executable path did not
+  exist. Using the observed Nix executable fixed the harness; no product check
+  was relaxed.
+- Full pinned-tool Mac suite passed: 121 tests, 3 native-binary skips and zero
+  failures across 17 files. Native dsh checks, Nix checks and Core full gates
+  remain in progress. Linux CI has not yet run for this increment.
+
+## Review and remaining work
+
+Local review preserves transport-specific capabilities and avoids a second
+policy authority. Native model capacity fields are metadata, not applied limits.
+Doctor normalizes lexical paths but does not attest symlink identity or login.
+Existing native config is trusted and may include hooks/provider settings.
+The wrapper does not alter the selected home, but the native product may do so.
+
+The result of resolve-core is advisory plan input, not a full signed DispatchPlan.
+No credential reading/distribution, provider inference, native resume, host
+selection, production activation or UI is implemented in this increment.
+The current homelab probe failed DNS resolution before authentication. Native
+subscription inference remains pending explicit group/profile/model values.
+
+Next: finish full gates, publish signed scoped PRs and run the pinned resolver
+against Core in Linux CI. Continue controller orchestration and Publisher fencing
+separately; this increment does not complete the whole harness foundation.
