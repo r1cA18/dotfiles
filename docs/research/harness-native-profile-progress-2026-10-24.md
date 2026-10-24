@@ -70,3 +70,20 @@ subscription inference remains pending explicit group/profile/model values.
 Next: finish full gates, publish signed scoped PRs and run the pinned resolver
 against Core in Linux CI. Continue controller orchestration and Publisher fencing
 separately; this increment does not complete the whole harness foundation.
+
+## Published verification and adoption handoff
+
+Signed dotfiles #30 head 4f5bf88a7dcff760c5fc57d64d8ee6cea11200e9 passed
+Mac/Linux full 121-pass/3-skip suites, Nix checks and the separate three native
+dsh synthetic endpoint checks. Core #68 passed 416 tests and the pinned joint
+gate. Later Core #71 passed all 444 Mac/Linux tests and joint verification.
+Core #72 signed head 106215d71d65a3d1442374e8e4d11f1ca30d2f2f adds buffered
+Gateway proxy admission; its Mac full 457 tests and actual CLI/curl/TLS synthetic
+gate passed. Linux results remain in that PR's checks and body.
+
+The adoption guide pins both repository candidates, distinguishes component
+implementation from live-agent workflows and links each operation's existing
+runbook. Corrected historical handoff-guide statements about dispatch/Publisher
+and homelab reachability. This documentation increment changes no runtime, Skill,
+Nix configuration, login or service. Validate Markdown formatting, local/pinned
+links and the evidence counts; do not rerun unrelated runtime suites for prose.
