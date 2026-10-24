@@ -205,3 +205,30 @@ No automatic transport, new execution authority or daemon is introduced.
 One-operation handoff, hard deadlines and cross-host live-agent acceptance remain
 separate. Real registration stays deferred to joint adoption. This follow-up
 changes documentation only.
+
+## Shared Skill resume integration follow-up
+
+The adoption guide now pins dotfiles #32 at
+`da95d3d3ef9832dd19d74be1d288c429c60e6654` and Core #78 at
+`9c1e54abe157570bdba9290f00957f7b6b0d268d`. The shared Skill distinguishes
+Core-managed individual stop/bound capture from standalone workspace closure.
+It takes the predecessor from the capture receipt and refuses automatic ID
+replacement, unknown termination and unsupported remote dispatch. Controller
+ledgers remain on the trusted host.
+
+Correct the documented order to restore, prepare/approve the destination
+Contract, create the guarded same-Task successor and dispatch. Attempts bind
+at creation; a later Contract approval cannot rebind one. The Core follow-up
+changes documentation only and passed required local fmt, all-target Clippy
+and all 499 tests. Its 120 recorded implementation inputs are unchanged.
+
+The Skill change passed 21 targeted Mac tests, including the three opt-in pinned
+dsh synthetic tests. The existing model/tool test now asserts explicit shared
+slash-Skill body expansion without adding a test process or CI job. Separate
+actual-harness and ordinary-prompt probes distinguish explicit expansion from
+metadata-only loading. Autonomous agent discovery, real accounts and live
+cross-host handoff remain unverified. Detailed evidence is pinned from the guide.
+
+This adoption-doc follow-up changes no runtime, Skill, Nix or service. Validate
+formatting, existing path checks, pinned links/anchors and local references.
+Published-head CI results will be recorded in the PR body. No merge or activation.
