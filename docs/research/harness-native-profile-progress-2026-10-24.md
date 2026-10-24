@@ -70,3 +70,165 @@ subscription inference remains pending explicit group/profile/model values.
 Next: finish full gates, publish signed scoped PRs and run the pinned resolver
 against Core in Linux CI. Continue controller orchestration and Publisher fencing
 separately; this increment does not complete the whole harness foundation.
+
+## Published verification and adoption handoff
+
+Signed dotfiles #30 head 4f5bf88a7dcff760c5fc57d64d8ee6cea11200e9 passed
+Mac/Linux full 121-pass/3-skip suites, Nix checks and the separate three native
+dsh synthetic endpoint checks. Core #68 passed 416 tests and the pinned joint
+gate. Later Core #71 passed all 444 Mac/Linux tests and joint verification.
+Core #72 signed head 106215d71d65a3d1442374e8e4d11f1ca30d2f2f adds buffered
+Gateway proxy admission; its Mac full 457 tests and actual CLI/curl/TLS synthetic
+gate passed. Linux results remain in that PR's checks and body.
+
+The adoption guide pins both repository candidates, distinguishes component
+implementation from live-agent workflows and links each operation's existing
+runbook. Corrected historical handoff-guide statements about dispatch/Publisher
+and homelab reachability. This documentation increment changes no runtime, Skill,
+Nix configuration, login or service. Validate Markdown formatting, local/pinned
+links and the evidence counts; do not rerun unrelated runtime suites for prose.
+
+The first documentation CI rejected four Core script names written as inline
+relative paths in the dotfiles guide. Replaced them with pinned Core links;
+kept the existing path checker unchanged and reran it locally. No runtime or
+configuration correction was needed.
+
+## Attempt-scoped Gateway candidate
+
+Core #72 Linux CI 40060286426 passed full, pinned joint and synthetic TLS gates.
+Core #73 signed head 4f6755f56c230cd50fb19ff571a963ddc8194bf5 adds optional
+Task/Attempt/Contract-bound grants with live lifecycle and approval checks.
+Mac full 469 tests, fmt, warnings-denied Clippy, OpenAPI comparison, committed
+fixture verification and the separate actual CLI/curl/TLS synthetic gate passed.
+Linux full/joint/TLS CI 40062334641 passed all 469 tests on clean checkout
+6561996abaedd3b5d768d650e02dc93842a825bb. Mac and Linux source tree both match
+e956afab6a14b24b71fdeaa74ec4bb8fe3b9950b. The adoption guide now pins
+this cumulative candidate and distinguishes issuance from dispatch-time token
+delivery. No runtime configuration, account, Skill or service was changed.
+
+## Real Orca synthetic destination acceptance
+
+Core #74 signed head b64c2b86419e66323b46cf4d601a3447af6c961e connects source
+capture/restoration with the actual 1.4.219 destination and the public dispatch
+CLI. Mac full 469 tests and required gates passed. Linux fmt, 19 dispatch
+regressions and the explicit native gate passed in an isolated amd64 container
+under emulation. The candidate's exact synthetic dsh config-home binding,
+staged/unstaged/untracked/binary inputs, result collection to Verifying, budget
+settlement and replay were checked. No dsh/model inference or actual login.
+
+The adoption guide now pins #74 and links the optional gate. Keep Mac native
+startup, cross-host live-agent moves and real profile acceptance unverified.
+This is a documentation-only follow-up. Use targeted Markdown/path validation;
+the existing PR checks retain their normal scope without an added CI job.
+
+Owner decision: continue implementation with synthetic group/profile/model
+registrations in isolated test ledgers and empty account homes. Register real
+identities and perform subscription acceptance together after implementation.
+Real profile names are deferred adoption inputs, not an implementation blocker.
+
+## Bound terminal stop acceptance
+
+Core #75 signed head 5e001da412c144627127b2d417a40d7963623c79 binds observe/stop
+to the recorded effect and terminal and reads the matching nested positive PTY
+receipt from real Orca 1.4.219. Mac full 471 tests and required gates passed.
+Linux's 39 related regressions and both opt-in real-runtime gates passed together
+in 70.319 seconds. The synthetic parent and child stopped, heartbeats stayed
+stable and the terminal was no longer observed as running. Read-only readiness
+probe timeouts recovered within the existing bound; the private display survives
+short-lived clients. No detached-process or remote-loss guarantee is inferred.
+
+The guide pins this cumulative candidate. Core's individual stop CLI, hard
+deadlines and real-agent acceptance remain separate. Registration stays deferred
+to joint adoption; no runtime, login, Skill, service or mandatory CI job changed.
+Validate this prose with the existing Markdown and path checks.
+
+## Individual stop and successor Attempts
+
+Owner chose a new Attempt for continuation after confirmed termination, keeping
+the Task. Core #76 signed head fe29687c27223af4c50d2046b59b1334394b5a23 adds
+durable stop intent/observation, per-Attempt run/poll/stop exclusion and a JSON CLI.
+Unconfirmed/lost receipts retain OutcomeUnknown, the budget hold and successor
+refusal. Stop does not depend on renewed start admission. Replay does not close
+again; confirmed stop recovers unknown-usage settlement after a successor.
+
+Mac all 484 tests, fmt, warnings-denied Clippy, generated OpenAPI comparison and
+fixed-commit fixture verify passed. Linux's 108 related regressions passed. The
+actual Orca 1.4.219 gate passed in 58.583 seconds under isolated amd64 emulation,
+including the new CLI stop, parent/child exit, saved files, settlement, replay and
+successor creation. A split Xvfb display-number pipe startup race was reproduced
+and fixed in the manual runner. No login/model, runtime activation or service
+change. Hosted full/joint/TLS results are on the PR. The guide pins #76; automatic
+successor dispatch, hard deadlines and cross-host live-agent acceptance remain
+separate. Real registration stays deferred to joint adoption.
+
+## Bound capture after confirmed stop
+
+Core #77 signed head a57f88af575a1c28424cfc0e329094ee3087f419 adds the JSON
+service/CLI `dispatch capture`. Its private receipt binds portable work to the
+closed Task/Attempt, execute effect, confirmed stop request and immutable plan.
+Exact replay verifies the artifact without rereading the source or closing another
+terminal. Unknown/manual-only cancellation, foreign plans, unrelated inputs and
+incomplete/corrupt claims are refused. Runtime/profile selection stays advisory;
+no successor launch authority or new source lease is introduced.
+
+Mac full 493 tests, fmt, warnings-denied Clippy and generated OpenAPI comparison
+passed. Linux's 117 related regressions and final 18 relevant regressions passed.
+The final real Orca 1.4.219 manual gate passed in 91.968 seconds under isolated
+amd64 emulation: actual CLI stop, bound capture, saved-work restoration, a new
+Attempt of the same Task and replay. No actual model/account or service change.
+The runner stopped its owned processes and private containers exited. Hosted
+full/joint/TLS and fixed-commit fixture evidence remain on the implementation PR.
+
+The adoption guide pins #77 and consolidates the current evidence; this progress
+record retains earlier results. Full one-operation handoff, hard deadlines and
+cross-host live-agent acceptance remain separate. Real registration stays deferred
+to joint adoption. This follow-up changes documentation only.
+
+## Guarded successor creation
+
+Core #78 signed head 6e9ae252e381f5aa1ed115056cc16faa83a73338 adds
+`attempt create --predecessor`. The Task transaction compares the expected
+latest closed predecessor before creating its successor. A stale controller
+cannot silently attach to a different Attempt. Exact replay returns its recorded
+successor after later work; a changed predecessor conflicts. Existing creation
+policy, current signed Contract approval and Attempt budgets remain in force.
+
+Mac all 499 tests, fmt, warnings-denied Clippy, OpenAPI comparison and fixed-commit
+fixture verification passed. Linux's 83 related regressions passed. The official
+Orca 1.4.219 gate passed in 117.809 seconds under isolated amd64 Linux emulation:
+confirmed parent/child stop, bound capture, dirty-work restoration, guarded
+successor and replay. Owned server/display and disposable container exited.
+No actual account/model or service change. Hosted full/joint/TLS evidence is on
+the implementation PR. The guide pins #78 and explains the precondition.
+
+No automatic transport, new execution authority or daemon is introduced.
+One-operation handoff, hard deadlines and cross-host live-agent acceptance remain
+separate. Real registration stays deferred to joint adoption. This follow-up
+changes documentation only.
+
+## Shared Skill resume integration follow-up
+
+The adoption guide now pins dotfiles #32 at
+`da95d3d3ef9832dd19d74be1d288c429c60e6654` and Core #78 at
+`9c1e54abe157570bdba9290f00957f7b6b0d268d`. The shared Skill distinguishes
+Core-managed individual stop/bound capture from standalone workspace closure.
+It takes the predecessor from the capture receipt and refuses automatic ID
+replacement, unknown termination and unsupported remote dispatch. Controller
+ledgers remain on the trusted host.
+
+Correct the documented order to restore, prepare/approve the destination
+Contract, create the guarded same-Task successor and dispatch. Attempts bind
+at creation; a later Contract approval cannot rebind one. The Core follow-up
+changes documentation only and passed required local fmt, all-target Clippy
+and all 499 tests. Its 120 recorded implementation inputs are unchanged.
+
+The Skill change passed 21 targeted Mac tests, including the three opt-in pinned
+dsh synthetic tests. The existing model/tool test now asserts explicit shared
+slash-Skill body expansion without adding a test process or CI job. Separate
+actual-harness and ordinary-prompt probes distinguish explicit expansion from
+metadata-only loading. Autonomous agent discovery, real accounts and live
+cross-host handoff remain unverified. Detailed evidence is pinned from the guide.
+
+This adoption-doc follow-up changes no runtime, Skill, Nix or service. Validate
+formatting, existing path checks, pinned links/anchors and local references.
+Published-head CI results will be recorded in the PR body. No merge or activation.

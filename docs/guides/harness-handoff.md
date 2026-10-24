@@ -1,5 +1,8 @@
 # OrcaとCoreによる作業の引き継ぎ
 
+最新の導入候補と実装・実機検証の区別は[導入状況](harness-adoption.md)を参照する。
+以下には過去の検証結果を含む。現在の接続状態は試験時に再確認する。
+
 開発の入口には共有Skill `harness`を使う。Orca MCPまたはversionに対応したCLIがhost・worktree・terminalを操作しCoreのcheckpointが作業内容を保存・検証・復元する。local/cloudと移動方向で別の仕組みを作らない。OS名による割り振りは行わず必要toolとdevice accessと空きresourceから既存hostを選ぶ。
 
 ## 操作
@@ -26,9 +29,9 @@
 
 Skillの正本は[agents/skills/harness](../../agents/skills/harness/SKILL.md)。配布対象へ追加済み。Claude・Codexへの配布には既存agent-skills moduleを使う。dshには既存のopt-in `dotfiles.harnessRuntime.dsh.shareSkills`を使う。本変更はHome Managerや既存accountへ適用していない。
 
-capture requestとCLI引数と復旧手順は[Coreのcontroller guide](https://github.com/r1cA18/harness-core/blob/0e672c139656aee7929ccb432039e0c6dbb51849/docs/handoff-controller.md)にまとめた。profileの中央catalogとdevice bindingは[model connections guide](model-connections.md)を使う。doctorの`ready`は定義の整合性を示す。native loginと実推論の成功は別に確認する。
+capture requestとCLI引数と復旧手順は[Coreのcontroller guide](https://github.com/r1cA18/harness-core/blob/106215d71d65a3d1442374e8e4d11f1ca30d2f2f/docs/handoff-controller.md)にまとめた。profileの中央catalogとdevice bindingは[model connections guide](model-connections.md)を使う。doctorの`ready`は定義の整合性を示す。native loginと実推論の成功は別に確認する。
 
-SSHで接続できるだけではOrcaのremote terminalを作成できるとは限らない。登録済みSSH targetとpaired runtimeは別の接続種別。installed APIで操作できる接続を確認する。Orca 1.4.219のMac CLIとhomelabの1.4.215で機能範囲を調査した。現状のhomelabはSSH試験が可能だがpaired runtimeの設定は未完了。
+SSHで接続できるだけではOrcaのremote terminalを作成できるとは限らない。登録済みSSH targetとpaired runtimeは別の接続種別。installed APIで操作できる接続を確認する。Orca 1.4.219のMac CLIとhomelabの1.4.215で機能範囲を調査した。過去のhomelab試験ではSSH接続を使用したがpaired runtimeは設定していない。最新の接続可否は導入状況と実際のdiscoveryで確認する。
 
 ## 保存内容と完了の意味
 
@@ -42,7 +45,7 @@ checkpointは複数repoのHEADとstaged/unstaged差分と指定した未追跡�
 
 controllerは自身のcwdとOrca terminalのworktree identityを検査する。同じterminalで`cd`しただけでは外部controllerにならない。`captured`はsource側の停止後保存が終わった状態でありdestinationの復元やagent再開や権限移譲は意味しない。
 
-停止確認だけでは復帰した旧workerの二重公開を永続的に防止できない。Coreのgeneric dispatchとPublisher gateは別の未完了項目。profileの中央catalogとdevice bindingは既存の基盤を使うが実subscription推論とcredentialの中央配布を本変更の完成範囲へ含めない。
+停止確認だけでは復帰した旧workerの二重公開を永続的に防止できない。Coreの明示dispatchは#67で実装済み。check/commentのPublisher gateは#69で実装済み。本番のcredential分離とDraft PR/push経路は未完了。これらをlive agentの通し引き継ぎ成功とは扱わない。profileの中央catalogとdevice bindingは既存の基盤を使うが実subscription推論とcredentialの中央配布を本変更の完成範囲へ含めない。
 
 ## 検証範囲
 
