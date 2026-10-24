@@ -160,3 +160,26 @@ and fixed in the manual runner. No login/model, runtime activation or service
 change. Hosted full/joint/TLS results are on the PR. The guide pins #76; automatic
 successor dispatch, hard deadlines and cross-host live-agent acceptance remain
 separate. Real registration stays deferred to joint adoption.
+
+## Bound capture after confirmed stop
+
+Core #77 signed head a57f88af575a1c28424cfc0e329094ee3087f419 adds the JSON
+service/CLI `dispatch capture`. Its private receipt binds portable work to the
+closed Task/Attempt, execute effect, confirmed stop request and immutable plan.
+Exact replay verifies the artifact without rereading the source or closing another
+terminal. Unknown/manual-only cancellation, foreign plans, unrelated inputs and
+incomplete/corrupt claims are refused. Runtime/profile selection stays advisory;
+no successor launch authority or new source lease is introduced.
+
+Mac full 493 tests, fmt, warnings-denied Clippy and generated OpenAPI comparison
+passed. Linux's 117 related regressions and final 18 relevant regressions passed.
+The final real Orca 1.4.219 manual gate passed in 91.968 seconds under isolated
+amd64 emulation: actual CLI stop, bound capture, saved-work restoration, a new
+Attempt of the same Task and replay. No actual model/account or service change.
+The runner stopped its owned processes and private containers exited. Hosted
+full/joint/TLS and fixed-commit fixture evidence remain on the implementation PR.
+
+The adoption guide pins #77 and consolidates the current evidence; this progress
+record retains earlier results. Full one-operation handoff, hard deadlines and
+cross-host live-agent acceptance remain separate. Real registration stays deferred
+to joint adoption. This follow-up changes documentation only.
