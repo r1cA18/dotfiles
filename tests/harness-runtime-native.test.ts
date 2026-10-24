@@ -22,7 +22,7 @@ function response(content: unknown[], stopReason: string) {
   return new Response(events.map(([event, data]) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`).join(''), { headers: { 'Content-Type': 'text/event-stream' } });
 }
 
-test.skipIf(!binary)('pinned dsh loads private config, shared assets, and completes a synthetic model/tool round trip', async () => {
+test.skipIf(!binary)('pinned dsh expands a shared slash skill and completes a synthetic model/tool round trip', async () => {
   const root = await mkdtemp(join(tmpdir(), 'dsh-native-roundtrip-'));
   const requests: any[] = [];
   const skills = join(root, 'shared-skills'); const instructions = join(root, 'shared.md');
@@ -42,11 +42,12 @@ test.skipIf(!binary)('pinned dsh loads private config, shared assets, and comple
         models: { main: { id: 'synthetic-model', context_window: 32000, max_output_tokens: 1024 } } }],
       profiles: [{ id: 'synthetic', connection: 'synthetic' }],
     });
-    const result = await launch(resolveConnection(catalog, { profile: 'synthetic', group: 'testing' }), { cwd: root, state: join(root, 'state'), task: 'Read fixture.txt and report its content', timeoutMs: 20_000, assets: { instructionsFile: instructions, skillsDirectory: skills } });
+    const result = await launch(resolveConnection(catalog, { profile: 'synthetic', group: 'testing' }), { cwd: root, state: join(root, 'state'), task: '/synthetic-skill Read fixture.txt and report its content', timeoutMs: 20_000, assets: { instructionsFile: instructions, skillsDirectory: skills } });
     expect(result.code).toBe(0);
     expect(requests).toHaveLength(2);
     expect(JSON.stringify(requests[0])).toContain('fixture-shared-instructions');
     expect(JSON.stringify(requests[0])).toContain('synthetic-skill');
+    expect(JSON.stringify(requests[0])).toContain('Synthetic skill body');
     expect(JSON.stringify(requests[1])).toContain('SYNTHETIC_FIXTURE');
     expect(JSON.parse(await readFile(join(result.directory, 'outcome.json'), 'utf8')).task_success).toBe('unverified');
   } finally { server.stop(true); await rm(root, { recursive: true, force: true }); }

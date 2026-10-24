@@ -9,7 +9,7 @@ const validator = resolve("agents/skills/skill-builder/scripts/validate-skill.ts
 const smoke = resolve("agents/skills/skill-auditor/scripts/trigger_smoke_test.py");
 
 test("maintained skill entrypoints have valid metadata and local references", () => {
-  for (const name of ["skill-builder", "skill-auditor", "codex-app-screenshots", "x-article-publisher", "indexion-workspace", "session-handoff"]) {
+  for (const name of ["skill-builder", "skill-auditor", "codex-app-screenshots", "x-article-publisher", "indexion-workspace", "session-handoff", "harness"]) {
     const result = Bun.spawnSync([process.execPath, validator, resolve("agents/skills", name)], { stdout: "pipe", stderr: "pipe" });
     expect(result.exitCode, `${name}: ${result.stderr.toString()}`).toBe(0);
   }
