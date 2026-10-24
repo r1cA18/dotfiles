@@ -8,29 +8,29 @@
 | Repository   | 固定commit                                 | 含まれる範囲                                                                                   |
 | ------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | dotfiles     | `4f5bf88a7dcff760c5fc57d64d8ee6cea11200e9` | dsh配置・runtime/model/account分離・共有Skill・portable profile・native binding                |
-| harness-core | `5e001da412c144627127b2d417a40d7963623c79` | bounded improvement・checkpoint・外部capture・明示dispatch・Publisher・Gateway認可とJSON proxy |
+| harness-core | `fe29687c27223af4c50d2046b59b1334394b5a23` | bounded improvement・checkpoint・外部capture・明示dispatch・Publisher・Gateway認可とJSON proxy |
 
 [dotfiles #30](https://github.com/r1cA18/dotfiles/pull/30)と
-[Core #75](https://github.com/r1cA18/harness-core/pull/75)の先端を示す。
+[Core #76](https://github.com/r1cA18/harness-core/pull/76)の先端を示す。
 各先端はそのbaseへ積んだ変更を含む。個々のPRを別々にcherry-pickする必要はない。
 取り込みはPRのbase依存を確認してから行う。運用中checkoutへの一括適用はまだ導入試験に含めない。
 
 ## 使える部品と未検証の体験
 
-| Workflow               | 実装済み                                                                           | 残る検証・実装                                       |
-| ---------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| profile選択            | runtime・model・group・account参照を分離                                           | 実loginとmodel entitlementの確認                     |
-| device間profile共有    | 中央manifestとhost別private binding                                                | 選択した実accountでの導入試験                        |
-| 未commit作業の移動     | 複数repo・staged/unstaged・選択済み未追跡file・binary・assetとcontextの保存復元    | live agentを含む両方向の通し操作                     |
-| 移動元の停止と保存     | 対象worktree外からの`handoff capture`                                              | Mac実機でのnative停止・移動先起動の通し確認          |
-| 明示hostへの配置       | signed DispatchPlanと実Orca 1.4.219での合成起動・結果回収                          | 実accountでのlive agent実行                          |
-| 実行中workerの停止確認 | effect/terminalの照合と実Orcaでの合成親子process停止                               | Coreの個別停止CLIとhard deadlineとremote切断時の照合 |
-| 公開                   | SHA・Attempt・Evidence・Reviewへ結合したcheck/comment gate                         | Draft PR作成とpush経路・本番のcredential分離         |
-| Service Gateway        | signed session/Attempt grant・WhoIs・request counter・op/curlのbuffered JSON proxy | 実Service Account・Tailscale Serve・OS分離の配備     |
-| slash操作              | 共有`harness` Skillから既存Orca/Core操作を案内                                     | 承認済みcontrollerとlive agentを接続した通し試験     |
-| host自動割振り         | 明示host選択の土台                                                                 | capabilityと鮮度付き負荷情報による自動選択           |
-| dshでsubscription利用  | 対応gatewayがない経路を拒否                                                        | 正式な認証・protocol adapterと実推論                 |
-| Consoleと生活アプリ    | 構想と部分実装                                                                     | 今回の基盤導入試験の対象外                           |
+| Workflow               | 実装済み                                                                           | 残る検証・実装                                   |
+| ---------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------ |
+| profile選択            | runtime・model・group・account参照を分離                                           | 実loginとmodel entitlementの確認                 |
+| device間profile共有    | 中央manifestとhost別private binding                                                | 選択した実accountでの導入試験                    |
+| 未commit作業の移動     | 複数repo・staged/unstaged・選択済み未追跡file・binary・assetとcontextの保存復元    | live agentを含む両方向の通し操作                 |
+| 移動元の停止と保存     | 対象worktree外からの`handoff capture`                                              | Mac実機でのnative停止・移動先起動の通し確認      |
+| 明示hostへの配置       | signed DispatchPlanと実Orca 1.4.219での合成起動・結果回収                          | 実accountでのlive agent実行                      |
+| 実行中workerの停止確認 | 個別停止CLI・停止event・実Orcaでの合成親子process停止                              | hard deadlineとremote切断時の照合                |
+| 公開                   | SHA・Attempt・Evidence・Reviewへ結合したcheck/comment gate                         | Draft PR作成とpush経路・本番のcredential分離     |
+| Service Gateway        | signed session/Attempt grant・WhoIs・request counter・op/curlのbuffered JSON proxy | 実Service Account・Tailscale Serve・OS分離の配備 |
+| slash操作              | 共有`harness` Skillから既存Orca/Core操作を案内                                     | 承認済みcontrollerとlive agentを接続した通し試験 |
+| host自動割振り         | 明示host選択の土台                                                                 | capabilityと鮮度付き負荷情報による自動選択       |
+| dshでsubscription利用  | 対応gatewayがない経路を拒否                                                        | 正式な認証・protocol adapterと実推論             |
+| Consoleと生活アプリ    | 構想と部分実装                                                                     | 今回の基盤導入試験の対象外                       |
 
 local→cloud・cloud→local・local→localで同じcheckpointとdispatchを使う。
 OS名で別workflowへ分岐しない。runtime/profile/groupの省略は現在の選択を維持する意味であり
@@ -51,13 +51,13 @@ fixtureの成功は実accountの成功やlive handoffの成功には数えない
 `doctor`のreadyも実loginの証明ではない。SSH targetの登録だけではOrcaのpaired runtimeや
 project host setupがreadyになったことにはならない。
 
-合成試験の入口はCoreの[validate-checkpoint.py](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/scripts/validate-checkpoint.py)と
-[validate-handoff-controller.py](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/scripts/validate-handoff-controller.py)と[validate-improvement.py](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/scripts/validate-improvement.py)と
-[validate-gateway-proxy.py](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/scripts/validate-gateway-proxy.py)。引数と隔離条件は各guideを参照する。
+合成試験の入口はCoreの[validate-checkpoint.py](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/scripts/validate-checkpoint.py)と
+[validate-handoff-controller.py](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/scripts/validate-handoff-controller.py)と[validate-improvement.py](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/scripts/validate-improvement.py)と
+[validate-gateway-proxy.py](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/scripts/validate-gateway-proxy.py)。引数と隔離条件は各guideを参照する。
 controllerは停止対象worktreeの外に置く。同一worktreeで`cd`するだけでは外部controllerにならない。
 
-step 3の通しgateは[Coreの手順](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/docs/handoff-controller.md#verification)を参照する。
-`--dispatch-test`で合成workerの起動と結果回収まで確認できる。default CIではElectronを起動しない。
+step 3の通しgateは[Coreの手順](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/handoff-controller.md#verification)を参照する。
+`--dispatch-test`で合成workerの起動・結果回収・個別停止・新Attempt作成を確認できる。default CIではElectronを起動しない。
 Linuxでは`--adapter-test`で実行中の合成親子processの停止確認もまとめて実行できる。
 結果の`Verifying`は実行結果を回収した状態でありTask全体の完了ではない。
 
@@ -79,11 +79,29 @@ Linuxでは`--adapter-test`で実行中の合成親子processの停止確認も�
 - [Core #74の検証結果と再実行手順](https://github.com/r1cA18/harness-core/pull/74)
 - Core #75はMac全471testと必須gateと固定commitのfixture verifyに成功
 - Core #75はLinuxの関連39回帰と実Orcaでの合成引き継ぎ・親子process停止の同時gateに成功
-- 停止確認は記録済みterminalのpositive PTY receiptを照合。Coreの個別停止CLIとhard deadlineは未実装
+- Core #75の停止確認は記録済みterminalのpositive PTY receiptを照合
 - [Core #75の検証結果と再実行手順](https://github.com/r1cA18/harness-core/pull/75)
+- Core #76はMac全484testとfmt・Clippy・OpenAPI照合・固定commitのfixture verifyに成功
+- Linuxの関連108回帰と実Orca 1.4.219の3つの通しgateも成功
+- 実Orca gateは隔離Linuxのamd64 emulationで58.583秒。実accountとmodelを使用していない
+- 個別停止CLIで親子process終了・作業保持・精算・replay・同じTaskの新Attempt作成を確認
+- Xvfb番号pipeの分割書込みによる起動失敗を再現して修正。試験serverとdisplayを終了
+- [Core #76の検証結果と再実行手順](https://github.com/r1cA18/harness-core/pull/76)
 - 過去のMac→homelab→Mac checkpoint往復とLinux Orcaでの合成terminal停止は成功
 - Macの隔離Orca起動は45秒でreadyへ到達せずnative destinationは未検証
 - 最新のTailscale確認ではhomelab peerを検出できず
+
+## 停止後の再開
+
+所有者の選択は現在のAttemptを閉じて同じTaskの新Attemptへ進む方式。
+Coreの個別停止CLIが確認済みならAttemptは`Cancelled`になり後続を作成できる。
+Task全体の取消や完了を意味しない。停止未確認やcontroller中断では`OutcomeUnknown`を保持して後続を拒否する。
+同じrequest IDと理由の再要求は保存済み結果の取得であり再停止を行わない。
+
+作業のcapture・検証・restoreと新しい配置の承認と後続dispatchは別操作。
+入力や配置が変わる場合は新しい承認済みplanが必要になる。
+一度のslash入力からlive agentを停止・保存・移動・再開する通し操作は引き続き未完了。
+[個別停止と再開の手順](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/dispatch.md#stop-and-continue-in-a-new-attempt)を参照する。
 
 ## 実装中の仮登録
 
@@ -114,10 +132,10 @@ dispatch時のtoken配布と本番のworker/Publisher/Gateway分離は残る。
 
 - [modelとaccountの設定](model-connections.md)
 - [OrcaとCoreの引き継ぎ](harness-handoff.md)
-- [Core外部controller](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/docs/handoff-controller.md)
-- [Core dispatch](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/docs/dispatch.md)
-- [Core Publisher](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/docs/publisher.md)
-- [Core Gateway](https://github.com/r1cA18/harness-core/blob/5e001da412c144627127b2d417a40d7963623c79/docs/gateway.md)
+- [Core外部controller](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/handoff-controller.md)
+- [Core dispatch](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/dispatch.md)
+- [Core Publisher](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/publisher.md)
+- [Core Gateway](https://github.com/r1cA18/harness-core/blob/fe29687c27223af4c50d2046b59b1334394b5a23/docs/gateway.md)
 
 共通Skillの正本は`agents/skills/`。CLIや承認の実装をSkillへ複製しない。
 manifestは共有可能な選択情報を保持しprivate bindingとloginとledger stateの保存先を兼ねない。

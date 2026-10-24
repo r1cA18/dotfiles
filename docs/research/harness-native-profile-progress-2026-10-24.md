@@ -141,3 +141,22 @@ The guide pins this cumulative candidate. Core's individual stop CLI, hard
 deadlines and real-agent acceptance remain separate. Registration stays deferred
 to joint adoption; no runtime, login, Skill, service or mandatory CI job changed.
 Validate this prose with the existing Markdown and path checks.
+
+## Individual stop and successor Attempts
+
+Owner chose a new Attempt for continuation after confirmed termination, keeping
+the Task. Core #76 signed head fe29687c27223af4c50d2046b59b1334394b5a23 adds
+durable stop intent/observation, per-Attempt run/poll/stop exclusion and a JSON CLI.
+Unconfirmed/lost receipts retain OutcomeUnknown, the budget hold and successor
+refusal. Stop does not depend on renewed start admission. Replay does not close
+again; confirmed stop recovers unknown-usage settlement after a successor.
+
+Mac all 484 tests, fmt, warnings-denied Clippy, generated OpenAPI comparison and
+fixed-commit fixture verify passed. Linux's 108 related regressions passed. The
+actual Orca 1.4.219 gate passed in 58.583 seconds under isolated amd64 emulation,
+including the new CLI stop, parent/child exit, saved files, settlement, replay and
+successor creation. A split Xvfb display-number pipe startup race was reproduced
+and fixed in the manual runner. No login/model, runtime activation or service
+change. Hosted full/joint/TLS results are on the PR. The guide pins #76; automatic
+successor dispatch, hard deadlines and cross-host live-agent acceptance remain
+separate. Real registration stays deferred to joint adoption.
