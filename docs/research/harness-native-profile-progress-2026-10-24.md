@@ -125,3 +125,19 @@ Owner decision: continue implementation with synthetic group/profile/model
 registrations in isolated test ledgers and empty account homes. Register real
 identities and perform subscription acceptance together after implementation.
 Real profile names are deferred adoption inputs, not an implementation blocker.
+
+## Bound terminal stop acceptance
+
+Core #75 signed head 5e001da412c144627127b2d417a40d7963623c79 binds observe/stop
+to the recorded effect and terminal and reads the matching nested positive PTY
+receipt from real Orca 1.4.219. Mac full 471 tests and required gates passed.
+Linux's 39 related regressions and both opt-in real-runtime gates passed together
+in 70.319 seconds. The synthetic parent and child stopped, heartbeats stayed
+stable and the terminal was no longer observed as running. Read-only readiness
+probe timeouts recovered within the existing bound; the private display survives
+short-lived clients. No detached-process or remote-loss guarantee is inferred.
+
+The guide pins this cumulative candidate. Core's individual stop CLI, hard
+deadlines and real-agent acceptance remain separate. Registration stays deferred
+to joint adoption; no runtime, login, Skill, service or mandatory CI job changed.
+Validate this prose with the existing Markdown and path checks.
