@@ -87,3 +87,8 @@ runbook. Corrected historical handoff-guide statements about dispatch/Publisher
 and homelab reachability. This documentation increment changes no runtime, Skill,
 Nix configuration, login or service. Validate Markdown formatting, local/pinned
 links and the evidence counts; do not rerun unrelated runtime suites for prose.
+
+The first documentation CI rejected four Core script names written as inline
+relative paths in the dotfiles guide. Replaced them with pinned Core links;
+kept the existing path checker unchanged and reran it locally. No runtime or
+configuration correction was needed.

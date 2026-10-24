@@ -50,9 +50,9 @@ fixtureの成功は実accountの成功やlive handoffの成功には数えない
 `doctor`のreadyも実loginの証明ではない。SSH targetの登録だけではOrcaのpaired runtimeや
 project host setupがreadyになったことにはならない。
 
-合成試験の入口はCoreの`scripts/validate-checkpoint.py`と
-`scripts/validate-handoff-controller.py`と`scripts/validate-improvement.py`と
-`scripts/validate-gateway-proxy.py`。引数と隔離条件は各guideを参照する。
+合成試験の入口はCoreの[validate-checkpoint.py](https://github.com/r1cA18/harness-core/blob/106215d71d65a3d1442374e8e4d11f1ca30d2f2f/scripts/validate-checkpoint.py)と
+[validate-handoff-controller.py](https://github.com/r1cA18/harness-core/blob/106215d71d65a3d1442374e8e4d11f1ca30d2f2f/scripts/validate-handoff-controller.py)と[validate-improvement.py](https://github.com/r1cA18/harness-core/blob/106215d71d65a3d1442374e8e4d11f1ca30d2f2f/scripts/validate-improvement.py)と
+[validate-gateway-proxy.py](https://github.com/r1cA18/harness-core/blob/106215d71d65a3d1442374e8e4d11f1ca30d2f2f/scripts/validate-gateway-proxy.py)。引数と隔離条件は各guideを参照する。
 controllerは停止対象worktreeの外に置く。同一worktreeで`cd`するだけでは外部controllerにならない。
 
 ## 検証済みの根拠
