@@ -81,3 +81,40 @@ guarded successor creation and dispatch. The current dispatch adapter's local
 filesystem boundary is unchanged. Live cross-host execution and native account
 adoption remain unverified. Real registrations and subscription acceptance stay
 with the owner's joint adoption test. No production activation or merge.
+
+## Approved successor dispatch follow-up
+
+Connect the existing Skill to Core's new `dispatch resume --predecessor`
+operation after explicit restore and current destination Contract approval.
+The service composes guarded creation, readiness, start and dispatch with stable
+request identities. Do not send a merely `created` Attempt to `dispatch run`.
+Keep explicit capability discovery and receipt-derived predecessor selection.
+Document unknown-usage budget refusal and inspection after preparation failure.
+No new runtime, registry, permission or deployment is introduced.
+
+The validator reports zero errors/warnings and actual Core CLI help matches the
+new resume invocation. Local Bun 1.4.2 ran the 18 relevant Skill/runtime tests:
+17 passed in the permitted run; the trigger fixture hit the default five-second
+test limit. Rechecking only that fixture with a 20-second test limit passed in
+10.399 seconds. The earlier sandbox run was denied process-group signaling and
+is not a product failure. No production timeout or test source was changed.
+
+The actual updated Skill body expanded into one loopback request on pinned dsh
+0.2.1-rc.2 and exited zero in a 60-second diagnostic probe. A first 20-second
+probe produced no request and its reporter failed before recording exit status.
+The ordinary-prompt control then failed the launcher's existing five-second
+version probe. Do not count that control as passed or infer autonomous Skill
+discovery. The previous revision's control remains historical evidence only.
+No real provider or credential was used. Core native acceptance and hosted
+published-head checks are still in progress.
+
+On 2026-10-27, recovered the same published base and changed files into an
+independent clone after the earlier temporary object's alternate store lost
+objects. Committed path bytes and symlink contents match the saved checkout.
+The second ordinary-prompt control did finish before interruption: exit zero,
+one synthetic request, metadata present and body absent. The earlier failed
+control remains a failed run; automatic Skill discovery is still unverified.
+Fresh local checks passed: 18 tests, zero failures, 74 assertions in 4.75 seconds.
+The validator reports zero errors/warnings. Pinned treefmt and its fail-on-change
+check passed with the cache disabled to keep cache writes out of the user home.
+Published-head evidence follows in the PR. No activation or merge.

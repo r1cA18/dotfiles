@@ -7,8 +7,8 @@ description: Allocate work, reconnect, branch, or move unfinished work between l
 
 Manage development sessions through Orca MCP when its operations are available.
 Otherwise load the installed `orca-cli` skill and use its version-matched CLI.
-For Core-managed work use `dispatch stop`, bound `dispatch capture` and guarded
-successor creation. Use `handoff capture` only for standalone Orca work.
+For Core-managed work use `dispatch stop`, bound `dispatch capture` and approved
+`dispatch resume`. Use `handoff capture` only for standalone Orca work.
 Use checkpoints for portable source and context. Do not build a scheduler,
 terminal UI, second task ledger, or OS-name routing policy.
 
@@ -88,11 +88,12 @@ For `branch`, preserve the source session and restore into a distinct worktree.
 Treat this as a separate task and do not grant it the source's publish authority.
 
 For Core-managed tasks retain the Task ID. Complete the existing Core revision
-and approval flow for changed inputs or placement before creating a successor.
-Use `attempt create --predecessor <closed-source-attempt>` through the existing
-service before continuing. Take that ID from the bound capture receipt, never
-from whichever Attempt happens to be latest. Require support in the installed
-Core CLI; do not fall back to unguarded creation. Retain Contract and policy
+and approval flow for changed inputs or placement before resuming.
+Use `dispatch resume --predecessor <closed-source-attempt>` with the approved
+destination plan. It creates, readies, starts and dispatches one successor.
+Take the predecessor from the bound capture receipt, never from whichever
+Attempt happens to be latest. Require support in the installed Core CLI; do not
+fall back to unguarded creation or a direct launcher. Retain Contract and policy
 bindings; checkpoint restoration grants neither execution nor publication
 authority. Do not rewrite approval records or ledgers.
 

@@ -15,7 +15,7 @@ Determine whether Core owns the source Task before stopping it. For Core-managed
 work retain the Task ID, Attempt ID, original immutable DispatchPlan, and trusted
 Workspace/operator ledgers. Follow the Core sequence below. Require the installed
 Core to expose `dispatch stop`, `dispatch capture` and
-`attempt create --predecessor` in its help. A missing capability blocks
+`dispatch resume --predecessor` in its help. A missing capability blocks
 continuation; do not substitute a workspace-wide close, direct runtime launch
 or unguarded creation.
 
@@ -70,33 +70,41 @@ before choosing a stop path.
    trusted control channel. Use the checkpoint verify/restore commands in the
    standalone sequence below, import through Orca and run project checks.
    Restoring files does not create execution authority
-5. Prepare a new destination DispatchPlan and obtain the required current
-   Contract approval for changed inputs or placement. Create the successor in
-   the same Task with the source Attempt ID from the capture receipt:
+5. Resolve the destination's native login reference and group again. Prepare a
+   new destination DispatchPlan and obtain the required current Contract approval
+   for changed inputs or placement. Resume in the same Task with the source
+   Attempt ID from the capture receipt:
 
    ```sh
-   harness-core --json attempt \
-     --ledger <workspace-ledger> --operator-ledger <operator-ledger> create \
-     --task <task-id> --request-id <resume-request-id> \
-     --predecessor <closed-source-attempt-id>
+   harness-core --json dispatch resume \
+     --ledger <workspace-ledger> --operator-ledger <operator-ledger> \
+     --orca <absolute-destination-cli> --task <task-id> \
+     --predecessor <closed-source-attempt-id> --request-id <resume-request-id> \
+     --input <approved-destination-plan.json>
    ```
 
    `predecessor_conflict` means the Task advanced. Inspect the Task rather than
    replacing the expected ID automatically. Replaying the same request ID and
    predecessor returns its recorded successor even after later Attempts. Changing
-   the predecessor for that ID is `request_conflict`. Require the returned
-   predecessor to match the receipt. A `created` Attempt has not started a worker
-6. Resolve the destination's native login reference and group again. Start the
-   new Attempt through the matching approved `dispatch run` plan. Report the
-   actual execution receipt; never reuse the old execution effect or claim native
-   session continuity. Unsupported remote dispatch remains incomplete
+   the predecessor for that ID is `request_conflict`. Replay still requires
+   current matching approval and placement. Require the returned
+   predecessor to match the receipt. The service composes guarded creation,
+   readiness, start and dispatch. A preparation failure can leave an Attempt
+   without execution; inspect it and repeat the same request after a known repair.
+   Never select new IDs to bypass an unknown result or budget refusal. Settled
+   unknown source usage blocks another reservation in that budget window;
+   increasing its limit does not resolve the missing usage. Do not invent zero
+6. Report the actual execution receipt; never reuse the old execution effect or
+   claim native session continuity. A stopped or completed successor stays closed
+   on replay. Unsupported remote dispatch remains incomplete
 
 Stop replay requires the same request ID and reason; capture replay requires the
 same request and output directory. Exact replay reads durable results without
 another close or capture. A partial/corrupt output or lost termination result
 requires inspection and reconciliation; a fresh request ID/directory is not an
 automatic retry. Keep terminal Attempts closed. This sequence uses the existing
-services separately; it is not a one-command cross-host controller or a new daemon.
+stop/capture/restore stages explicitly and composes successor preparation and
+dispatch; it is not a one-command cross-host controller or a new daemon.
 
 ## Standalone Orca stop, capture, restore, continue
 
