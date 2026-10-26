@@ -1,14 +1,112 @@
 # Checkpoint handoff
 
 Dependencies: Orca MCP or the installed Orca CLI; a built `harness-core` containing
-`handoff capture|show` and `checkpoint create|verify|restore`; Git; an authorized
-artifact transfer path. The source-side controller supports the observed local
-workspace-close protocol on Orca 1.4.215 and 1.4.219. Other versions need adapter
-revalidation rather than an automatic fallback to raw terminal close.
+`checkpoint create|verify|restore`; Git; an authorized artifact transfer path.
+The standalone controller supports the observed local workspace-close protocol
+on Orca 1.4.215 and 1.4.219. Core-managed dispatch requires a version supported
+by its installed adapter. Other versions need adapter revalidation rather than
+an automatic fallback to raw terminal close.
 Use the operator-provided Core executable on each host. Do not install global
 packages or assume identical executable paths, repositories or account homes.
 
-## Stop, capture, restore, continue
+## Choose the control path
+
+Determine whether Core owns the source Task before stopping it. For Core-managed
+work retain the Task ID, Attempt ID, original immutable DispatchPlan, and trusted
+Workspace/operator ledgers. Follow the Core sequence below. Require the installed
+Core to expose `dispatch stop`, `dispatch capture` and
+`dispatch resume --predecessor` in its help. A missing capability blocks
+continuation; do not substitute a workspace-wide close, direct runtime launch
+or unguarded creation.
+
+Run ledger operations in the trusted controller context. Keep operator and
+Workspace ledgers, approval keys and publishing credentials off Workers. The
+current dispatch adapter requires its local filesystem and Orca runtime; plain
+SSH or a paired remote Orca connection does not make that adapter remote-capable.
+If the selected topology is unsupported, report the missing boundary and prepare
+only the work that can be saved safely. Do not copy ledgers to make it work.
+
+For standalone Orca work use `handoff capture|show` and the standalone sequence
+below. If Core ownership or its recorded inputs are unknown, resolve that state
+before choosing a stop path.
+
+## Core-managed stop, capture, restore, continue
+
+1. Save the objective, accepted decisions, constraints, checks and next action.
+   Resolve the destination profile and data/group permission before transferring
+   anything. Keep the source group in the capture request; destination overrides
+   require their own permitted placement
+2. Use an authorized controller outside the source worktree and its terminals.
+   Stop the recorded execution using the original plan and stable request ID:
+
+   ```sh
+   harness-core --json dispatch stop \
+     --ledger <workspace-ledger> --operator-ledger <operator-ledger> \
+     --orca <absolute-source-cli> --task <task-id> --attempt <source-attempt-id> \
+     --request-id <stop-request-id> --input <source-plan.json> \
+     --reason 'Continue in a new Attempt'
+   ```
+
+   Require recorded confirmed termination. `cancelled` alone or explicit human
+   reconciliation is not backend stop evidence. An unknown result retains the
+   old budget hold and blocks a successor. Do not close the whole worktree
+3. Preserve selected work with the same original plan:
+
+   ```sh
+   harness-core --json dispatch capture \
+     --ledger <workspace-ledger> --operator-ledger <operator-ledger> \
+     --orca <absolute-source-cli> --task <task-id> --attempt <source-attempt-id> \
+     --request-id <capture-request-id> --input <source-plan.json> \
+     --checkpoint-input <checkpoint-request.json> --destination <new-capture-directory>
+   ```
+
+   Include the primary repository at the plan's materialized
+   `repositories/<primary_repository>` path. All selected repositories and
+   assets must belong to that materialization. Require the returned receipt to
+   match the source Task/Attempt and plan digest. This operation checks recorded
+   stop evidence and does not close another terminal or launch a successor
+4. Retain the private receipt in the controller. Transfer only its `checkpoint/`
+   package through the authorized path, with `checkpoint_digest` sent through the
+   trusted control channel. Use the checkpoint verify/restore commands in the
+   standalone sequence below, import through Orca and run project checks.
+   Restoring files does not create execution authority
+5. Resolve the destination's native login reference and group again. Prepare a
+   new destination DispatchPlan and obtain the required current Contract approval
+   for changed inputs or placement. Resume in the same Task with the source
+   Attempt ID from the capture receipt:
+
+   ```sh
+   harness-core --json dispatch resume \
+     --ledger <workspace-ledger> --operator-ledger <operator-ledger> \
+     --orca <absolute-destination-cli> --task <task-id> \
+     --predecessor <closed-source-attempt-id> --request-id <resume-request-id> \
+     --input <approved-destination-plan.json>
+   ```
+
+   `predecessor_conflict` means the Task advanced. Inspect the Task rather than
+   replacing the expected ID automatically. Replaying the same request ID and
+   predecessor returns its recorded successor even after later Attempts. Changing
+   the predecessor for that ID is `request_conflict`. Replay still requires
+   current matching approval and placement. Require the returned
+   predecessor to match the receipt. The service composes guarded creation,
+   readiness, start and dispatch. A preparation failure can leave an Attempt
+   without execution; inspect it and repeat the same request after a known repair.
+   Never select new IDs to bypass an unknown result or budget refusal. Settled
+   unknown source usage blocks another reservation in that budget window;
+   increasing its limit does not resolve the missing usage. Do not invent zero
+6. Report the actual execution receipt; never reuse the old execution effect or
+   claim native session continuity. A stopped or completed successor stays closed
+   on replay. Unsupported remote dispatch remains incomplete
+
+Stop replay requires the same request ID and reason; capture replay requires the
+same request and output directory. Exact replay reads durable results without
+another close or capture. A partial/corrupt output or lost termination result
+requires inspection and reconciliation; a fresh request ID/directory is not an
+automatic retry. Keep terminal Attempts closed. This sequence uses the existing
+stop/capture/restore stages explicitly and composes successor preparation and
+dispatch; it is not a one-command cross-host controller or a new daemon.
+
+## Standalone Orca stop, capture, restore, continue
 
 1. Read source and destination terminal state from the correct Orca host
 2. Save a concise context: objective, decisions, constraints, tests, remaining work

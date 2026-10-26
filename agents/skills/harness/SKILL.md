@@ -7,8 +7,9 @@ description: Allocate work, reconnect, branch, or move unfinished work between l
 
 Manage development sessions through Orca MCP when its operations are available.
 Otherwise load the installed `orca-cli` skill and use its version-matched CLI.
-Use Core's external `handoff capture` controller for stop-and-capture and
-checkpoints for portable source and context. Do not build a scheduler,
+For Core-managed work use `dispatch stop`, bound `dispatch capture` and approved
+`dispatch resume`. Use `handoff capture` only for standalone Orca work.
+Use checkpoints for portable source and context. Do not build a scheduler,
 terminal UI, second task ledger, or OS-name routing policy.
 
 Respect the active product's delegation policy. This skill does not authorize
@@ -69,25 +70,32 @@ verified that capability for this account and session.
 
 For `offload`, prepare a new worktree or folder on the selected host through
 Orca. Resolve the destination profile. Start through the configured runtime
-launcher and report the full worktree ID and terminal receipt. An accepted input
-is not proof of an agent turn or task completion. Never resend on silence.
+launcher, or the approved Core dispatch for Core-managed work, and report the
+full worktree ID and terminal receipt. Do not bypass Core with a direct launcher
+when a Task is managed there. An accepted input is not proof of an agent turn or
+task completion. Never resend on silence.
 
 For `handoff`, read [checkpoint handoff](references/checkpoint-handoff.md).
 Use the same sequence for both directions and for a runtime/group change on the
 same host. Continue only after confirmed source termination and verified restore.
 If the source is the terminal running this agent, arrange an already-authorized
-controller outside that worktree before calling `handoff capture`. Without one save
-the context and checkpoint and report `prepared`; do not kill the only controller
-or claim a completed live handoff. No receiving agent may start in that state.
+controller outside that worktree before invoking either stop path. Without one
+save the context and checkpoint and report `prepared`; do not kill the only
+controller or claim a completed live handoff. No receiving agent may start in
+that state.
 
 For `branch`, preserve the source session and restore into a distinct worktree.
 Treat this as a separate task and do not grant it the source's publish authority.
 
-For Core-managed tasks retain the Task ID and record a successor Attempt through
-the existing service before continuing. Retain Contract and policy bindings;
-checkpoint restoration grants neither execution nor publication authority.
-If required approval does not cover the new binding, prepare its existing Core
-approval request instead of rewriting the old Contract or ledger.
+For Core-managed tasks retain the Task ID. Complete the existing Core revision
+and approval flow for changed inputs or placement before resuming.
+Use `dispatch resume --predecessor <closed-source-attempt>` with the approved
+destination plan. It creates, readies, starts and dispatches one successor.
+Take the predecessor from the bound capture receipt, never from whichever
+Attempt happens to be latest. Require support in the installed Core CLI; do not
+fall back to unguarded creation or a direct launcher. Retain Contract and policy
+bindings; checkpoint restoration grants neither execution nor publication
+authority. Do not rewrite approval records or ledgers.
 
 ## Report truth
 
@@ -97,8 +105,9 @@ lease. Source stop confirmation is not permanent publication fencing. Do not
 claim outage-safe migration, native-session cloning or exclusive ownership until
 the corresponding Core dispatch and Publisher enforce those properties.
 
-A capture receipt of `captured` means the source was stopped before that artifact
-was made. It does not mean restored or resumed. Repeating a completed capture
-only verifies its existing artifact. For any incomplete receipt inspect
-`handoff show` and reconcile manually; never retry by selecting a fresh operation
-directory automatically.
+A standalone capture receipt of `captured` means the source was stopped before
+that artifact was made. It does not mean restored or resumed. Repeating a
+completed capture only verifies its existing artifact. For any incomplete receipt
+inspect `handoff show` and reconcile manually; never retry by selecting a fresh operation
+directory automatically. For Core-managed captures use the recorded dispatch and
+private capture receipt instead; follow the reference's conflict and replay rules.
