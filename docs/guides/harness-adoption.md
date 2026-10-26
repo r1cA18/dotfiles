@@ -1,17 +1,17 @@
 # Harnessの導入候補と検証順
 
-2026-10-24時点の実装状況。部品ごとの完成と日常運用の完成を分ける。
+2026-10-27時点の実装状況。部品ごとの完成と日常運用の完成を分ける。
 対象PRはDraftでありmainへmergeしていない。本番設定の適用も行っていない。
 
 ## 最初に試すrevision
 
-| Repository   | 固定commit                                 | 含まれる範囲                                                                                                                |
-| ------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| dotfiles     | `da95d3d3ef9832dd19d74be1d288c429c60e6654` | dsh配置・runtime/model/account分離・共有Skill・portable profile・native binding・guard付き共有Skill                         |
-| harness-core | `9c1e54abe157570bdba9290f00957f7b6b0d268d` | bounded improvement・checkpoint・停止確認と結合capture・後続Attempt guard・明示dispatch・Publisher・Gateway認可とJSON proxy |
+| Repository   | 固定commit                                 | 含まれる範囲                                                                                                                        |
+| ------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| dotfiles     | `c027bad993f4d27f2bbdc77666b20dae155bd5f7` | dsh配置・runtime/model/account分離・共有Skill・portable profile・native binding・承認済み後続dispatch用共有Skill                    |
+| harness-core | `a92f86c24748452182a51db35fdd38494290b40f` | bounded improvement・checkpoint・停止確認と結合capture・後続Attempt guard・承認済み後続dispatch・Publisher・Gateway認可とJSON proxy |
 
 [dotfiles #32](https://github.com/r1cA18/dotfiles/pull/32)と
-[Core #78](https://github.com/r1cA18/harness-core/pull/78)の先端を示す。
+[Core #79](https://github.com/r1cA18/harness-core/pull/79)の先端を示す。
 各先端はそのbaseへ積んだ変更を含む。個々のPRを別々にcherry-pickする必要はない。
 取り込みはPRのbase依存を確認してから行う。運用中checkoutへの一括適用はまだ導入試験に含めない。
 
@@ -51,38 +51,40 @@ fixtureの成功は実accountの成功やlive handoffの成功には数えない
 `doctor`のreadyも実loginの証明ではない。SSH targetの登録だけではOrcaのpaired runtimeや
 project host setupがreadyになったことにはならない。
 
-合成試験の入口はCoreの[validate-checkpoint.py](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/scripts/validate-checkpoint.py)と
-[validate-handoff-controller.py](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/scripts/validate-handoff-controller.py)と[validate-improvement.py](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/scripts/validate-improvement.py)と
-[validate-gateway-proxy.py](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/scripts/validate-gateway-proxy.py)。引数と隔離条件は各guideを参照する。
+合成試験の入口はCoreの[validate-checkpoint.py](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/scripts/validate-checkpoint.py)と
+[validate-handoff-controller.py](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/scripts/validate-handoff-controller.py)と[validate-improvement.py](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/scripts/validate-improvement.py)と
+[validate-gateway-proxy.py](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/scripts/validate-gateway-proxy.py)。引数と隔離条件は各guideを参照する。
 controllerは停止対象worktreeの外に置く。同一worktreeで`cd`するだけでは外部controllerにならない。
 
-step 3の通しgateは[Coreの手順](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/handoff-controller.md#verification)を参照する。
-`--dispatch-test`で合成workerの起動・結果回収・個別停止・結合capture・復元・新Attempt作成を確認できる。default CIではElectronを起動しない。
+step 3の通しgateは[Coreの手順](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/handoff-controller.md#verification)を参照する。
+`--dispatch-test`で合成workerの起動・結果回収・個別停止・結合capture・復元・新plan承認・後続dispatchと完了回収を確認できる。default CIではElectronを起動しない。
 Linuxでは`--adapter-test`で実行中の合成親子processの停止確認もまとめて実行できる。
 結果の`Verifying`は実行結果を回収した状態でありTask全体の完了ではない。
 
 ## 検証済みの根拠
 
-- dotfiles #30はMac/Linux各121pass・3native skip・0fail
-- native dshのmodel/tool/cancelは別gateで各3pass。合成endpointを使用
-- dotfiles #32のMac関連21件が成功。既存native testで共有Skillのslash本文展開を確認
+- dotfiles #32はLinux全121pass・3native skip・0fail。既存4checkがすべて成功
+- native dshのmodel/tool/cancelは別gateで3pass。合成endpointと共有Skill本文展開を確認
+- 更新済み共有SkillとruntimeのMac関連18件が成功。0fail・74assertion
 - 実際の更新済み`harness` Skillも固定dsh 0.2.1-rc.2の最初の合成requestへ本文を展開
 - 通常promptの対照試験ではmetadataのみ。実agentの自動選択や移動操作の証明ではない
-- Core #78はMac全499testとfmt・warnings denied ClippyとOpenAPI照合に成功
-- Linuxの関連83回帰に成功
-- 実Orca 1.4.219の通しgateは隔離Linuxのamd64 emulationで117.809秒の成功
-- CLI停止後の結合captureと復元と直前Attemptを指定した後続作成とreplayを確認
+- Core #79はMac全509testとfmt・warnings denied ClippyとOpenAPI照合に成功
+- Linuxの関連93回帰に成功。公開後の全体CI結果は実装PRを参照
+- 固定commitのfixture verifyがchanged=falseとreused=falseで成功
+- 実Orca 1.4.219の通しgateは隔離Linuxのamd64 emulationで246.145秒の成功
+- CLI停止後の結合captureと復元と移動先plan承認と同じTaskの後続dispatchと完了回収を確認
+- 同じrequest IDの再送で追加launchと再停止を行わないことを確認
 - stale controllerと後続の重複と異なるpredecessorの再要求を拒否
 - staged/unstaged差分と選択した未追跡fileとbinary assetを保持
 - 仮group/profileと指定した空dsh homeを使用。実accountとmodelを使用していない
 - 試験serverとdisplayと専用containerを終了。既存serviceの変更なし
-- [Core #78の検証結果と再実行手順](https://github.com/r1cA18/harness-core/pull/78)
+- [Core #79の検証結果と再実行手順](https://github.com/r1cA18/harness-core/pull/79)
 - 過去のMac→homelab→Mac checkpoint往復とLinux Orcaでの合成terminal停止は成功
 - Macの隔離Orca起動は以前の45秒試験でreadyへ到達せずnative destinationは未検証
-- 10/24の今回のhomelab再確認は名前解決で失敗。認証とservice操作へ到達していない
+- 10/24のhomelab再確認は名前解決で失敗。認証とservice操作へ到達していない
 
 過去の各PRの検証履歴は[進捗記録](../research/harness-native-profile-progress-2026-10-24.md)に残す。
-共有Skillの検証範囲と再実行方法は[Skill検証記録](https://github.com/r1cA18/dotfiles/blob/da95d3d3ef9832dd19d74be1d288c429c60e6654/docs/research/harness-resume-skill-progress-2026-10-24.md)を参照する。
+共有Skillの検証範囲と再実行方法は[Skill検証記録](https://github.com/r1cA18/dotfiles/blob/c027bad993f4d27f2bbdc77666b20dae155bd5f7/docs/research/harness-resume-skill-progress-2026-10-24.md)を参照する。
 
 ## 停止後の再開
 
@@ -97,8 +99,13 @@ Coreで管理している仕事は次の順で進める。
 2. `dispatch capture`で停止したAttemptへ結合したcheckpointを新しいprivate directoryへ保存する
 3. checkpointだけを転送して`checkpoint verify`と`checkpoint restore`を実行する
 4. 移動先のplanを作成して入力や配置の変更を反映した現在のContractの承認を得る
-5. 保存receiptのAttempt IDを`attempt create --predecessor <closed-source-attempt>`へ渡して同じTaskの新Attemptを作成する
-6. 作成したAttemptと承認済みplanで`dispatch run`へ進む
+5. 保存receiptのAttempt IDと承認済み移動先planを`dispatch resume --predecessor <closed-source-attempt>`へ渡す
+6. 新Attemptの実行receiptを確認する。同じ要求の再送は同じAttemptとeffectを使う
+
+`dispatch resume`はguard付き後続作成とreadyとstartとdispatchを既存serviceでまとめる。
+`attempt create`だけでは`Created`のままであり実行準備と起動は完了しない。
+準備中に失敗した場合は`attempt list`とproblemを確認して原因を解決してから同じrequest IDで再実行する。
+unknown状態や予算拒否を新しいIDで回避しない。閉じた後続Attemptは再起動しない。
 
 Attemptは作成時の承認済みContractへ結合される。
 作成後にContractを変更しても結合先は更新されず起動を拒否されるため承認を先に行う。
@@ -108,20 +115,26 @@ Attemptは作成時の承認済みContractへ結合される。
 新しいIDへ自動で置き換えずTaskの状態を確認する。
 同じrequest IDとpredecessorの再要求は既存の後続Attemptを返す。
 predecessorを変更した再要求は`request_conflict`になる。
-[後続作成の手順](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/attempt-log.md#operations)を参照する。
+[承認済み後続dispatchの手順](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/dispatch.md#prepare-and-dispatch-the-successor)を参照する。
 
 保存receiptはTask・Attempt・effect・停止要求・plan・保存要求とcheckpoint digestを結合する。
 同じ要求と保存先の再実行は既存artifactの検証。Orcaへの再接続と再停止を行わない。
 未確認停止と別planと範囲外入力を拒否する。途中失敗や破損を成功として扱わない。
 停止の確認はsourceを永久に固定するleaseではない。他のwriterは保存前に停止する。
-[停止済み作業の保存手順](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/dispatch.md#capture-work-from-the-stopped-attempt)を参照する。
+[停止済み作業の保存手順](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/dispatch.md#capture-work-from-the-stopped-attempt)を参照する。
 
-作業の保存・復元と新しい配置の承認と後続dispatchは個別操作。転送は明示した経路で行う。
+作業の保存・復元と新しい配置の承認は先行する明示操作。転送は明示した経路で行う。
+後続作成と実行準備と起動を外部CLIでまとめる。
 一度のslash入力からlive agentを停止・保存・移動・再開する通し操作は引き続き未完了。
 Coreの現adapterはcontrollerと同じlocal filesystemとOrca runtimeを要求する。
 remote Orcaへ接続できてもこれだけでremote dispatchにはならない。
 ledgerと承認keyをWorkerへコピーしてこの境界を迂回しない。
-[個別停止と再開の手順](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/dispatch.md#stop-and-continue-in-a-new-attempt)を参照する。
+[個別停止と再開の手順](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/dispatch.md#stop-and-continue-in-a-new-attempt)を参照する。
+
+元Attemptの使用量がunknownのまま精算された場合は同じbudget windowの新規予約を拒否する。
+予算上限を増やしても使用量は既知にならない。実agentの使用量収集と精算連携は残件。
+成功経路の合成試験は既知の合成使用量を明示するため実subscriptionでの再開成功とは区別する。
+unknownをゼロで置き換えない。
 
 ## 実装中の仮登録
 
@@ -152,10 +165,10 @@ dispatch時のtoken配布と本番のworker/Publisher/Gateway分離は残る。
 
 - [modelとaccountの設定](model-connections.md)
 - [OrcaとCoreの引き継ぎ](harness-handoff.md)
-- [Core外部controller](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/handoff-controller.md)
-- [Core dispatch](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/dispatch.md)
-- [Core Publisher](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/publisher.md)
-- [Core Gateway](https://github.com/r1cA18/harness-core/blob/9c1e54abe157570bdba9290f00957f7b6b0d268d/docs/gateway.md)
+- [Core外部controller](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/handoff-controller.md)
+- [Core dispatch](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/dispatch.md)
+- [Core Publisher](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/publisher.md)
+- [Core Gateway](https://github.com/r1cA18/harness-core/blob/a92f86c24748452182a51db35fdd38494290b40f/docs/gateway.md)
 
 共通Skillの正本は`agents/skills/`。CLIや承認の実装をSkillへ複製しない。
 manifestは共有可能な選択情報を保持しprivate bindingとloginとledger stateの保存先を兼ねない。

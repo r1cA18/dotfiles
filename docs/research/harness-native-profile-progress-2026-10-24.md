@@ -232,3 +232,36 @@ cross-host handoff remain unverified. Detailed evidence is pinned from the guide
 This adoption-doc follow-up changes no runtime, Skill, Nix or service. Validate
 formatting, existing path checks, pinned links/anchors and local references.
 Published-head CI results will be recorded in the PR body. No merge or activation.
+
+## Approved successor dispatch controller follow-up
+
+Update the adoption sequence to use `dispatch resume` after explicit restored
+input verification and current destination Contract approval. The new service
+composes guarded creation, readiness, start and dispatch. A bare `attempt create`
+does not prepare a worker for `dispatch run`. Stable request IDs recover known
+preparation failures and never reopen closed or unknown work.
+
+Document the existing conservative budget rule: settled unknown source usage
+blocks new reservations in that window regardless of nominal capacity. Native
+usage collection and settlement remain work; synthetic success uses explicitly
+known fixture usage. Do not turn missing usage into zero. The guide now pins Core #79 at
+`a92f86c24748452182a51db35fdd38494290b40f` and dotfiles #32 at
+`c027bad993f4d27f2bbdc77666b20dae155bd5f7`.
+
+Core passed all 509 Mac tests, fmt, warnings-denied all-target Clippy, OpenAPI
+comparison and fixed-commit fixture verification with unchanged source tree and
+no reused evidence. Linux passed 93 related regressions. Official Orca 1.4.219
+passed the final unchanged-timeout native gate in 246.145 seconds: parent/child
+stop, bound capture, dirty restore, destination approval, same-Task successor
+dispatch, completion collection and replay without another launch. The runner
+retains partial stop-test output on timeout. An earlier native timeout is not
+counted as a pass. The synthetic worker declares known zero model usage and
+invokes no model. Owned processes and disposable containers exited.
+
+The updated Skill passed 18 related Mac tests with 74 assertions. Published-head
+Linux checks all passed: 121 default tests with three native skips and a separate
+three-test pinned native gate. Explicit synthetic slash-Skill expansion and the
+ordinary metadata-only control are measured; autonomous discovery and live
+handoff remain unverified. No new daemon, mandatory CI job, runtime activation
+or service change. Hosted Core results and this documentation-only follow-up
+remain recorded on their PRs. Real registration stays deferred to joint adoption.
