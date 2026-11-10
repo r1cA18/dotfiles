@@ -68,8 +68,10 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 ## ビルド
 
 ```bash
-dr  # macOS全体 / LinuxのHome Managerだけを適用
-nix run ~/dotfiles#server-apply  # Linuxのsystem設定とHome Managerを一括適用
+dot apply  # 短縮形はdr。macOS全体 / LinuxのHome Managerだけを適用
+dot update  # flake・native tool・Homebrewを更新。適用はしない
+dot server apply  # Linuxのsystem設定とHome Managerを一括適用
+dot help  # subcommand一覧
 ```
 
 ## 詳細ドキュメント

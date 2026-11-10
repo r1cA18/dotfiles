@@ -76,22 +76,20 @@ ll = { cmd = "eza -la --group-directories-first --icons=auto"; desc = "List file
 generalAliases = {
   ll = {cmd = "eza -la"; desc = "List files with eza";};
   nv = {cmd = "nvim"; desc = "Open Neovim";};
-  dot = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
 };
 
 nixCommonAliases = {
-  update-all = {
-    cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity";
-    desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity";
-  };
+  nx = {cmd = "cd ~/dotfiles"; desc = "Go to dotfiles";};
+  dr = {cmd = "dot apply"; desc = "Apply this host's config";};
+  db = {cmd = "dot build"; desc = "Build this host's config";};
 };
 
 nixDarwinAliases = {
-  dr = {cmd = "nh darwin switch ~/dotfiles -H ${hostname}"; desc = "Apply Darwin config";};
+  dp = {cmd = "dot rollback"; desc = "Rollback Darwin config";};
 };
 
 nixLinuxAliases = {
-  dr = {cmd = "nh home switch ~/dotfiles -c ${username}@linux"; desc = "Apply Home Manager config";};
+  dp = {cmd = "dot generations"; desc = "List Home Manager generations";};
 };
 
 claudeAliases = {
@@ -122,11 +120,10 @@ $ h | cat
 [General]
   ll - List files with eza
   nv - Open Neovim
-  dot - Go to dotfiles
 
 [Nix]
-  dr - Apply Darwin config
-  update-all - Update flake + GitHub apps + Claude Code + Codex + Antigravity
+  dot - Operate dotfiles (apply / build / update / rollback / clean ...)
+  dr - Apply this host's config
   ...
 
 [Claude Code]
@@ -139,22 +136,21 @@ $ hv
 [General]
   ll = eza -la
   nv = nvim
-  dot = cd ~/dotfiles
   ...
 ```
 
 ## カテゴリ構成
 
-| カテゴリ       | 内容                                          |
-| -------------- | --------------------------------------------- |
-| General        | 汎用（ll, nv, dot, ..）                       |
-| Nix            | Nix関連（dr, update-all, ds, dg, nd, db, dp） |
-| Directory      | ディレクトリ移動（dev, drive, downloads）     |
-| Claude Code    | Claude Code関連（clc, clr, cld, cls）         |
-| Codex          | Codex関連（cx, cxc, cxr, cxrev）              |
-| Workspace      | `ws`から`workspace`への短縮入口               |
-| Agent Commands | `ccspace`・`clgpt`・`clproxy`                 |
-| Help           | `h`・`hp`・`hv`                               |
+| カテゴリ       | 内容                                       |
+| -------------- | ------------------------------------------ |
+| General        | 汎用（ll, nv, ..）                         |
+| Nix            | Nix関連（dot, dr, db, dp, ds, dg, nd, nx） |
+| Directory      | ディレクトリ移動（dev, drive, downloads）  |
+| Claude Code    | Claude Code関連（clc, clr, cld, cls）      |
+| Codex          | Codex関連（cx, cxc, cxr, cxrev）           |
+| Workspace      | `ws`から`workspace`への短縮入口            |
+| Agent Commands | `ccspace`・`clgpt`・`clproxy`              |
+| Help           | `h`・`hp`・`hv`                            |
 
 `Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。
 shell aliasやabbrには変換しないため、実体のcommandをshadowしない。
@@ -163,10 +159,10 @@ shell aliasやabbrには変換しないため、実体のcommandをshadowしな�
 
 `ws`は`workspace`へ展開する。作成は`ws init ~/Workspaces/product`で、共有workspace内の操作は同梱の`./ws`を使う。詳しくは[workspace運用](multi-repo-workspaces.md)を参照。
 
-- dotfilesへの移動は`dot`を推奨し同じ動作の`nx`は互換名として維持
-- Macのrollbackは`dot-rollback`を推奨
-- Linuxの世代一覧は`dot-generations`を推奨
-- 旧`dp`は互換名として維持するがMacとLinuxで操作が異なる
+- dotfilesの操作は実行file`dot`のsubcommand(`dot apply`・`dot update`など)に統一
+- `dr`・`db`・`dp`・`ds`・`dg`は`dot <動詞>`へ展開する短縮形
+- `dot`は実行fileなのでabbrにしない。dotfilesへの移動は`nx`を使用
+- `dp`はMacでは`dot rollback`でLinuxでは`dot generations`へ展開
 - `dr`はdotfiles適用に予約しoh-my-zshのDocker aliasより優先する
 - Docker containerの起動には`docker run`を使用
 - `cl`・`cx`系の既存prefixとsession操作の短縮名は維持

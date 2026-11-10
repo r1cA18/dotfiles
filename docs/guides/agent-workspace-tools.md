@@ -17,7 +17,7 @@ keybindは実際の利用で必要性を確認してから追加する。
 | ツール             | 担当                                  | 管理方法                          |
 | ------------------ | ------------------------------------- | --------------------------------- |
 | Ghostty            | terminal windowの表示・描画           | Homebrew cask + Home Manager設定  |
-| Herdr              | agentのworkspace・tab・pane・状態表示 | Nix flake input                   |
+| Herdr              | agentのworkspace・tab・pane・状態表示 | 未導入                            |
 | AeroSpace          | macOS全体のwindow配置・workspace移動  | Homebrew cask                     |
 | Raycast            | command palette・検索・ツール起動     | Homebrew cask                     |
 | Karabiner-Elements | keyboard remap                        | Home Managerからdotfilesをsymlink |
@@ -27,15 +27,15 @@ keybindは実際の利用で必要性を確認してから追加する。
 
 ### Codex CLI
 
-OpenAI公式installerで`~/.local/bin/codex`へ導入する。Home Managerのactivation (`setupCodex`) が未導入時だけbootstrapし、`update-all` (`update-codex`) で最新版へ更新する。account・sessionは`CODEX_HOME`ごとに分離し、共有configは`nix/home-manager/programs/codex.nix`から生成する。
+OpenAI公式installerで`~/.local/bin/codex`へ導入する。Home Managerのactivation (`setupCodex`) が未導入時だけbootstrapし、`dot update` (`codex`段階) で最新版へ更新する。account・sessionは`CODEX_HOME`ごとに分離し、共有configは`nix/home-manager/programs/codex.nix`から生成する。
 
 ### Antigravity CLI
 
-Google公式installerで`~/.local/bin/agy`へ導入する。自己更新するnative binaryのためNix storeには置かない。`~/.local/bin`はHome ManagerでPATHに含め、Home Managerのactivation (`setupAntigravity`) により `dr` 時に自動インストール、`update-all` (`update-antigravity`) で最新へ更新する。
+Google公式installerで`~/.local/bin/agy`へ導入する。自己更新するnative binaryのためNix storeには置かない。`~/.local/bin`はHome ManagerでPATHに含め、Home Managerのactivation (`setupAntigravity`) により `dr` 時に自動インストール、`dot update` (`antigravity`段階) で最新へ更新する。
 
 ### Herdr
 
-公式flakeのstable releaseをinputとして固定し、macOS/Linuxの共通packageに追加する。`herdr`はagent用のpane・tab・workspace管理だけを担当する。
+現在のNix構成には含めていない(packageへ未追加のまま残っていたflake inputは削除済み)。導入する場合は公式flakeのstable releaseをinputとして固定し、macOS/Linuxの共通packageに追加する。`herdr`はagent用のpane・tab・workspace管理だけを担当する。
 
 CodexとClaude Codeのintegration installerは、設定ファイルを書き換える可能性がある。Codex設定はNixから再生成するため、必要なintegration設定は内容を確認してから宣言的に管理する。
 

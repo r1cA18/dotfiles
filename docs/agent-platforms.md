@@ -23,8 +23,8 @@
 | Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                           |
 | Claude user MCP seed         | `claude/mcp-servers.json`                         | `~/.claude.json` へ merge する前提                                    |
 | Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                    |
-| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
-| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`update-all`で更新               |
+| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新               |
+| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新               |
 | Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | native installをbootstrapして既存user configへ管理項目をmergeする     |
 
 ## 共有できるもの
@@ -47,7 +47,7 @@
 - Antigravityのprovider・credential・session state
 
 Claude・Codexのaccount切り替えは外部tool `ccspace`(`Omakase-Robotics-Org/ccspace`)で管理する。
-`space`(config directory)ごとに`launcher`(`cc-<name>`・`cx-<name>`)を生成し、
+Orca managed accountからproviderとOrca account IDベースの`launcher`を自動同期し、
 credential・session・plugin cacheをlauncherごとに分離する。
 詳細は[ccspaceガイド](guides/ccspace.md)を参照。
 
@@ -160,7 +160,7 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 - `gemini`
 
 Claude Code・Codex・Antigravityの自己更新型CLIは例外として公式native installerを使う。
-Home Managerはbootstrap・PATH・宣言設定を管理し、binary更新は`update-all`に一元化する。
+Home Managerはbootstrap・PATH・宣言設定を管理し、binary更新は`dot update`に一元化する。
 
 `skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。
 

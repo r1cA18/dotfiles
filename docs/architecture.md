@@ -24,6 +24,10 @@ dotfiles/
 ├── tests/                   # workspaceとaccount profileの回帰test
 │
 ├── nix/                      # Nix設定（メイン）
+│   ├── flake/                # flake outputの責務別定義
+│   │   ├── configurations.nix # host構成とHome Managerの組み立て
+│   │   ├── development.nix   # formatter・checks・devShell共通定義
+│   │   └── apps.nix          # formatterとLinux server workflow
 │   ├── darwin/               # macOS専用 (nix-darwin)
 │   │   └── configuration.nix # システム設定、Homebrew管理
 │   │
@@ -35,6 +39,7 @@ dotfiles/
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
 │   │       ├── zsh.nix       # Zsh、abbr、help
 │   │       ├── nh.nix        # nh 設定
+│   │       ├── dot.nix       # dotfiles操作CLI (dot.sh)
 │   │       ├── git.nix       # Git設定
 │   │       ├── neovim.nix    # Neovim本体と開発ツール供給
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
@@ -111,7 +116,7 @@ home-managerが以下のシンボリックリンクを自動管理：
 
 Claude・Codexのaccount切り替えは外部tool `ccspace`で管理する。
 `nix/home-manager/programs/ccspace.nix`のactivationが導入と更新経路を管理し、
-launcher(`cc-<name>`・`cx-<name>`)ごとにconfig homeを分離する。
+Orca managed accountをemailベースのlauncherへ自動同期してconfig homeを分離する。
 詳細は[ccspaceガイド](guides/ccspace.md)を参照。
 
 ## Agent 運用の基本方針
@@ -355,8 +360,8 @@ Codex では Claude の Markdown agent 定義はそのまま使えない。role 
 ```nix
 { pkgs, lib, ... }:
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
 in {
   # 条件付き設定
   some.option = lib.mkIf isDarwin "darwin value";
@@ -368,15 +373,19 @@ in {
 
 ## ビルドコマンド
 
-| OS                      | コマンド                                      | エイリアス |
-| ----------------------- | --------------------------------------------- | ---------- |
-| macOS                   | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
-| Linux user設定          | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
-| Linux system + user設定 | `nix run ~/dotfiles#server-apply`             | なし       |
+dotfilesの操作は実行file`dot`(`nix/home-manager/programs/dot.nix`と`dot.sh`)のsubcommandに揃える。一覧は`dot help`と`nix/docs/cheatsheet.md`を参照。
+
+| OS                      | `dot`              | 実行内容                                      | エイリアス |
+| ----------------------- | ------------------ | --------------------------------------------- | ---------- |
+| macOS                   | `dot apply`        | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
+| Linux user設定          | `dot apply`        | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
+| Linux system + user設定 | `dot server apply` | `nix run ~/dotfiles#server-apply`             | なし       |
+
+更新は`dot update`が行う。各module所有の`dot-update-<段階>`を順に呼び、macOSでは最後に`brew update`と`brew upgrade`を実行する。Homebrewの更新はactivationでは行わない(`homebrew.onActivation.autoUpdate = false`)。
 
 ## 重要な注意事項
 
-1. 変更後は対象に応じて`dr`または`server-apply`でリビルド
+1. 変更後は対象に応じて`dr`または`dot server apply`でリビルド
 2. **Nix設定のフォーマット**: `nix fmt` で整形可能
 3. **パッケージ検索**: `nix search nixpkgs <name>` または https://search.nixos.org/packages
 4. **home-managerオプション検索**: https://home-manager-options.extranix.com/
@@ -385,9 +394,13 @@ in {
 ## flake.nixの構造
 
 - `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
-- `outputs`:
+- `outputs`: `nix/flake/`の定義を各systemへ配布する
+- hostの追加・削除とprofile選択: `nix/flake/configurations.nix`
+- formatter・check・開発shell: `nix/flake/development.nix`
+- app entrypoint: `nix/flake/apps.nix`
+- custom package一覧: `nix/pkgs/default.nix`。実装は`nix/pkgs/<name>/default.nix`
+- host output:
   - `darwinConfigurations.RMB`: macOS workstation設定
-  - `darwinConfigurations."MBP187-Z"`: SSH中心のmacOS minimal server設定
   - `homeConfigurations."r1ca18@homelab"`: Ubuntu homelab設定
 
 ### プロジェクトごとの開発環境を作る

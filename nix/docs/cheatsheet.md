@@ -2,33 +2,52 @@
 
 よく使うエイリアスとコマンドのクイックリファレンス。
 
+## dot コマンド
+
+dotfilesの操作は実行file`dot`のsubcommandに揃えている。対話shell以外(agentやscript)からも呼べる。一覧は`dot help`で表示する。
+
+| Command             | 実行内容                                                                       | Description                          |
+| ------------------- | ------------------------------------------------------------------------------ | ------------------------------------ |
+| `dot apply`         | macOS: `nh darwin switch ~/dotfiles -H <hostname>` / Linux: `nh home switch`   | 設定を適用 (rebuild)                 |
+| `dot build`         | macOS: `nh darwin build` / Linux: `nh home build`                              | ビルドのみ (適用しない)              |
+| `dot rollback`      | `sudo darwin-rebuild switch --rollback` (macOSのみ)                            | 前の世代に戻す                       |
+| `dot generations`   | macOS: `darwin-rebuild --list-generations` / Linux: `home-manager generations` | 世代一覧を表示                       |
+| `dot update`        | 下記の全段階を順に実行                                                         | flake・native tool・Homebrewを更新   |
+| `dot search <名前>` | `nix search nixpkgs`                                                           | パッケージを検索                     |
+| `dot clean`         | `nh clean all --keep-since 14d --keep 5`                                       | 古い generation と store path を削除 |
+| `dot fmt`           | `nix run ~/dotfiles#fmt`                                                       | repositoryを整形                     |
+| `dot server <動作>` | `nix run ~/dotfiles#server-<動作>` (Linuxのみ)                                 | homelabのserver workflowを実行       |
+
+### dot update の段階
+
+`dot update`は次の段階を順に実行する。失敗した段階があっても残りを続行し、最後に段階ごとの成否を表示する。1つでも失敗すると終了codeは非0になる。`dot update codex brew`のように段階名を渡すとその段階だけを実行する。
+
+| 段階          | 内容                                                      |
+| ------------- | --------------------------------------------------------- |
+| `flake`       | `nix flake update --flake ~/dotfiles`                     |
+| `github-apps` | `nix/pkgs/github-apps.json`のGitHub release appを最新版へ |
+| `claude-code` | Claude Code native版を`managed-channel`に従い更新         |
+| `codex`       | Codex CLI native版を更新                                  |
+| `antigravity` | Antigravity CLIを更新                                     |
+| `ccspace`     | ccspaceを`git pull`して再install                          |
+| `brew`        | `brew update`と`brew upgrade` (macOSのみ)                 |
+
+Homebrewの更新は`dot update`だけが行う。`dot apply`(`dr`)はHomebrewの更新確認をしない。
+
 ## Nix エイリアス
 
-### 共通 (macOS & Linux)
+2文字のabbrは`dot`への短縮形。
 
-| Alias        | Command                                  | Description                          |
-| ------------ | ---------------------------------------- | ------------------------------------ |
-| `nx`         | `cd ~/dotfiles`                          | flake ルートへ移動                   |
-| `update-all` | `nix flake update ...`                   | flakeと関連ツールを最新に            |
-| `ds`         | `nix search nixpkgs`                     | パッケージを検索                     |
-| `dg`         | `nh clean all --keep-since 14d --keep 5` | 古い generation と store path を削除 |
-| `nd`         | `nix develop`                            | 開発環境に入る                       |
-
-### macOS 専用 (nix-darwin)
-
-| Alias | Command                                     | Description             |
-| ----- | ------------------------------------------- | ----------------------- |
-| `dr`  | `nh darwin switch ~/dotfiles -H <hostname>` | 設定を適用 (rebuild)    |
-| `db`  | `nh darwin build ~/dotfiles -H <hostname>`  | ビルドのみ (適用しない) |
-| `dp`  | `darwin-rebuild switch --rollback`          | 前のバージョンに戻す    |
-
-### Linux 専用 (home-manager)
-
-| Alias | Command                                       | Description    |
-| ----- | --------------------------------------------- | -------------- |
-| `dr`  | `nh home switch ~/dotfiles -c r1ca18@homelab` | user設定を適用 |
-| `db`  | `nh home build ~/dotfiles -c r1ca18@homelab`  | ビルドのみ     |
-| `dp`  | `home-manager generations`                    | 世代一覧を表示 |
+| Alias | Command           | Description                          |
+| ----- | ----------------- | ------------------------------------ |
+| `dr`  | `dot apply`       | 設定を適用 (rebuild)                 |
+| `db`  | `dot build`       | ビルドのみ (適用しない)              |
+| `dp`  | `dot rollback`    | macOS: 前の世代に戻す                |
+| `dp`  | `dot generations` | Linux: 世代一覧を表示                |
+| `ds`  | `dot search`      | パッケージを検索                     |
+| `dg`  | `dot clean`       | 古い generation と store path を削除 |
+| `nx`  | `cd ~/dotfiles`   | flake ルートへ移動                   |
+| `nd`  | `nix develop`     | 開発環境に入る                       |
 
 ---
 
@@ -44,7 +63,7 @@ dr
 ds ripgrep
 
 # 依存を最新にする（週1くらい）
-update-all && dr
+dot update && dr
 
 # ディスク容量を確保（月1くらい）
 dg
@@ -60,13 +79,13 @@ dp
 dr
 
 # Ubuntu system設定も含めて適用
-nix run ~/dotfiles#server-apply
+dot server apply
 
 # パッケージを探す
 ds nodejs
 
 # 依存を最新にする
-update-all && dr
+dot update && dr
 
 # 世代を確認
 dp
@@ -130,7 +149,7 @@ dg
 ```
 1. 設定ファイルを編集
 2. macOSまたはLinux user設定は`dr`でリビルド
-3. Linux system設定を含む場合は`nix run ~/dotfiles#server-apply`でリビルド
+3. Linux system設定を含む場合は`dot server apply`でリビルド
 4. git commit & push
 ```
 
