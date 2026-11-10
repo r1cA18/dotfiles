@@ -390,7 +390,7 @@ case "$command_name" in
 apply)
   require_server_host
   run_playbook
-  home-manager switch --flake "$dotfiles_root#$hm_profile"
+  PATH="/nix/var/nix/profiles/default/bin:$PATH" home-manager switch --flake "$dotfiles_root#$hm_profile"
   systemctl --user restart codex-app-server.service
   configure_login_shell
   printf 'server applied; log out and back in to activate shell and group changes\n'

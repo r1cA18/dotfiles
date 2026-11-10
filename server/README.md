@@ -91,6 +91,19 @@ systemctl status gnome-remote-desktop.service --no-pager
 
 初回検証はSyncthingが`Up to Date`になってから行う。UbuntuのGUI sessionをlogoutするか再起動し、MacからRDP接続できることを確認する。
 
+### Overshellから接続する場合
+
+OvershellのRDP clientはGNOME Remote Loginが要求するCredSSP/NLAに対応していない。`server-apply`は別のxrdp listenerを`3390/tcp`に設定し、xrdp sessionではXFCEを起動する。GNOME Remote Loginの`3389/tcp`はそのまま利用できる。
+
+Overshellでは接続先を`homelab:3390`にし、Ubuntu user`r1ca18`の通常passwordでloginする。xrdpは新しいXFCE sessionを作るため、GNOMEのlogin画面や既存sessionの共有にはならない。どちらもTailscale経由で接続する。UFWは`tailscale0`からの通信を許可し、LANやInternetへ`3390/tcp`を追加公開しない。
+
+2026-09-29にOvershellから`homelab:3390`への接続成功を確認した。xrdpのsocket directory権限とXFCE session環境の修正後の結果である。
+
+```bash
+systemctl status xrdp.service --no-pager
+ss -ltn | grep -E ':3389|:3390'
+```
+
 ## 4. Syncthing
 
 Linux側はRMBのdevice IDと次のfolder IDを宣言済み。
@@ -220,7 +233,7 @@ chatgpt
 
 1PasswordのSSH Agentを有効にする。常駐serviceにsecretが必要になった時点で1Password Service Accountを追加する。現在はsecretを必要とするCompose serviceがないためtokenを配置しない。
 
-Claude CodeとCodexの対話CLIはnative installerで導入する。Home Manager適用時に未導入ならbootstrapされ、以後は`update-all`が明示的に更新する。Codex app serverだけはAppArmor profileとの結合があるためNix版を使う。
+Claude CodeとCodexの対話CLIはnative installerで導入する。Home Manager適用時に未導入ならbootstrapされ、以後は`dot update`が明示的に更新する。Codex app serverだけはAppArmor profileとの結合があるためNix版を使う。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -228,6 +241,20 @@ curl -fsSL https://chatgpt.com/codex/install.sh | bash
 claude --version
 codex --version
 ```
+
+### Orca
+
+Orca IDEはLinux AppImageをNix package`orca-ide`としてラップし、user service`orca-serve`で常駐させる。GNOMEのscreen readerと衝突するため素の`orca`ではなく`orca-ide`を使う。Ubuntuのuser namespace制限に対しては、Orca専用bwrapだけを許可するAppArmor profile`/etc/apparmor.d/orca-ide`を`server-apply`が配置する。
+
+serviceはTailscaleのIPv4(起動時に`tailscale ip -4`で取得)と`6768`番portをmobile clientへ広告する。paired deviceは`~/.config/orca`に保存されるのでrestartやupgrade後も再ペアリングは不要である。terminal daemonは`app-orca-*.scope`に分離されるので、restartしても実行中のterminalは残る。
+
+```bash
+orca-pair                                   # 新しいphone用のQRを表示する（serviceをrestartする）
+systemctl --user status orca-serve --no-pager
+journalctl --user -t orca-ide -f            # Orca本体のlogはscope側に出る
+```
+
+Orcaを更新するときは`nix/pkgs/orca-ide/default.nix`の`version`と`hash`を変更してHome Managerを適用する。
 
 ## 7. Firewall
 
