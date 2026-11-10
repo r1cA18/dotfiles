@@ -131,7 +131,7 @@
         "imagegen-frontend-mobile" # name: imagegen-frontend-mobile (mobile images)
         # orca
         "orca-cli"
-        "computer-use"
+        "orca-computer-use"
         "orchestration"
       ];
 
