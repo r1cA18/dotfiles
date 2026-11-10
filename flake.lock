@@ -286,7 +286,8 @@
         "taste-skill": "taste-skill",
         "trailofbits-skills": "trailofbits-skills",
         "treefmt-nix": "treefmt-nix",
-        "typst-skills": "typst-skills"
+        "typst-skills": "typst-skills",
+        "unslop": "unslop"
       }
     },
     "taste-skill": {
@@ -355,6 +356,23 @@
       "original": {
         "owner": "apcamargo",
         "repo": "typst-skills",
+        "type": "github"
+      }
+    },
+    "unslop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794172582,
+        "narHash": "sha256-Tb58rBrZQ20SWkvKewIhxS6GDr56y3zZe5EQZbh3UhQ=",
+        "owner": "heydamir",
+        "repo": "unslop",
+        "rev": "97daa3eb365670ea3f87ed85356cbfcee18105a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "heydamir",
+        "repo": "unslop",
+        "rev": "97daa3eb365670ea3f87ed85356cbfcee18105a5",
         "type": "github"
       }
     }

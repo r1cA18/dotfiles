@@ -112,7 +112,7 @@ systemの`skill-creator`や`openai-docs`を上書きしない。
 | `remotion-best-practices`     | Remotion（React動画制作）のベストプラクティス        |
 | `video-editing`               | FFmpeg + FrameScriptによる動画編集                   |
 | `design-taste-frontend`       | project文脈に合わせたanti-slop frontend実装          |
-| `redesign-existing-projects`  | 既存UIのauditと改善                                  |
+| `unslop`                      | AI生成に見えるUIの監査と9 passの作り直し             |
 | `image-to-code`               | image基準のfrontend実装                              |
 
 ### コンテンツ

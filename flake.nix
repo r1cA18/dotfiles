@@ -60,6 +60,10 @@
     lottie.url = "github:diffusionstudio/lottie";
     lottie.flake = false;
 
+    # unslop: audit and redesign AI-looking UI. Pinned: young repo without tags.
+    unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
+    unslop.flake = false;
+
     # Codex plugin: ask local Claude Code from Codex
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
