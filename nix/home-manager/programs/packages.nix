@@ -1,14 +1,10 @@
 {
   pkgs,
   lib,
-  profile ? "workstation",
   ...
 }:
 let
-  inherit (pkgs.stdenv) isDarwin;
-  isServer = profile == "server";
-  mkGithubReleaseApp = pkgs.callPackage ../../lib/github-app.nix { };
-  recordlyPackage = pkgs.callPackage ../../pkgs/recordly { inherit mkGithubReleaseApp; };
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   agentSkillPath = pkgs.writeShellApplication {
     name = "agent-skill-path";
     text = ''
@@ -85,9 +81,9 @@ let
 
   # GitHub release アプリ (Recordly 等) の version/hash を最新へ更新する。
   # 対象は nix/pkgs/github-apps.json レジストリで管理。ファイル書換のみで
-  # commit/rebuild はしない (update-all が呼ぶ -> git diff 確認 -> dr)。
+  # commit/rebuild はしない (dot update が呼ぶ -> git diff 確認 -> dr)。
   updateGithubApps = pkgs.writeShellApplication {
-    name = "update-github-apps";
+    name = "dot-update-github-apps";
     runtimeInputs = with pkgs; [
       gh
       jq
@@ -144,10 +140,10 @@ let
     '';
   };
 
-  # Claude Code (native) を managed-channel に従い更新する。update-all が呼ぶ。
+  # Claude Code (native) を managed-channel に従い更新する。dot update が呼ぶ。
   # claude-code.nix の activation が ~/.claude/managed-channel を書き出す。
   updateClaudeCode = pkgs.writeShellApplication {
-    name = "update-claude-code";
+    name = "dot-update-claude-code";
     runtimeInputs = with pkgs; [
       curl
       bash
@@ -222,7 +218,7 @@ let
   ];
 
   darwinGuiPackages = with pkgs; [
-    recordlyPackage
+    recordly-bin
   ];
 
   # Linux 専用パッケージ
@@ -238,7 +234,7 @@ in
       commonPackages
       ++ (if isDarwin then darwinCliPackages else linuxPackages)
       ++ lib.optionals isDarwin darwinFontPackages
-      ++ lib.optionals (isDarwin && !isServer) darwinGuiPackages;
+      ++ lib.optionals isDarwin darwinGuiPackages;
     sessionPath = [
       "$HOME/.local/bin"
     ];

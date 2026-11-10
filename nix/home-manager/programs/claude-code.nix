@@ -6,18 +6,18 @@
   ...
 }:
 let
-  homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+  homeDir = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
   python3 = lib.getExe pkgs.python3;
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
   notificationCommand =
     sound:
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "afplay /System/Library/Sounds/${sound}.aiff 2>/dev/null || true"
     else
       "canberra-gtk-play --id=message 2>/dev/null || true";
 
-  # Claude Code (native installer) の追従チャネル。"latest" で update-all のたびに
+  # Claude Code (native installer) の追従チャネル。"latest" で dot update のたびに
   # 最新へ追従、版番号 (例 "2.1.150") でその版に固定/ロールバック。
   claudeChannel = "latest";
 
@@ -66,7 +66,7 @@ in
         CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
         # Claude Mods (function hooks) 実験機能を有効化
         CLAUDE_CODE_ENABLE_FUNCTION_HOOKS = "1";
-        # bg 自動更新を切り、更新経路を update-all (update-claude-code) に一元化する。
+        # bg 自動更新を切り、更新経路を dot update (claude-code 段階) に一元化する。
         DISABLE_AUTOUPDATER = "1";
       };
 
@@ -375,9 +375,9 @@ in
           "${dotfilesDir}/claude/mcp-servers.json" || true
       '';
 
-      # Claude Code native 版の導入/固定。更新 (latest 追従) は update-all の
-      # update-claude-code が担うので、ここは初回導入と固定版の適用のみ。
-      # claudeChannel を managed-channel に書き出し、update-all の更新処理へ状態を渡す。
+      # Claude Code native 版の導入/固定。更新 (latest 追従) は dot update の
+      # claude-code 段階が担うので、ここは初回導入と固定版の適用のみ。
+      # claudeChannel を managed-channel に書き出し、dot update の更新処理へ状態を渡す。
       setupClaudeCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         export PATH="${
           lib.makeBinPath (
@@ -409,10 +409,6 @@ in
           install_claude >>"$log" 2>&1 || echo "[claude-code] install failed, see $log" >&2
         elif [ "$channel" != "latest" ] && ! "$bin" --version 2>/dev/null | grep -q "$channel"; then
           install_claude >>"$log" 2>&1 || echo "[claude-code] install failed, see $log" >&2
-        fi
-
-        if command -v npm >/dev/null 2>&1; then
-          ${pkgs.nodejs}/bin/npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true
         fi
       '';
     };

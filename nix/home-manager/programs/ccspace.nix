@@ -6,13 +6,13 @@
 let
   ccspaceDir = "$HOME/.local/share/ccspace";
   ccspaceClone =
-    if pkgs.stdenv.isLinux then
+    if pkgs.stdenv.hostPlatform.isLinux then
       ''${pkgs.git}/bin/git -c credential.helper= -c "credential.helper=!${pkgs.gh}/bin/gh auth git-credential" clone https://github.com/Omakase-Robotics-Org/ccspace.git "$dir"''
     else
       ''${pkgs.git}/bin/git clone git@github.com:Omakase-Robotics-Org/ccspace.git "$dir"'';
 
   updateCcspace = pkgs.writeShellApplication {
-    name = "update-ccspace";
+    name = "dot-update-ccspace";
     runtimeInputs = with pkgs; [
       git
       bun
@@ -21,7 +21,7 @@ let
     text = ''
       dir="${ccspaceDir}"
       if [ ! -d "$dir/.git" ]; then
-        echo "[ccspace] not installed yet; run 'dr' first" >&2
+        echo "[ccspace] not installed yet; run 'dot apply' first" >&2
         exit 1
       fi
       echo "[ccspace] updating..."
@@ -195,7 +195,7 @@ let
       fi
     fi
 
-    ${lib.optionalString pkgs.stdenv.isLinux ''
+    ${lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
       if [ -d "$dir/.git" ]; then
         ${pkgs.git}/bin/git -C "$dir" config --local credential.helper "!${pkgs.gh}/bin/gh auth git-credential"
       fi
@@ -208,11 +208,11 @@ let
       fi
     fi
   ''
-  + lib.optionalString pkgs.stdenv.isDarwin ''
+  + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
     # Native menu bar app. Requires Xcode 26 (opened once, manually, to
     # finish its own first-run setup) at /Applications/Xcode.app; skipped
     # with a warning when that is not ready yet. Once installed here,
-    # update-ccspace's install.sh rebuilds it after any widget-touching
+    # dot update ccspace's install.sh rebuilds it after any widget-touching
     # pull on its own — this block only does the one-time bootstrap.
     if [ -d "$dir/.git" ] && [ ! -d "$HOME/Applications/CCSpace.app" ]; then
       if [ -d "/Applications/Xcode.app" ]; then
@@ -233,15 +233,15 @@ in
       updateCcspace
       ccspacePick
     ]
-    ++ lib.optional pkgs.stdenv.isDarwin ccspaceSyncOrca;
+    ++ lib.optional pkgs.stdenv.hostPlatform.isDarwin ccspaceSyncOrca;
 
     activation = {
       # ccspace (Omakase-Robotics-Org/ccspace, private repo) runs its
       # TypeScript directly via bun; there is no Nix package for it. First
       # install: clone the source and run its own install.sh, which writes
       # the `ccspace` launcher and shell completion to ~/.local/bin. Updates
-      # go through update-ccspace (update-all), matching update-claude-code /
-      # update-codex / update-antigravity.
+      # go through dot update (ccspace stage), matching the claude-code /
+      # codex / antigravity stages.
       setupCcspace = lib.hm.dag.entryAfter [ "writeBoundary" ] setupCcspaceScript;
     };
   };

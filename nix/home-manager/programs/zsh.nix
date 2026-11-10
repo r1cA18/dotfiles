@@ -1,13 +1,11 @@
 {
-  hostname ? null,
   pkgs,
   lib,
   username,
   ...
 }:
 let
-  inherit (pkgs.stdenv) isDarwin;
-  linuxConfigName = if hostname == null then "${username}@linux" else "${username}@${hostname}";
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 
   generalAliases = {
     ll = {
@@ -18,10 +16,6 @@ let
       cmd = "nvim";
       desc = "Open Neovim";
     };
-    dot = {
-      cmd = "cd ~/dotfiles";
-      desc = "Go to dotfiles";
-    };
     gacm = {
       cmd = "git add -A && git commit -m";
       desc = "Add all + commit";
@@ -31,18 +25,25 @@ let
   nixCommonAliases = {
     nx = {
       cmd = "cd ~/dotfiles";
-      desc = "Go to dotfiles (compatibility name; prefer dot)";
+      desc = "Go to dotfiles";
     };
-    update-all = {
-      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity && update-ccspace";
-      desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity + ccspace";
+    dr = {
+      cmd = "dot apply";
+      desc = "Apply this host's config";
+      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n${
+        if isDarwin then "適用前の状態へ戻す場合: dot rollback" else "世代を確認する場合: dot generations"
+      }";
+    };
+    db = {
+      cmd = "dot build";
+      desc = "Build this host's config";
     };
     ds = {
-      cmd = "nix search nixpkgs";
+      cmd = "dot search";
       desc = "Search nixpkgs";
     };
     dg = {
-      cmd = "nh clean all --keep-since 14d --keep 5";
+      cmd = "dot clean";
       desc = "Clean old generations and store paths";
     };
     nd = {
@@ -52,41 +53,15 @@ let
   };
 
   nixDarwinAliases = {
-    dr = {
-      cmd = "nh darwin switch ~/dotfiles -H ${hostname}";
-      desc = "Apply Darwin config";
-      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n適用前の状態へ戻す場合: dot-rollback";
-    };
-    db = {
-      cmd = "nh darwin build ~/dotfiles -H ${hostname}";
-      desc = "Build Darwin config";
-    };
     dp = {
-      cmd = "darwin-rebuild switch --rollback";
-      desc = "Rollback Darwin config (compatibility name; prefer dot-rollback)";
-    };
-    dot-rollback = {
-      cmd = "darwin-rebuild switch --rollback";
+      cmd = "dot rollback";
       desc = "Rollback Darwin config";
     };
   };
 
   nixLinuxAliases = {
-    dr = {
-      cmd = "nh home switch ~/dotfiles -c ${linuxConfigName}";
-      desc = "Apply Home Manager config";
-      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n世代を確認する場合: dot-generations";
-    };
-    db = {
-      cmd = "nh home build ~/dotfiles -c ${linuxConfigName}";
-      desc = "Build Home Manager config";
-    };
     dp = {
-      cmd = "home-manager generations";
-      desc = "List Home Manager generations (compatibility name; prefer dot-generations)";
-    };
-    dot-generations = {
-      cmd = "home-manager generations";
+      cmd = "dot generations";
       desc = "List Home Manager generations";
     };
   };
@@ -314,6 +289,14 @@ let
 
   # Executables do not become abbreviations. Keep them visible in h without
   # adding shell aliases that could shadow the real commands.
+  dotCommands = {
+    dot = {
+      cmd = "dot <command>";
+      desc = "Operate dotfiles (apply / build / update / rollback / clean ...)";
+      help = "dotfilesの操作をまとめた実行fileです。subcommand一覧: dot help\n\n  dot apply\n  dot build\n  dot update\n  dot update help\n\ndot update は各段階を順に実行し失敗した段階があっても続行します。";
+    };
+  };
+
   canonicalCommands = {
     ccspace = {
       cmd = "ccspace <command>";
@@ -381,7 +364,7 @@ let
     }
     {
       title = "Nix";
-      defs = nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases);
+      defs = dotCommands // nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases);
     }
     {
       title = "Directory";
