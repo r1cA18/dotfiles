@@ -90,7 +90,7 @@ let
     '';
   };
 in
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # Orca GUI is installed via the homebrew cask in nix/darwin/configuration.nix.
   # Orca skills come from the orca-skills flake input via agent-skills.nix.
   # Orca owns live settings in profile-state.db. Do not patch legacy
