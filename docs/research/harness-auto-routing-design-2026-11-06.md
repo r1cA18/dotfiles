@@ -39,13 +39,13 @@ flowchart TD
 
 ## 一次資料から得たこと
 
-| 調査対象 | 確認した内容 | このハーネスへの採用判断 |
-| --- | --- | --- |
-| [RouteLLM](https://github.com/lm-sys/RouteLLM) | preference dataから強弱2モデルを選ぶ。入力分布に合わせたthreshold調整を推奨 | 学習と評価の参考。現行モデル群とサブスク管理を直接置換しない |
-| [vLLM Semantic RouterのMulti Factor](https://vllm-sr.ai/docs/tutorials/algorithm/selection/multi-factor/) | 候補の適格性と品質・速度・費用・負荷の比較を分離。重み付けと優先順の方式を提供 | 制約を先に確定する構成を採用。初期版は優先順で説明可能にする |
-| [Session-Aware Agentic Routing](https://vllm.ai/blog/2026-06-02-session-aware-agentic-routing) | tool loopとprovider固有の継続状態を考慮。切り替え時のcache損失も扱う | タスク開始時に選び安全な区切りまで保持する |
-| [RSI-Router](https://arxiv.org/html/2609.34712v1) | 小型モデルでsubtaskを識別し割り当てとmodel-specific skillを適用 | 作業分類と実績に基づく割り当てを参考にする。自己改変は初期版に含めない |
-| [TwinRouterBench v5](https://arxiv.org/abs/2605.18859v5) | 静的なrouting評価と実際のagent実行評価を分ける | replayによる制約検査の後に完了率と実消費を比較する |
+| 調査対象                                                                                                  | 確認した内容                                                                   | このハーネスへの採用判断                                               |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| [RouteLLM](https://github.com/lm-sys/RouteLLM)                                                            | preference dataから強弱2モデルを選ぶ。入力分布に合わせたthreshold調整を推奨    | 学習と評価の参考。現行モデル群とサブスク管理を直接置換しない           |
+| [vLLM Semantic RouterのMulti Factor](https://vllm-sr.ai/docs/tutorials/algorithm/selection/multi-factor/) | 候補の適格性と品質・速度・費用・負荷の比較を分離。重み付けと優先順の方式を提供 | 制約を先に確定する構成を採用。初期版は優先順で説明可能にする           |
+| [Session-Aware Agentic Routing](https://vllm.ai/blog/2026-06-02-session-aware-agentic-routing)            | tool loopとprovider固有の継続状態を考慮。切り替え時のcache損失も扱う           | タスク開始時に選び安全な区切りまで保持する                             |
+| [RSI-Router](https://arxiv.org/html/2609.34712v1)                                                         | 小型モデルでsubtaskを識別し割り当てとmodel-specific skillを適用                | 作業分類と実績に基づく割り当てを参考にする。自己改変は初期版に含めない |
+| [TwinRouterBench v5](https://arxiv.org/abs/2605.18859v5)                                                  | 静的なrouting評価と実際のagent実行評価を分ける                                 | replayによる制約検査の後に完了率と実消費を比較する                     |
 
 RSI-Routerは2026年9月のpreprint。DeepSeek-V4.1-FlashとQwen3.5-9Bの組み合わせを評価している。
 同論文のablationでは小型モデルに次の段階の難易度だけを判断させる直接routingはstep単位のrandom baselineを下回った。
@@ -60,13 +60,13 @@ vLLMの文書は更新される。今回確認したAPIや設定例をそのま�
 
 ユーザーには1枚のModel Cardとして見せる。内部では更新頻度と所有者が違う情報を分ける。
 
-| 情報 | 内容 | 保管・更新 |
-| --- | --- | --- |
-| ModelSpec | 正確なmodel ID・revision・task分類のhint・出典・確認日 | version管理するcatalog |
-| ExecutionProfile | model参照・instruction profile参照・effort・runtimeとadapterの版 | version管理する実行条件 |
-| Connection | serving provider・wire model ID・対応機能・認証参照・group・課金枠参照 | 共有宣言とdeviceのprivate binding |
-| Evaluation | task種別ごとの成功率・修正回数・所要時間・消費量・試験条件・件数 | 出典付き評価記録 |
-| LiveState | 利用枠・reset時刻・観測時刻・予約済み容量・障害・待ち時間 | privateなruntime state |
+| 情報             | 内容                                                                   | 保管・更新                        |
+| ---------------- | ---------------------------------------------------------------------- | --------------------------------- |
+| ModelSpec        | 正確なmodel ID・revision・task分類のhint・出典・確認日                 | version管理するcatalog            |
+| ExecutionProfile | model参照・instruction profile参照・effort・runtimeとadapterの版       | version管理する実行条件           |
+| Connection       | serving provider・wire model ID・対応機能・認証参照・group・課金枠参照 | 共有宣言とdeviceのprivate binding |
+| Evaluation       | task種別ごとの成功率・修正回数・所要時間・消費量・試験条件・件数       | 出典付き評価記録                  |
+| LiveState        | 利用枠・reset時刻・観測時刻・予約済み容量・障害・待ち時間              | privateなruntime state            |
 
 タグは検索と候補提示に使う。`coding`や`design`が付いていること自体を品質や利用権限の証明にしない。
 画像・tool calling・context容量は実際の接続経路で検証する。model vendorの宣伝値だけで有効化しない。
@@ -74,13 +74,13 @@ vLLMの文書は更新される。今回確認したAPIや設定例をそのま�
 
 GLMをMistral経由で使う場合は次の関係になる。
 
-| 対象 | 例 |
-| --- | --- |
-| model identity | GLM 5.3 |
-| serving provider | Mistral |
-| wire model ID | `zai-glm-5-3` |
-| instruction候補 | `glm` profileの特定revision |
-| usage/billing | 接続先のMistralアカウントに紐づく枠 |
+| 対象             | 例                                  |
+| ---------------- | ----------------------------------- |
+| model identity   | GLM 5.3                             |
+| serving provider | Mistral                             |
+| wire model ID    | `zai-glm-5-3`                       |
+| instruction候補  | `glm` profileの特定revision         |
+| usage/billing    | 接続先のMistralアカウントに紐づく枠 |
 
 モデル名から課金先やpromptを文字列の部分一致で推測しない。
 同じsubscriptionを別モデルや別端末から使っても残量を別々の資産として二重計上しない。
@@ -100,12 +100,12 @@ skill集合やcontext量で条件が変わる場合はその条件も記録す�
 
 ## 静的ルールと小型モデルの分担
 
-| 方式 | 長所 | 制約 | 採用時期 |
-| --- | --- | --- | --- |
-| 明示したtask情報と静的ルール | 速く再現可能。新規モデルを追加しやすい | 自由文だけでは分類が曖昧になる | 初期版 |
-| embeddingによる類似度 | 過去の似た仕事を探せる | 説明文の近さは成功率ではない。実績のない新modelには弱い | 評価データが集まってから検討 |
-| 小型モデルによる分類 | 自由文の目的と作業段階を拾える | 推論費用と遅延と分類誤りが増える | ルールで決められない場合に限定 |
-| 実績から学習したrouter | task別の結果を選択へ反映できる | データの偏りとmodel更新への追従が必要 | baselineとの比較後 |
+| 方式                         | 長所                                   | 制約                                                    | 採用時期                       |
+| ---------------------------- | -------------------------------------- | ------------------------------------------------------- | ------------------------------ |
+| 明示したtask情報と静的ルール | 速く再現可能。新規モデルを追加しやすい | 自由文だけでは分類が曖昧になる                          | 初期版                         |
+| embeddingによる類似度        | 過去の似た仕事を探せる                 | 説明文の近さは成功率ではない。実績のない新modelには弱い | 評価データが集まってから検討   |
+| 小型モデルによる分類         | 自由文の目的と作業段階を拾える         | 推論費用と遅延と分類誤りが増える                        | ルールで決められない場合に限定 |
+| 実績から学習したrouter       | task別の結果を選択へ反映できる         | データの偏りとmodel更新への追従が必要                   | baselineとの比較後             |
 
 小型モデルへ最初から全候補のmodel名と評判を渡して自由に選ばせない。
 小型分類器を使う場合は目的と必要能力の抽出に限定し最終選択を決定的な関数で行う。

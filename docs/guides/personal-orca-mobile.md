@@ -19,14 +19,14 @@ App Storeの掲載版は`0.0.62`で個人版の基点に含まれるmobile sourc
 
 ## 自作アプリが必要になる境界
 
-| 変更・用途 | 対応 |
-| --- | --- |
-| 個人版desktopやheadless serverへ接続 | 対応する公式アプリからpairingする |
-| 既存terminalでagentやDSHのTUIを操作 | 既存のterminal経路を利用。実機での操作確認は別途必要 |
-| desktopだけのsidebar変更 | スマホの見た目へ自動反映されるとは扱わない |
-| hostが配信するmobile画面の変更 | 既存shellのschema・protocol・native bridgeの対応範囲ならhost側bundleを更新できる |
-| 新しいnative機能・bridge・独自のアプリ名や配布 | mobile sourceもforkして独自署名・配布を用意する |
-| 公式サービスへの依存も除去 | 接続・Relay・Pushを別々に評価。Pushの独立にはnative appの配布やAPNs/FCM資格情報も関わる |
+| 変更・用途                                     | 対応                                                                                    |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 個人版desktopやheadless serverへ接続           | 対応する公式アプリからpairingする                                                       |
+| 既存terminalでagentやDSHのTUIを操作            | 既存のterminal経路を利用。実機での操作確認は別途必要                                    |
+| desktopだけのsidebar変更                       | スマホの見た目へ自動反映されるとは扱わない                                              |
+| hostが配信するmobile画面の変更                 | 既存shellのschema・protocol・native bridgeの対応範囲ならhost側bundleを更新できる        |
+| 新しいnative機能・bridge・独自のアプリ名や配布 | mobile sourceもforkして独自署名・配布を用意する                                         |
+| 公式サービスへの依存も除去                     | 接続・Relay・Pushを別々に評価。Pushの独立にはnative appの配布やAPNs/FCM資格情報も関わる |
 
 Orcaのmobile shellはpairingしたhostからmanifestと画面assetをRPCで取得する。
 受信内容のhashと互換性を検証しcacheして表示する。すべての画面とOS機能を自由に置換できる仕組みではない。
@@ -34,12 +34,12 @@ Harness Consoleをスマホにも出す場合もmobile向けの画面と操作�
 
 ## 接続方式
 
-| 経路 | 条件と境界 |
-| --- | --- |
-| 同じLAN | Mac/serverが起動中でスマホから到達可能。直接pairingにOrca Relayへのsign-inは不要 |
-| Tailscale | Mac/serverとスマホが同じtailnetで通信可能。スマホから到達できるTailscale addressを選択 |
-| Orca Relay | 公式のsign-inとRelayに依存する別の接続経路 |
-| Push通知 | 直接接続とは別。現行のdesktop既定値は公式Push gateway |
+| 経路       | 条件と境界                                                                             |
+| ---------- | -------------------------------------------------------------------------------------- |
+| 同じLAN    | Mac/serverが起動中でスマホから到達可能。直接pairingにOrca Relayへのsign-inは不要       |
+| Tailscale  | Mac/serverとスマホが同じtailnetで通信可能。スマホから到達できるTailscale addressを選択 |
+| Orca Relay | 公式のsign-inとRelayに依存する別の接続経路                                             |
+| Push通知   | 直接接続とは別。現行のdesktop既定値は公式Push gateway                                  |
 
 直接通信でもdeviceごとのpairingと暗号化を使う。
 pairing URL・QR・device tokenをGitHubや共有文書へ保存しない。
@@ -70,16 +70,16 @@ desktopと別の`orca serve`を二重起動しない。
 
 ## 検証記録
 
-| 項目 | 2026-11-03の結果 |
-| --- | --- |
-| forkによる通信契約の差分 | upstream stableからmobile sourceと対象のprotocol・RPC・Push実装に差分なし |
-| mobile protocol | source上でversion 3。互換性の下限は2 |
-| mobile側の対象テスト | 5ファイル57件成功。pairing・直接E2EE・protocol・bundle互換性と取得 |
-| host側の対象テスト | 4ファイル70件成功。protocol・pairing offer・mobile bundle配信 |
-| 配布済みmobile bundle | 181 assets・11 routes。全assetのhash・サイズとpackage検証が成功 |
-| このMacの接続前提 | Orca runtime応答あり。Tailscale接続中 |
+| 項目                          | 2026-11-03の結果                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| forkによる通信契約の差分      | upstream stableからmobile sourceと対象のprotocol・RPC・Push実装に差分なし                                                |
+| mobile protocol               | source上でversion 3。互換性の下限は2                                                                                     |
+| mobile側の対象テスト          | 5ファイル57件成功。pairing・直接E2EE・protocol・bundle互換性と取得                                                       |
+| host側の対象テスト            | 4ファイル70件成功。protocol・pairing offer・mobile bundle配信                                                            |
+| 配布済みmobile bundle         | 181 assets・11 routes。全assetのhash・サイズとpackage検証が成功                                                          |
+| このMacの接続前提             | Orca runtime応答あり。Tailscale接続中                                                                                    |
 | 配布済みアプリへの隔離RPC試験 | `1.4.247-personal.1`へmobile scopeで暗号化接続。状態取得とbundle互換性判定が成功。HTMLとJavaScriptの取得・hash検証も成功 |
-| 実機の画面・入力・復帰・Push | 未確認 |
+| 実機の画面・入力・復帰・Push  | 未確認                                                                                                                   |
 
 実行したテストは署名済みパッケージと同じsourceを対象にしている。
 スマホ実機のOS権限・ネットワーク経路・描画を代替するものではない。

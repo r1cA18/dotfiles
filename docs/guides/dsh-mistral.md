@@ -19,16 +19,16 @@ Subscriptions plugin 0.9.12にはMistral実装がないため利用しない。
 既存の`agent-default-model`と他providerは維持する。
 WebとTUIは同一のDSH homeを使用する必要がある。
 
-| 項目 | 設定 |
-| --- | --- |
-| 表示名 | Mistral (personal Vibe) |
-| Provider | `mistral` |
-| Models | 下表の5モデル |
-| Reasoning | 接続の既定は共通で利用できる`high`。選択肢はモデルごとに表示 |
-| Credential reference | `HARNESS_MISTRAL_PERSONAL_VIBE_KEY` |
-| Adapter | 組み込みの`llm-pi-ai` |
-| Protocol | 組み込みcatalogの`mistral-conversations` |
-| Endpoint | 組み込みcatalogの`https://api.mistral.ai` |
+| 項目                 | 設定                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| 表示名               | Mistral (personal Vibe)                                      |
+| Provider             | `mistral`                                                    |
+| Models               | 下表の5モデル                                                |
+| Reasoning            | 接続の既定は共通で利用できる`high`。選択肢はモデルごとに表示 |
+| Credential reference | `HARNESS_MISTRAL_PERSONAL_VIBE_KEY`                          |
+| Adapter              | 組み込みの`llm-pi-ai`                                        |
+| Protocol             | 組み込みcatalogの`mistral-conversations`                     |
+| Endpoint             | 組み込みcatalogの`https://api.mistral.ai`                    |
 
 モデルは公式資料とインストール済みcatalogの両方で確認した。
 Large 4はPublic Preview。登録されたキーによる実通信にも成功した。
@@ -46,13 +46,13 @@ Webの実際の選択メニューに5モデルが表示されることを確認�
 既に開いているTUIに追加候補が出ない場合は実行中の処理が終わってから再起動する。
 新しい候補を追加しても選択中のモデルを自動では切り替えない。
 
-| 表示名 | Model ID | 確認状態 |
-| --- | --- | --- |
-| Mistral Large 4 | `mistral-large-4` | 推論・ファイル読取・保存確認済み |
-| GLM 5.3 | `zai-glm-5-3` | 推論・ファイル読取・保存確認済み |
-| GLM 5.3 Flash | `zai-glm-5-3-flash` | 推論・ファイル読取・保存確認済み |
+| 表示名                   | Model ID                   | 確認状態                         |
+| ------------------------ | -------------------------- | -------------------------------- |
+| Mistral Large 4          | `mistral-large-4`          | 推論・ファイル読取・保存確認済み |
+| GLM 5.3                  | `zai-glm-5-3`              | 推論・ファイル読取・保存確認済み |
+| GLM 5.3 Flash            | `zai-glm-5-3-flash`        | 推論・ファイル読取・保存確認済み |
 | DeepSeek V4.1 Flash 1017 | `deepseek-v4-1-flash-1017` | 推論・ファイル読取・保存確認済み |
-| Mistral Small 4 | `mistral-small-2603` | 推論・ファイル読取・保存確認済み |
+| Mistral Small 4          | `mistral-small-2603`       | 推論・ファイル読取・保存確認済み |
 
 すべて登録済みMistralキーとMistralのendpointを使う。
 Z.aiやDeepSeekの別アカウントへの接続ではない。

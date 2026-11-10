@@ -12,14 +12,14 @@ CPUはNice 10で低優先度にする。I/Oは標準設定にする。
 
 ## 対象と保持条件
 
-| 対象 | 処理 |
-| --- | --- |
-| Rust `target` | 通常7日保持。空き100GiB未満では3日以上未更新の非稼働生成物を掃除して空き150GiBを目指す |
-| Nix user profile | 日次。最低5世代と30日以内の世代を保持。store GCとdirenv root削除は行わない |
-| uv | 日次。uvが動いていなければ`uv cache prune`で不要cacheを整理 |
-| OrbStack build cache | 日次。7日以上未使用のcacheを対象に10GiBを目安とするGC |
-| Docker dangling images | 日次。作成から30日以上のdangling imageを整理 |
-| Git clone・worktree | 日次の読み取り専用report。checkoutとbranchは削除しない |
+| 対象                   | 処理                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| Rust `target`          | 通常7日保持。空き100GiB未満では3日以上未更新の非稼働生成物を掃除して空き150GiBを目指す |
+| Nix user profile       | 日次。最低5世代と30日以内の世代を保持。store GCとdirenv root削除は行わない             |
+| uv                     | 日次。uvが動いていなければ`uv cache prune`で不要cacheを整理                            |
+| OrbStack build cache   | 日次。7日以上未使用のcacheを対象に10GiBを目安とするGC                                  |
+| Docker dangling images | 日次。作成から30日以上のdangling imageを整理                                           |
+| Git clone・worktree    | 日次の読み取り専用report。checkoutとbranchは削除しない                                 |
 
 Rustの探索範囲は`~/Develop`と`~/Workspaces`。
 project内の`.local`と`.device-lab`は永続データとiOS検証結果のため探索しない。
@@ -70,15 +70,15 @@ URLの認証情報とqueryとfragmentは除去する。認証設定やremoteの�
 以前の候補表の日付はHEADのcommit日でありcloneした日時ではなかった。
 commit日と作成・変更・観測の日時を分けて自動記録する。
 
-| 記録 | 意味と制約 |
-| --- | --- |
-| `directory_created_at` | filesystemのbirthtime。コピーや復元でも変わるためclone実行日時の保証にはならない |
-| `last_tracked_file_modified_at` | 現存するGit追跡ファイルの最新mtime。内容を変更した日時の目安 |
-| `last_tracked_file_changed_at` | 同ファイルの最新ctime。metadataの変更も含む |
-| `head_committed_at` | HEADのcommit日。ローカルの利用時期とは別 |
-| `first_seen_at` | この台帳でそのcloneを初めて観測した日時 |
-| `unchanged_since` | ファイルmetadataとHEADとrefsと候補判定理由の変化を観測していない期間の開始 |
-| `last_seen_at` | Git状態とファイルmetadataの観測に成功した最新日時 |
+| 記録                            | 意味と制約                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| `directory_created_at`          | filesystemのbirthtime。コピーや復元でも変わるためclone実行日時の保証にはならない |
+| `last_tracked_file_modified_at` | 現存するGit追跡ファイルの最新mtime。内容を変更した日時の目安                     |
+| `last_tracked_file_changed_at`  | 同ファイルの最新ctime。metadataの変更も含む                                      |
+| `head_committed_at`             | HEADのcommit日。ローカルの利用時期とは別                                         |
+| `first_seen_at`                 | この台帳でそのcloneを初めて観測した日時                                          |
+| `unchanged_since`               | ファイルmetadataとHEADとrefsと候補判定理由の変化を観測していない期間の開始       |
+| `last_seen_at`                  | Git状態とファイルmetadataの観測に成功した最新日時                                |
 
 最初の観測時に過去の未使用期間は付与しない。
 日次観測で状態が30日間変わらず作成・変更日時も30日以上前の場合に`age_review_candidate`をtrueにする。
@@ -90,11 +90,11 @@ commit日と作成・変更・観測の日時を分けて自動記録する。
 このdirectoryはRust掃除とclone候補の探索から除外する。
 directoryは700でファイルは600。publicなdotfilesには実際の一覧を保存しない。
 
-| ファイル | 内容 |
-| --- | --- |
-| `repositories.json` | 現在と過去のcloneの原本。元の場所・復元元・HEAD・日時・判定理由を保持 |
-| `repository-events.jsonl` | 初回観測・変化・消失の追記履歴。定期掃除ではrotateも削除もしない |
-| `repositories.md` | 閲覧用の一覧と復元先情報。原本から再生成 |
+| ファイル                  | 内容                                                                  |
+| ------------------------- | --------------------------------------------------------------------- |
+| `repositories.json`       | 現在と過去のcloneの原本。元の場所・復元元・HEAD・日時・判定理由を保持 |
+| `repository-events.jsonl` | 初回観測・変化・消失の追記履歴。定期掃除ではrotateも削除もしない      |
+| `repositories.md`         | 閲覧用の一覧と復元先情報。原本から再生成                              |
 
 cloneが消えても台帳の行は削除しない。
 同じ場所にcloneを作り直した場合はfilesystem identityを分けて古い行も残す。
@@ -126,16 +126,16 @@ launchctl print gui/$(id -u)/org.dotfiles.developer-cleanup-monitor
 
 状態は所有者だけが読める`~/.local/state/developer-cleanup/`に保存する。
 
-| ファイル | 内容 |
-| --- | --- |
-| `cleanup.log` | 実行ログ。2MBでrotateして3世代保持 |
-| `daily-summary.json` | 最後の日次処理の空き容量・候補数・掃除数・skip理由・失敗数 |
-| `monitor-summary.json` | 最後の毎時監視結果 |
-| `latest-summary.json` | 最後に実行した処理の結果 |
-| `repo-report.json` | 最後の日次処理で確認したcloneとworktreeの状態 |
-| `inventory-report.json` | 最後に`--inventory-only`で再確認した既知cloneの状態 |
-| `inventory-summary.json` | 最後の台帳更新結果 |
-| `launchd-error.log` | launchd側の起動エラー |
+| ファイル                 | 内容                                                       |
+| ------------------------ | ---------------------------------------------------------- |
+| `cleanup.log`            | 実行ログ。2MBでrotateして3世代保持                         |
+| `daily-summary.json`     | 最後の日次処理の空き容量・候補数・掃除数・skip理由・失敗数 |
+| `monitor-summary.json`   | 最後の毎時監視結果                                         |
+| `latest-summary.json`    | 最後に実行した処理の結果                                   |
+| `repo-report.json`       | 最後の日次処理で確認したcloneとworktreeの状態              |
+| `inventory-report.json`  | 最後に`--inventory-only`で再確認した既知cloneの状態        |
+| `inventory-summary.json` | 最後の台帳更新結果                                         |
+| `launchd-error.log`      | launchd側の起動エラー                                      |
 
 候補数と掃除数はRust targetの件数。uv・Nix・Dockerの実行結果はログに残す。
 空き容量の前後差には同時に動く他processの増減も含まれる。

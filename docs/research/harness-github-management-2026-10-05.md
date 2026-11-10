@@ -9,12 +9,12 @@ tags: [harness, github, environment]
 
 小さなdesktop/installer修正をmainへ反映する。ハーネスと検証と環境管理は別feature branchのDraft PRへまとめる。既にmainへmergeされたmodel profileとaccount identityは重複させない。作業中の元checkoutは変更を保持する。
 
-| 区分 | 変更 |
-| --- | --- |
-| main | Aerospace shortcutとDarwin font配置とAntigravity/Claude/Devin installer修正 |
+| 区分                                   | 変更                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| main                                   | Aerospace shortcutとDarwin font配置とAntigravity/Claude/Devin installer修正              |
 | feature/harness-environment-management | Nix flake構成整理とlock更新とhomelab/Orca runtimeとaccount/workspace設定と進捗・調査記録 |
-| 既存main | model-profile compilerとimmutable account identityとOrca SQLite authority維持 |
-| 調査のみ | Olympus UI改修とTask/Attempt接続とremote workspace/sessionの不足 |
+| 既存main                               | model-profile compilerとimmutable account identityとOrca SQLite authority維持            |
+| 調査のみ                               | Olympus UI改修とTask/Attempt接続とremote workspace/sessionの不足                         |
 
 # 確認結果
 

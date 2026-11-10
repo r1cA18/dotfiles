@@ -19,16 +19,16 @@ Orca内にHarness Consoleを置く。Coreの実行管理とOlympusの生活ア�
 
 ## 既存コードで使えるもの
 
-| 現状 | 根拠と限界 |
-| --- | --- |
-| Agentsサイドバー | `SidebarAgentsList.tsx`が既存Activity一覧を利用する |
-| 状態別グループ | `agents-view-thread-filters.ts`で初期値は`status`。project・worktree・agentでも分類可能 |
-| 状態の優先順 | `activity-thread-grouping.ts`はwaiting等を先に並べる。doneはworkingより後で順番は固定 |
-| 最近の活動順 | `activity-thread-builder.ts`が`latestTimestamp`で整列する。独立した永続session一覧とは異なる |
-| workspaceの表示設定 | 状態別・Project別・グループなしとrecent・manual・Agent Activity順がある |
-| 既存folderのCLI登録 | `orca repo add --path <path> --kind git\|folder`を実装。毎回UIを通す必要はない |
-| hostによる絞り込み | Agentsのselectorが`agentsVisibleHostIds`を使用する。host階層のsession一覧は追加対象 |
-| Coreの実行API | Contract・Attemptの読み取りと署名付きstart/poll/stopの実装がある |
+| 現状                | 根拠と限界                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| Agentsサイドバー    | `SidebarAgentsList.tsx`が既存Activity一覧を利用する                                          |
+| 状態別グループ      | `agents-view-thread-filters.ts`で初期値は`status`。project・worktree・agentでも分類可能      |
+| 状態の優先順        | `activity-thread-grouping.ts`はwaiting等を先に並べる。doneはworkingより後で順番は固定        |
+| 最近の活動順        | `activity-thread-builder.ts`が`latestTimestamp`で整列する。独立した永続session一覧とは異なる |
+| workspaceの表示設定 | 状態別・Project別・グループなしとrecent・manual・Agent Activity順がある                      |
+| 既存folderのCLI登録 | `orca repo add --path <path> --kind git\|folder`を実装。毎回UIを通す必要はない               |
+| hostによる絞り込み  | Agentsのselectorが`agentsVisibleHostIds`を使用する。host階層のsession一覧は追加対象          |
+| Coreの実行API       | Contract・Attemptの読み取りと署名付きstart/poll/stopの実装がある                             |
 
 現行Agentsの行は`paneKey`を中心にしている。閉じたpaneの保持と履歴からの再開を
 仕事・session単位で整理する必要がある。存在するstate表示やselectorを再利用し、別の状態判定を増やさない。
@@ -48,12 +48,12 @@ remote URLの一致だけで別clone・worktree・machineをまとめない。
 
 段階的な対応範囲を明記する。
 
-| 入口 | 取り込み方 |
-| --- | --- |
-| 共通launcherから起動 | 起動受付から終了まで明示的なイベントを発行する最初の対応経路 |
-| Orca内のnative chat/terminal | 既存のpaneとagent状態から投影 |
-| wrapperを通さないCLI起動 | 対応runtimeのhookで検出する追加経路 |
-| 保存済みの過去session | Historyから発見。live実行や制御可能性を推定しない |
+| 入口                         | 取り込み方                                                   |
+| ---------------------------- | ------------------------------------------------------------ |
+| 共通launcherから起動         | 起動受付から終了まで明示的なイベントを発行する最初の対応経路 |
+| Orca内のnative chat/terminal | 既存のpaneとagent状態から投影                                |
+| wrapperを通さないCLI起動     | 対応runtimeのhookで検出する追加経路                          |
+| 保存済みの過去session        | Historyから発見。live実行や制御可能性を推定しない            |
 
 登録のためだけにOrcaのUIを起動必須にしない。未接続なら再照合できる記録を保持する。
 外部terminalの既存PTYをOrcaへそのまま移せるとは扱わない。
@@ -100,13 +100,13 @@ idleなterminalや止まったagentを未着手と判定しない。
 
 ### 仕事とsessionと場所
 
-| 対象 | 使い方 |
-| --- | --- |
-| Core Task | Core管理の仕事の安定したID。複数Attemptを同じ仕事の下に表示 |
-| native session | Core外で開始した会話。Task登録を強制せず一覧へ表示 |
-| 作業場所 | repo・worktree・folder。Gitなしや複数repoにも対応できる参照 |
-| host/environment | どこで実行しているか。Profileやaccountとは別 |
-| pane/tab | 現在表示するための参照。仕事の永続IDにしない |
+| 対象             | 使い方                                                      |
+| ---------------- | ----------------------------------------------------------- |
+| Core Task        | Core管理の仕事の安定したID。複数Attemptを同じ仕事の下に表示 |
+| native session   | Core外で開始した会話。Task登録を強制せず一覧へ表示          |
+| 作業場所         | repo・worktree・folder。Gitなしや複数repoにも対応できる参照 |
+| host/environment | どこで実行しているか。Profileやaccountとは別                |
+| pane/tab         | 現在表示するための参照。仕事の永続IDにしない                |
 
 一覧用の投影はCoreとOrca/runtimeから作る。独立した実行state machineは作らない。
 Core管理の行はCoreのlifecycleと検証結果を使う。native sessionだけの行は
@@ -123,13 +123,13 @@ Core Taskとsessionの対応が明示的に判明したときだけ同じ仕事�
 
 サイドバーを日常の一覧として使い、Consoleは詳細の確認と操作をする固定tabにする。
 
-| 面 | 担当する情報・操作 |
-| --- | --- |
-| Overview | 確認待ち・実行中・未着手と直近の成果 |
-| 仕事の詳細 | 依頼・Attempt・session・差分・検証・使用量・引き継ぎ記録への参照 |
-| 実行環境 | 接続状態と実行中の仕事。実装済みの停止・再接続能力を表示 |
-| 接続 | group・account・model・runtimeと利用可能な経路 |
-| Skills/Plugins | catalogと今回の選択と固定した版とservice connection |
+| 面             | 担当する情報・操作                                               |
+| -------------- | ---------------------------------------------------------------- |
+| Overview       | 確認待ち・実行中・未着手と直近の成果                             |
+| 仕事の詳細     | 依頼・Attempt・session・差分・検証・使用量・引き継ぎ記録への参照 |
+| 実行環境       | 接続状態と実行中の仕事。実装済みの停止・再接続能力を表示         |
+| 接続           | group・account・model・runtimeと利用可能な経路                   |
+| Skills/Plugins | catalogと今回の選択と固定した版とservice connection              |
 
 ConsoleはCoreとruntimeを使うclientにする。providerの認証処理や実行authorityをOrca内へ増やさない。
 実行・停止・承認は既存の認可と署名を通し、未対応操作は利用可能なボタンとして表示しない。
@@ -147,13 +147,13 @@ main processの限定したIPC bridgeを候補とする。rendererへ署名鍵�
 変更を起動時登録adapter・既存一覧の投影と表示設定・Console clientへ分ける。
 DB schemaやterminal engineを広く書き換えるより上流差分を抑えられるが、無競合を保証するものではない。
 
-| 段階 | 変更 | 完了条件 |
-| --- | --- | --- |
-| 1 | Agents一覧を日常の入口にして状態順と確認済み表示を調整 | 完了・返信待ちが上。確認後は履歴。順番の保存と既存表示への復帰が可能 |
-| 2 | 共通launcherから既存folderを自動登録 | GUI登録とmkdirなしで開始可能。同時起動や再送でも重複登録しない |
-| 3 | Task/session参照と最近・host viewを接続 | paneを閉じても履歴を識別。同名folderや複数hostを混同しない |
-| 4 | ConsoleにCoreの読み取りを接続 | 仕事の状態・承認待ち・検証結果を根拠付きで表示 |
-| 5 | 既存の署名付き操作とassets選択を接続 | 同じ承認・停止確認・再送契約をUIから利用できる |
+| 段階 | 変更                                                   | 完了条件                                                             |
+| ---- | ------------------------------------------------------ | -------------------------------------------------------------------- |
+| 1    | Agents一覧を日常の入口にして状態順と確認済み表示を調整 | 完了・返信待ちが上。確認後は履歴。順番の保存と既存表示への復帰が可能 |
+| 2    | 共通launcherから既存folderを自動登録                   | GUI登録とmkdirなしで開始可能。同時起動や再送でも重複登録しない       |
+| 3    | Task/session参照と最近・host viewを接続                | paneを閉じても履歴を識別。同名folderや複数hostを混同しない           |
+| 4    | ConsoleにCoreの読み取りを接続                          | 仕事の状態・承認待ち・検証結果を根拠付きで表示                       |
+| 5    | 既存の署名付き操作とassets選択を接続                   | 同じ承認・停止確認・再送契約をUIから利用できる                       |
 
 初回の改修は段階1と2を優先する。DSHの通常起動環境の恒久化も同じ日常利用の改善として扱う。
 稼働中のOrcaや他のagentを終了する必要はない。実装と隔離試験は別checkout/profileで行い、

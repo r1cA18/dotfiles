@@ -32,13 +32,13 @@ Harness2は既存Coreの上でprompt・skill・helperの改善を試す仕組み
 
 ## 構造から取り込める点
 
-| 境界 | 確認した実装 | 既存基盤への適用案 |
-| --- | --- | --- |
-| 改善方法 | `core/recursion.py`が提案と試行と合成を担当 | Coreに依頼する改善workflowとして配置 |
+| 境界        | 確認した実装                                                 | 既存基盤への適用案                                    |
+| ----------- | ------------------------------------------------------------ | ----------------------------------------------------- |
+| 改善方法    | `core/recursion.py`が提案と試行と合成を担当                  | Coreに依頼する改善workflowとして配置                  |
 | 実行runtime | `substrate/`が編集面とnative配置と実行とtrajectory読取を担当 | dsh・Claude Code・Codexをpeerとして扱う既存方針を保持 |
-| 評価task | `BenchmarkAdapter`がtaskと入力と成果物と採点を担当 | 検証recipeをruntimeから分離 |
-| 改善経験 | `library.py`が構成一式とEXPERIENCEとindexを保存 | privateな実行根拠と共有可能な手順を分けて保存 |
-| 採点 | `judge.py`が最終選択後に採点 | 改善AIの判断と正式な完了Evidenceを区別 |
+| 評価task    | `BenchmarkAdapter`がtaskと入力と成果物と採点を担当           | 検証recipeをruntimeから分離                           |
+| 改善経験    | `library.py`が構成一式とEXPERIENCEとindexを保存              | privateな実行根拠と共有可能な手順を分けて保存         |
+| 採点        | `judge.py`が最終選択後に採点                                 | 改善AIの判断と正式な完了Evidenceを区別                |
 
 `Substrate`は`surface`・`materialise`・`execute`・`read_trajectory`・`preflight`を定義している。製品ごとのnative形式を保持しながら接続する境界として参考になる。`BenchSpec`も改善側channelと実行runtimeとbenchmarkを分ける。[base.py](https://github.com/google-research/harness2/blob/1cfe254e8d25b15f37048c3730134686abe60335/harness2/substrate/base.py)・[spec.py](https://github.com/google-research/harness2/blob/1cfe254e8d25b15f37048c3730134686abe60335/harness2/core/spec.py)
 
@@ -48,12 +48,12 @@ Harness2は既存Coreの上でprompt・skill・helperの改善を試す仕組み
 
 INVとDOMの分割は汎用手順と専門領域の手順を整理する参考になる。一方で8種類のcomponentは資産の形式であり分野の分類とは別の軸になる。以下は既存catalogを拡張するときの案であり新しいschemaの決定ではない。
 
-| 軸 | 例 | 所有するもの |
-| --- | --- | --- |
-| 資産の形式 | rule / skill / script / plugin / knowledge | 読込方法とruntimeとの接続 |
-| 分野 | software → ui → design / personal → tax → jp | 発見と関連付けのcatalog |
-| 適用条件 | runtime / 対象年度 / 有効期間 / account scope | metadataと実行時の判定 |
-| 根拠と履歴 | 出典 / task ID / revision / supersedes | Knowledgeと実行Evidence |
+| 軸         | 例                                            | 所有するもの              |
+| ---------- | --------------------------------------------- | ------------------------- |
+| 資産の形式 | rule / skill / script / plugin / knowledge    | 読込方法とruntimeとの接続 |
+| 分野       | software → ui → design / personal → tax → jp  | 発見と関連付けのcatalog   |
+| 適用条件   | runtime / 対象年度 / 有効期間 / account scope | metadataと実行時の判定    |
+| 根拠と履歴 | 出典 / task ID / revision / supersedes        | Knowledgeと実行Evidence   |
 
 標準の`SKILL.md`を分野ごとの深いdirectoryへ移動する必要はない。既存PR #22のsidecar catalogを維持し分野階層とruntimeへの配布を分離する。
 
@@ -83,13 +83,13 @@ Codexの参照起動にはapprovalとsandboxを無効化するflagが含まれ�
 
 Mac arm64で既存dotfilesのflake inputからNixのPython 3.12.14を一時利用した。依存のglobal installは不要だった。実行processのHOMEとXDG directoryは一時領域へ分離しAPI credentialを環境へ引き継がなかった。OS sandboxの強制隔離試験は行っていない。
 
-| 検証 | 結果 | 確認範囲 |
-| --- | --- | --- |
-| upstream unittest | 5件成功 | `python3.12 -m unittest discover -s tests -v` |
-| deterministic demo初回 | 2task完了 / 0失敗 | `--k 2 --mode both`で28回のscript実行と32回の固定editor呼出 |
-| 同じdemoの再実行 | 2taskをskip | 追加script実行0回 / 追加editor呼出0回 |
-| library参照 | 次taskの開始時に各modeで先行entryが1件 | 各modeの初回taskは0件 |
-| repository差分 | なし | 取得したupstream checkoutは変更なし |
+| 検証                   | 結果                                   | 確認範囲                                                    |
+| ---------------------- | -------------------------------------- | ----------------------------------------------------------- |
+| upstream unittest      | 5件成功                                | `python3.12 -m unittest discover -s tests -v`               |
+| deterministic demo初回 | 2task完了 / 0失敗                      | `--k 2 --mode both`で28回のscript実行と32回の固定editor呼出 |
+| 同じdemoの再実行       | 2taskをskip                            | 追加script実行0回 / 追加editor呼出0回                       |
+| library参照            | 次taskの開始時に各modeで先行entryが1件 | 各modeの初回taskは0件                                       |
+| repository差分         | なし                                   | 取得したupstream checkoutは変更なし                         |
 
 upstreamテストは候補構成の変更と成果物欠落による再実行も確認する。さらに不正なPython候補のretryと費用集計とNO_ENTRYの除外と選択失敗時の採点禁止を検査する。[test_workflow.py](https://github.com/google-research/harness2/blob/1cfe254e8d25b15f37048c3730134686abe60335/tests/test_workflow.py)
 

@@ -13,11 +13,11 @@ dshはDeepSeek Harnessと解釈した。主runtimeとして採用する方向は
 
 # 2種類の接続
 
-| 構成 | 実装とtool実行のloop | 会話の正本 | 現在の根拠と制限 |
-| --- | --- | --- | --- |
-| dsh → LLM adapter → model | dsh | dsh Session | providerとtoolsをpluginで交換可能 |
-| dsh → native Codex / Claude Code | 各native agent | native側。親dshは委譲結果を保持 | 公式subagent bundleはfresh processで1回のみ。resumeなし |
-| Core → native agent | 各native agent | native側 | dshを経由せず同じ外側の実行契約へ接続する代替 |
+| 構成                             | 実装とtool実行のloop | 会話の正本                      | 現在の根拠と制限                                        |
+| -------------------------------- | -------------------- | ------------------------------- | ------------------------------------------------------- |
+| dsh → LLM adapter → model        | dsh                  | dsh Session                     | providerとtoolsをpluginで交換可能                       |
+| dsh → native Codex / Claude Code | 各native agent       | native側。親dshは委譲結果を保持 | 公式subagent bundleはfresh processで1回のみ。resumeなし |
+| Core → native agent              | 各native agent       | native側                        | dshを経由せず同じ外側の実行契約へ接続する代替           |
 
 第三者subscription pluginは1行目にあたる。Codexの実装loopを借りるものではない。Codex adapterはCodex CLIのclient IDとChatGPT backend Responses endpointを使い独自にstreamを変換する。Claude adapterはnative credentialのimportまたはOAuthから直接Messagesを呼ぶ。ネイティブ製品を起動する公式subagent bundleとは独立した実装。
 
@@ -46,14 +46,14 @@ AnthropicのHelp Centerは10月7日更新としてAgent SDKとclaude -pとthird-
 
 # 推奨する責務
 
-| 境界 | 責務 |
-| --- | --- |
-| Core | Contract / Attempt / policy / account group / 予算 / 検証 / 承認 / 担当権 / 公開 |
-| Agent runtime | dshまたはnative coding agent。promptとtool loopとnative履歴 |
-| Model connection | provider / model / reasoning / billing mode / auth ref |
-| Credential管理 | 製品が対応するloginとrefreshの所有者。secret本体をledgerへ渡さない |
-| Environment | Mac / homelab / ephemeral host。配置とprocessとOS制約 |
-| UI | Orcaとdsh UIとCLI。提供される操作を利用する |
+| 境界             | 責務                                                                             |
+| ---------------- | -------------------------------------------------------------------------------- |
+| Core             | Contract / Attempt / policy / account group / 予算 / 検証 / 承認 / 担当権 / 公開 |
+| Agent runtime    | dshまたはnative coding agent。promptとtool loopとnative履歴                      |
+| Model connection | provider / model / reasoning / billing mode / auth ref                           |
+| Credential管理   | 製品が対応するloginとrefreshの所有者。secret本体をledgerへ渡さない               |
+| Environment      | Mac / homelab / ephemeral host。配置とprocessとOS制約                            |
+| UI               | Orcaとdsh UIとCLI。提供される操作を利用する                                      |
 
 論理境界として実装する。6つのdaemonや新しい万能frameworkは不要。Coreの既存ExecutionBackendとcapability manifestを拡張しdsh adapterを追加する。Coreはplugin内部型へ依存せずACPまたはSDKの公開protocolを翻訳する。
 

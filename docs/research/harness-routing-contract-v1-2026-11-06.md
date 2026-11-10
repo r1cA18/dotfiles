@@ -29,12 +29,12 @@ flowchart TD
     C -->|記録から再開| O
 ```
 
-| 所有者 | 責務 |
-| --- | --- |
-| オーケストレーターモデル | task分割・必要能力の提案・worker成果の統合 |
-| router | 許可範囲内の実行profileと接続先の選択・理由の返却 |
-| controllerとCore | 実行の許可と予約・起動と停止・利用不能の検出・引き継ぎ |
-| DSH adapterとUI | model呼び出し・tool loop・会話表示・Autoの選択と実際のroute表示 |
+| 所有者                   | 責務                                                            |
+| ------------------------ | --------------------------------------------------------------- |
+| オーケストレーターモデル | task分割・必要能力の提案・worker成果の統合                      |
+| router                   | 許可範囲内の実行profileと接続先の選択・理由の返却               |
+| controllerとCore         | 実行の許可と予約・起動と停止・利用不能の検出・引き継ぎ          |
+| DSH adapterとUI          | model呼び出し・tool loop・会話表示・Autoの選択と実際のroute表示 |
 
 routerはworkerを起動しない。選択結果は実行権限ではない。
 モデルが動かなくても代替選択を開始できるようにcontrollerはモデルから独立して動作する。
@@ -47,10 +47,10 @@ routerはworkerを起動しない。選択結果は実行権限ではない。
 reviewや調査や文章処理はworkerのtask分類として表現し役割enumを用途ごとに増やさない。
 フロンティアという名称だけを能力検証に使わず役割profileに検証済み候補と品質下限を持つ。
 
-| 役割 | 通常の選択 | 利用不能時 |
-| --- | --- | --- |
-| orchestrator | 統合判断と継続性を優先。会話中は保持 | 同じ役割条件を満たす候補へ切り替え。候補なしなら待機 |
-| worker | taskごとの品質下限を満たす候補から消費量と速度を比較 | 同じtask条件で再選択。再実行可否はcontrollerが判断 |
+| 役割         | 通常の選択                                           | 利用不能時                                           |
+| ------------ | ---------------------------------------------------- | ---------------------------------------------------- |
+| orchestrator | 統合判断と継続性を優先。会話中は保持                 | 同じ役割条件を満たす候補へ切り替え。候補なしなら待機 |
+| worker       | taskごとの品質下限を満たす候補から消費量と速度を比較 | 同じtask条件で再選択。再実行可否はcontrollerが判断   |
 
 役割profileにはcatalog内の適格候補と優先順と継続条件を保存する。
 groupごとの許可範囲と予算はCore側policyへの参照で束縛する。
@@ -71,17 +71,17 @@ JSON整形を変える場合もdigestが変わる。既存Coreの署名形式や
 
 ### 保存する文書
 
-| kind | 主な必須情報 | 所有・保管 |
-| --- | --- | --- |
-| `ModelSpec` | model identity・対応能力・出典・検証状態 | 秘密を含まないcatalogをGit管理 |
-| `ExecutionProfile` | ModelSpec参照・prompt参照・effort・runtime/adapterの版・評価参照 | 秘密を含まないcatalogをGit管理 |
-| `RolePolicy` | role・適格profile・優先順・継続条件・policy参照 | 正規のpolicy管理経路で版管理 |
-| `ConnectionBinding` | serving provider・wire ID・host・認証参照・課金枠参照 | deviceとoperatorのprivate設定 |
-| `CapacitySnapshot` | 課金枠ID・観測値と単位・source・観測時刻・失効時刻・予約参照 | privateなruntime state |
-| `EvaluationRecord` | 実行条件参照・task分類・成果の判定根拠・測定値・件数 | 評価記録。公開可能な集計のみ分離 |
-| `RouteRequest` | 要求ID・role・trigger・task条件・policy参照・継続状態参照 | privateな実行記録 |
-| `RouteDecision` | 要求参照・選択結果・具体profileと接続・snapshot参照・理由・有効期限 | Coreの実行記録へ関連付け |
-| `OrchestrationCheckpoint` | 目的・判断記録・taskとworkerの参照・未処理事項・履歴と成果物の参照 | privateな既存checkpoint機構 |
+| kind                      | 主な必須情報                                                        | 所有・保管                       |
+| ------------------------- | ------------------------------------------------------------------- | -------------------------------- |
+| `ModelSpec`               | model identity・対応能力・出典・検証状態                            | 秘密を含まないcatalogをGit管理   |
+| `ExecutionProfile`        | ModelSpec参照・prompt参照・effort・runtime/adapterの版・評価参照    | 秘密を含まないcatalogをGit管理   |
+| `RolePolicy`              | role・適格profile・優先順・継続条件・policy参照                     | 正規のpolicy管理経路で版管理     |
+| `ConnectionBinding`       | serving provider・wire ID・host・認証参照・課金枠参照               | deviceとoperatorのprivate設定    |
+| `CapacitySnapshot`        | 課金枠ID・観測値と単位・source・観測時刻・失効時刻・予約参照        | privateなruntime state           |
+| `EvaluationRecord`        | 実行条件参照・task分類・成果の判定根拠・測定値・件数                | 評価記録。公開可能な集計のみ分離 |
+| `RouteRequest`            | 要求ID・role・trigger・task条件・policy参照・継続状態参照           | privateな実行記録                |
+| `RouteDecision`           | 要求参照・選択結果・具体profileと接続・snapshot参照・理由・有効期限 | Coreの実行記録へ関連付け         |
+| `OrchestrationCheckpoint` | 目的・判断記録・taskとworkerの参照・未処理事項・履歴と成果物の参照  | privateな既存checkpoint機構      |
 
 これは論理的な文書形式の定義であり9種類のserviceやdatabaseを新設する指示ではない。
 既存のTask・Attempt・Effect・budget・checkpointを参照する。競合する実行state machineは増やさない。
@@ -90,17 +90,17 @@ JSON整形を変える場合もdigestが変わる。既存Coreの署名形式や
 
 ### RouteRequest
 
-| field | 契約 |
-| --- | --- |
-| `request_id` | callerとworkspaceと操作の範囲で一意。同一IDの異なる内容はconflict |
-| `role` | `orchestrator`または`worker` |
-| `trigger` | `initial`・`worker_assignment`・`failover`・`explicit_change` |
-| `task_ref` / `parent_task_ref` | 既存taskの参照。workerは親を記録 |
-| `task_requirements` | task分類・品質下限の提案・必要能力・context見積もり・期限 |
-| `preferences` | 希望model・速度や消費の希望。強制条件とは区別 |
-| `policy_ref` | 解決済みの許可範囲とRolePolicyへの参照 |
-| `continuity_ref` | checkpoint・前回route・現在の実行状態への参照 |
-| `failure_ref` | failover時の構造化された観測記録への参照 |
+| field                          | 契約                                                              |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `request_id`                   | callerとworkspaceと操作の範囲で一意。同一IDの異なる内容はconflict |
+| `role`                         | `orchestrator`または`worker`                                      |
+| `trigger`                      | `initial`・`worker_assignment`・`failover`・`explicit_change`     |
+| `task_ref` / `parent_task_ref` | 既存taskの参照。workerは親を記録                                  |
+| `task_requirements`            | task分類・品質下限の提案・必要能力・context見積もり・期限         |
+| `preferences`                  | 希望model・速度や消費の希望。強制条件とは区別                     |
+| `policy_ref`                   | 解決済みの許可範囲とRolePolicyへの参照                            |
+| `continuity_ref`               | checkpoint・前回route・現在の実行状態への参照                     |
+| `failure_ref`                  | failover時の構造化された観測記録への参照                          |
 
 callerとworkspaceの実体は認証済みの呼出経路から取得する。
 modelが渡した`policy_ref`を権限の証明には使わない。taskから有効なpolicyを引いて照合する。
@@ -109,16 +109,16 @@ workerへ渡すのは必要な作業文脈。親の全会話を無条件に複�
 
 ### RouteDecision
 
-| field | 契約 |
-| --- | --- |
-| `request_ref` | 要求IDと内容digest |
-| `status` | `selected`・`wait`・`unavailable` |
-| `selection` | selectedの場合のExecutionProfileとConnectionBindingの版付き参照 |
-| `effective_role` | 選択に用いた役割 |
-| `reason_codes` | 機械可読の選択理由と候補除外理由 |
-| `evidence_refs` | policy・catalog・評価・容量snapshot・継続状態への参照 |
-| `expires_at` | 選択情報を新規dispatchへ使える期限 |
-| `retry_at` | wait時に観測根拠がある場合のみ提示 |
+| field            | 契約                                                            |
+| ---------------- | --------------------------------------------------------------- |
+| `request_ref`    | 要求IDと内容digest                                              |
+| `status`         | `selected`・`wait`・`unavailable`                               |
+| `selection`      | selectedの場合のExecutionProfileとConnectionBindingの版付き参照 |
+| `effective_role` | 選択に用いた役割                                                |
+| `reason_codes`   | 機械可読の選択理由と候補除外理由                                |
+| `evidence_refs`  | policy・catalog・評価・容量snapshot・継続状態への参照           |
+| `expires_at`     | 選択情報を新規dispatchへ使える期限                              |
+| `retry_at`       | wait時に観測根拠がある場合のみ提示                              |
 
 同じ要求IDには記録済みの決定を返す。期限切れや実行不可になった決定を別modelへ書き換えない。
 再評価は新しい要求IDと前の決定への参照を持たせる。

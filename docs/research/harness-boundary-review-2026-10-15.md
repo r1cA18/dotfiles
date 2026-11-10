@@ -18,14 +18,14 @@ tags: [harness, architecture, handoff, orca]
 
 # 残す責務と追加契約
 
-| 主体 | 正本・責務 | 担当しないもの |
-| --- | --- | --- |
-| Core | Contract / Attempt / 承認 / 予算 / 担当権 / Evidence / 外部公開intent | 会話UIと技術ごとのcheck本体 |
-| Orca | host側worktreeとterminalとnative sessionの表示・操作 | Core Taskの正式完了と独立した公開承認 |
-| 環境adapter | 登録済み環境への配置と起動と観測と停止 | 配置成功からのTask成功の推定 |
-| Olympus | 人間のTaskとTimesとKnowledgeとInbox | 別のgeneric schedulerと開発terminal UI |
-| asset resolver | immutable参照からの内容取得とhash検証 | 全backendで同一の保存完了保証 |
-| Publisher | 現行担当権と対象digestを確認した外部更新 | workerが生成したshellの実行 |
+| 主体           | 正本・責務                                                            | 担当しないもの                         |
+| -------------- | --------------------------------------------------------------------- | -------------------------------------- |
+| Core           | Contract / Attempt / 承認 / 予算 / 担当権 / Evidence / 外部公開intent | 会話UIと技術ごとのcheck本体            |
+| Orca           | host側worktreeとterminalとnative sessionの表示・操作                  | Core Taskの正式完了と独立した公開承認  |
+| 環境adapter    | 登録済み環境への配置と起動と観測と停止                                | 配置成功からのTask成功の推定           |
+| Olympus        | 人間のTaskとTimesとKnowledgeとInbox                                   | 別のgeneric schedulerと開発terminal UI |
+| asset resolver | immutable参照からの内容取得とhash検証                                 | 全backendで同一の保存完了保証          |
+| Publisher      | 現行担当権と対象digestを確認した外部更新                              | workerが生成したshellの実行            |
 
 論理境界であり初期から別daemonへ分割する必要はない。既存integration ownership ADRを更新する形で責務を固定する。CoreのWorkspaceはpolicy境界。配置workspaceは別概念としてProjectとCheckoutとAttemptから参照する。新たなExecutionをAttemptと並列の正本にしない。
 
