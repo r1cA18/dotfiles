@@ -170,7 +170,7 @@ validate_application_inputs() {
 
   for required_input in "${required_inputs[@]}"; do
     [[ -e "$home_assistant_root/$required_input" ]] || {
-      printf 'missing %s; wait for Syncthing before starting services\n' \
+      printf 'missing %s; copy the runtime data from the old host or a backup first\n' \
         "$home_assistant_root/$required_input" >&2
       return 1
     }
