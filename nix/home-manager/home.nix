@@ -20,6 +20,7 @@
     ./programs/model-profiles.nix
     ./programs/antigravity.nix
     ./programs/ccspace.nix
+    ./programs/r1hn.nix
     ./programs/devin.nix
     ./programs/claude-code.nix
     ./programs/claude-code-proxy.nix

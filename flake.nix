@@ -80,6 +80,12 @@
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
+    # r1hn: account groups and the harness endpoint. Private repository, fetched
+    # over SSH and pinned to a commit of feature/r1hn-groups. Only
+    # nix/home-manager/programs/r1hn.nix reads this input, and only where
+    # dotfiles.r1hn.enable is set, so other hosts and CI never fetch it.
+    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-groups&rev=0441614a7cfd6ee730f5c1df1827c1501c3dcd3d";
+    r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =

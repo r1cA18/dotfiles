@@ -267,6 +267,28 @@
         "type": "github"
       }
     },
+    "r1hn": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794358570,
+        "narHash": "sha256-7DQl+KiTOdgaaVx7PMw98TXs+5WKH5Rdm2EzQBrT934=",
+        "ref": "feature/r1hn-groups",
+        "rev": "0441614a7cfd6ee730f5c1df1827c1501c3dcd3d",
+        "revCount": 199,
+        "type": "git",
+        "url": "ssh://git@github.com/r1cA18/harness-core"
+      },
+      "original": {
+        "ref": "feature/r1hn-groups",
+        "rev": "0441614a7cfd6ee730f5c1df1827c1501c3dcd3d",
+        "type": "git",
+        "url": "ssh://git@github.com/r1cA18/harness-core"
+      }
+    },
     "root": {
       "inputs": {
         "agent-skills-nix": "agent-skills-nix",
@@ -283,6 +305,7 @@
         "notebooklm-skill": "notebooklm-skill",
         "openai-skills": "openai-skills",
         "orca-skills": "orca-skills",
+        "r1hn": "r1hn",
         "taste-skill": "taste-skill",
         "trailofbits-skills": "trailofbits-skills",
         "treefmt-nix": "treefmt-nix",
