@@ -1,6 +1,7 @@
 pkgs:
 {
   agent-browser = pkgs.callPackage ./agent-browser { };
+  deepseek-harness = pkgs.callPackage ./deepseek-harness { };
   difit = pkgs.callPackage ./difit { };
   mdv = pkgs.callPackage ./mdv { };
 }

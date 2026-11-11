@@ -205,6 +205,8 @@ let
     ];
 
   darwinCliPackages = with pkgs; [
+    # dsh; started through `r1hn run --runtime dsh`
+    deepseek-harness
     fastlane
     mas
     xcodegen
