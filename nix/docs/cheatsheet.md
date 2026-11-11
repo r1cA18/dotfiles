@@ -24,7 +24,7 @@ dotfilesの操作は実行file`dot`のsubcommandに揃えている。対話shell
 
 | 段階          | 内容                                                      |
 | ------------- | --------------------------------------------------------- |
-| `flake`       | `nix flake update --flake ~/dotfiles`                     |
+| `flake`       | `r1hn`以外のflake inputを更新 (`r1hn`はrev固定)           |
 | `github-apps` | `nix/pkgs/github-apps.json`のGitHub release appを最新版へ |
 | `claude-code` | Claude Code native版を`managed-channel`に従い更新         |
 | `codex`       | Codex CLI native版を更新                                  |

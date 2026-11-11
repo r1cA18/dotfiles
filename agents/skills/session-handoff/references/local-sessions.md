@@ -57,10 +57,12 @@ tool records or repeat the missing narrow check instead.
 
 ## Account Boundaries
 
-`cx-<name> resume <id>` searches the selected launcher's account home; `--all`
-broadens the directory filter, not the set of account homes. Likewise
-`cc-<name> --resume <id>` uses that Claude launcher's history.
-Passing another account's ID does not import its session.
+`r1hn run --group <group> --runtime codex -- resume <id>` searches the chosen
+account's home; `--all` broadens the directory filter, not the set of account
+homes. Likewise `r1hn run --group <group> --runtime claude -- --resume <id>`
+uses that account's history. When the chosen account lacks the session, r1hn
+links the transcript from another account of the same group and provider.
+A session of another group or provider is not imported.
 
 For a handoff to a different account/provider, read the relevant source history
 into the current task or use a portable summary. Native conversion is a separate

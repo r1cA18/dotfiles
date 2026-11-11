@@ -38,9 +38,17 @@ update_stages() {
   fi
 }
 
+# r1hn is pinned to a commit of a private repository. Leaving it out keeps the
+# stage working on hosts that cannot fetch it; bump its rev in flake.nix instead.
+update_flake() {
+  local -a inputs
+  mapfile -t inputs < <(jq -r '.nodes.root.inputs | keys[] | select(. != "r1hn")' "$flake/flake.lock")
+  nix flake update --flake "$flake" "${inputs[@]}"
+}
+
 run_update_stage() {
   case "$1" in
-  flake) nix flake update --flake "$flake" ;;
+  flake) update_flake ;;
   brew) brew_bin update && brew_bin upgrade ;;
   *) "dot-update-$1" ;;
   esac

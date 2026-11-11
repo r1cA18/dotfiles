@@ -33,7 +33,7 @@ r1hn run --runtime claude --dry-run                        # 起動内容だけ�
 `cl`と`cx`はzsh-abbrの短縮形で、入力すると上の`r1hn run`へ展開される。
 `clc`・`cxr`など他の短縮形は既定の設定directoryで公式clientを直接起動する。
 
-起動したclientは親shellの環境変数を引き継がない。
+起動したclientが引き継ぐ環境変数は`PATH`や`HOME`など決まった一覧だけである。
 `GH_TOKEN`などを渡す場合は`config.toml`の`[runtime] pass_env`へ変数名を書く。
 
 ## 使用量
