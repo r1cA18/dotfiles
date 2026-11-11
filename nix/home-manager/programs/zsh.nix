@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   username,
@@ -6,6 +7,8 @@
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  # Hosts without r1hn (programs/r1hn.nix) start the official client directly.
+  r1hnEnabled = config.dotfiles.r1hn.enable;
 
   generalAliases = {
     ll = {
@@ -114,14 +117,14 @@ let
   # interception — each variation gets its own abbr so the resolved command is
   # always visible.
   #
-  # Account switching used to go through clp (archived; see
-  # archive/agent-profile-manager/). ccspace (docs/guides/ccspace.md) replaces
-  # it with per-account launcher shims (e.g. cc-work); cl reproduces the old
-  # picker via ccspace-pick (ccspace.nix).
+  # Accounts are chosen by r1hn (docs/guides/r1hn.md): cl picks the group from
+  # the current directory or a picker and r1hn picks the account inside it.
+  # Client arguments go after "--", e.g. `cl -- --resume`. The other entries
+  # start the client directly with the default config directory.
   claudeAliases = {
     cl = {
-      cmd = "ccspace-pick claude";
-      desc = "Start Claude Code with account picker";
+      cmd = if r1hnEnabled then "r1hn run --runtime claude" else "claude";
+      desc = "Start Claude Code in an r1hn group";
     };
     clw = {
       cmd = "ANTHROPIC_API_KEY=\${CLAUDE_CSTYLE_API_KEY} claude";
@@ -197,13 +200,11 @@ let
 
   # Codex abbreviations (primary account). Named model layers are loaded from
   # the default CODEX_HOME as heavy.config.toml / spark.config.toml.
-  # Account switching used to go through cxp (archived; see
-  # archive/agent-profile-manager/) and is now ccspace launcher shims
-  # (e.g. cx-work); cx reproduces the old picker via ccspace-pick (ccspace.nix).
+  # cx goes through r1hn like cl; client arguments go after "--".
   codexAliases = {
     cx = {
-      cmd = "ccspace-pick codex";
-      desc = "Start Codex with account picker";
+      cmd = if r1hnEnabled then "r1hn run --runtime codex" else "codex";
+      desc = "Start Codex in an r1hn group";
     };
     cxh = {
       cmd = "codex --profile heavy";
@@ -297,29 +298,32 @@ let
     };
   };
 
-  canonicalCommands = {
-    ccspace = {
-      cmd = "ccspace <command>";
-      desc = "Manage Claude/Codex account spaces and launchers";
-      help = ''
-        accountごとにconfig homeを分けたlauncher (cc-<name> / cx-<name>) を管理します。
-          ccspace list
-          ccspace add cc-work
-          ccspace usage
-          ccspace doctor
-        詳細: docs/guides/ccspace.md
-        workspaceから起動する場合: ./ws claude / ./ws codex
-      '';
+  canonicalCommands =
+    lib.optionalAttrs r1hnEnabled {
+      r1hn = {
+        cmd = "r1hn <command>";
+        desc = "Run agents by account group and show usage";
+        help = ''
+          accountをgroupにまとめ、group内のaccountで公式clientを起動します。
+            r1hn group list
+            r1hn account list
+            r1hn usage
+            r1hn run --group <group> --runtime claude -- --resume
+          cl / cx は r1hn run --runtime claude / codex の短縮形です。
+          詳細: docs/guides/r1hn.md
+        '';
+      };
+    }
+    // {
+      clgpt = {
+        cmd = "clgpt [args]";
+        desc = "Run Claude Code through the GPT proxy";
+      };
+      clproxy = {
+        cmd = "clproxy <command>";
+        desc = "Manage the Claude Code proxy";
+      };
     };
-    clgpt = {
-      cmd = "clgpt [args]";
-      desc = "Run Claude Code through the GPT proxy";
-    };
-    clproxy = {
-      cmd = "clproxy <command>";
-      desc = "Manage the Claude Code proxy";
-    };
-  };
 
   aliasOnlyDefs = {
     ".." = {
