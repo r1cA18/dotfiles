@@ -48,6 +48,20 @@ Homebrewの更新は`dot update`だけが行う。`dot apply`(`dr`)はHomebrew�
 | `nx`  | `cd ~/dotfiles`   | flake ルートへ移動                   |
 | `nd`  | `nix develop`     | 開発環境に入る                       |
 
+## Agent起動とaccount
+
+accountは`r1hn`がgroupの中から選ぶ。詳細は[r1hnガイド](../../docs/guides/r1hn.md)を参照。
+
+| Command                          | Description                         |
+| -------------------------------- | ----------------------------------- |
+| `cl`                             | `r1hn run --runtime claude`へ展開   |
+| `cx`                             | `r1hn run --runtime codex`へ展開    |
+| `cl --group <group> -- --resume` | groupを指定し公式clientへ引数を渡す |
+| `r1hn run --runtime dsh`         | dshを起動                           |
+| `r1hn usage`                     | accountごとの残量とreset時刻        |
+| `r1hn group list`                | groupとprovider別のaccount数        |
+| `r1hn account list --check`      | accountの一覧とlogin状態            |
+
 ---
 
 ## 使用例

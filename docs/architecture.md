@@ -47,6 +47,8 @@ dotfiles/
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
 │   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
+│   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
+│   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
@@ -118,6 +120,11 @@ Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
 `nix/home-manager/programs/r1hn.nix`がprivateなflake inputから`r1hn`を導入し、
 `cl`と`cx`は`r1hn run`へ展開される。台帳は`~/.config/r1hn/`にありdotfilesでは管理しない。
 詳細は[r1hnガイド](guides/r1hn.md)を参照。
+
+flake input `r1hn`はprivate repositoryをSSHで取得する。flake inputは参照されたときだけ取得されるので、
+`dotfiles.r1hn.enable`が偽のhost(homelabとCI)は認証なしで評価とbuildができる。
+privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
+dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSだけに入れる。
 
 ## Agent 運用の基本方針
 

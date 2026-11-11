@@ -76,4 +76,5 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - `dotfiles.r1hn.enable`がtrueのhostだけがinputを取得する。既定はmacOSだけtrue
 - 無効なhostでは`cl`と`cx`は`claude`と`codex`へ展開される
 - 更新は`flake.nix`の`rev`を書き換えて`nix flake update r1hn`を実行する
+- dshは`nix/pkgs/deepseek-harness/`のpackageでmacOSに入る。`config.toml`の`[runtime] dsh`は`dsh`かNixが入れた絶対pathを指す
 - homelabで有効にするにはGitHubへのSSH鍵を用意し`nix/home-manager/hosts/homelab.nix`で`dotfiles.r1hn.enable = true`を設定する
