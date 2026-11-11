@@ -29,7 +29,6 @@ dotfilesの操作は実行file`dot`のsubcommandに揃えている。対話shell
 | `claude-code` | Claude Code native版を`managed-channel`に従い更新         |
 | `codex`       | Codex CLI native版を更新                                  |
 | `antigravity` | Antigravity CLIを更新                                     |
-| `ccspace`     | ccspaceを`git pull`して再install                          |
 | `brew`        | `brew update`と`brew upgrade` (macOSのみ)                 |
 
 Homebrewの更新は`dot update`だけが行う。`dot apply`(`dr`)はHomebrewの更新確認をしない。

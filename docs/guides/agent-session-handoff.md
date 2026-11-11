@@ -42,8 +42,8 @@ workspace棚卸しの未完了作業を引き継いで続けてほしい
 ```
 
 ログの場所と抽出方法はskillの[local session lookup](../../agents/skills/session-handoff/references/local-sessions.md)にまとめた。
-launcherごとのhomeは`ccspace list`で確認できる。
-account管理の詳細は[ccspaceガイド](ccspace.md)を参照。
+accountごとの設定directoryは`r1hn account list --json`で確認できる。
+account管理の詳細は[r1hnガイド](r1hn.md)を参照。
 
 ## 公式Import
 

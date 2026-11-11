@@ -7,13 +7,13 @@ configuration.
 
 | Product | Primary | Additional accounts |
 | --- | --- | --- |
-| Codex | `~/.codex/sessions` | ccspace space home, e.g. `~/.codex-<name>/sessions` |
-| Claude Code | `~/.claude/projects` | ccspace space home, e.g. `~/.claude-<name>/projects` |
+| Codex | `~/.codex/sessions` | `<config_dir>/sessions` of each r1hn account |
+| Claude Code | `~/.claude/projects` | `<config_dir>/projects` of each r1hn account |
 
 An explicit `CODEX_HOME` or `CLAUDE_CONFIG_DIR` can identify another current home.
-In this repository, ccspace launchers (`cx-<name>` for Codex, `cc-<name>` for
-Claude Code) set these; `ccspace list` shows registered launchers and `ccspace
-doctor` checks their homes.
+In this repository, `r1hn run` sets these from the chosen account; `r1hn account
+list --json` shows each account's config dir and `r1hn account list --check`
+checks their logins.
 Use paths only; reading `auth.json`, `.claude.json`, or keychains is unnecessary.
 
 ## Find A Candidate

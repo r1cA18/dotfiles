@@ -114,10 +114,10 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `codex/hooks.json`                               | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `codex/prompts/`                                 | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
-Claude・Codexのaccount切り替えは外部tool `ccspace`で管理する。
-`nix/home-manager/programs/ccspace.nix`のactivationが導入と更新経路を管理し、
-Orca managed accountをemailベースのlauncherへ自動同期してconfig homeを分離する。
-詳細は[ccspaceガイド](guides/ccspace.md)を参照。
+Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
+`nix/home-manager/programs/r1hn.nix`がprivateなflake inputから`r1hn`を導入し、
+`cl`と`cx`は`r1hn run`へ展開される。台帳は`~/.config/r1hn/`にありdotfilesでは管理しない。
+詳細は[r1hnガイド](guides/r1hn.md)を参照。
 
 ## Agent 運用の基本方針
 

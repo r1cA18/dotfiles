@@ -61,32 +61,32 @@ function checkoutMode(): "local" | "ghq" {
 }
 
 type Agent = "codex" | "claude";
-// ccspace (docs/guides/ccspace.md) names launchers cc-<name> (Claude) /
-// cx-<name> (Codex); the manifest at ~/.local/share/ccspace/spaces.json is
-// the source of truth for which launchers exist.
-const launcherPrefixes = { codex: "cx-", claude: "cc-" };
+// r1hn (docs/guides/r1hn.md) owns accounts. A workspace can pin the r1hn group
+// an agent starts in; r1hn then chooses the account inside that group.
+function r1hnGroups(): string[] {
+  if (!Bun.which("r1hn")) throw new Error("r1hn is required to select a group");
+  const result = Bun.spawnSync(["r1hn", "group", "list", "--json"], { env: process.env, stdout: "pipe", stderr: "inherit" });
+  if (result.exitCode !== 0) throw new Error("r1hn group list failed");
+  const groups = JSON.parse(result.stdout.toString())?.groups ?? [];
+  return groups.map((group: { name?: unknown }) => group.name).filter((name: unknown): name is string => typeof name === "string" && /^[a-z0-9][a-z0-9_-]*$/.test(name)).sort();
+}
 
-function ccspaceLaunchers(agent: Agent): string[] {
-  const sync = Bun.which("ccspace-sync-orca");
-  if (sync) {
-    const result = Bun.spawnSync([sync], { env: process.env, stdout: "inherit", stderr: "inherit" });
-    if (result.exitCode !== 0) console.error("Orca account sync failed; using existing ccspace launchers");
-  }
-  const manifestPath = join(process.env.HOME ?? "", ".local/share/ccspace/spaces.json");
-  if (!existsSync(manifestPath)) return [];
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  const prefix = launcherPrefixes[agent];
-  return Object.keys(manifest?.launchers ?? {}).filter(name => name.startsWith(prefix)).sort();
+function localConfig(key: string): string | undefined {
+  const root = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { stdout: "pipe", stderr: "pipe" });
+  if (root.exitCode !== 0 || realpathSync(root.stdout.toString().trim()) !== realpathSync(process.cwd())) return;
+  const result = Bun.spawnSync(["git", "config", "--local", "--no-includes", "--get", key], { stdout: "pipe", stderr: "pipe" });
+  if (result.exitCode === 1) return;
+  if (result.exitCode !== 0) throw new Error("Cannot read workspace group configuration");
+  return result.stdout.toString().trim();
 }
 
 function savedProfile(agent: Agent): string | undefined {
-  const root = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { stdout: "pipe", stderr: "pipe" });
-  if (root.exitCode !== 0 || realpathSync(root.stdout.toString().trim()) !== realpathSync(process.cwd())) return;
-  const result = Bun.spawnSync(["git", "config", "--local", "--no-includes", "--get", `workspace.${agent}Launcher`], { stdout: "pipe", stderr: "pipe" });
-  if (result.exitCode === 1) return;
-  if (result.exitCode !== 0) throw new Error("Cannot read workspace launcher configuration");
-  const value = result.stdout.toString().trim();
-  if (!value || /[\r\n]/.test(value)) throw new Error(`Invalid ${agent} launcher; run ws profile ${agent} again`);
+  // Launchers saved by older versions no longer exist. Stop instead of
+  // silently starting the agent under whatever account the shell provides.
+  if (localConfig(`workspace.${agent}Launcher`) !== undefined) throw new Error(`This workspace has an old ${agent} launcher setting; run ws profile ${agent} or ws profile ${agent} --clear`);
+  const value = localConfig(`workspace.${agent}Group`);
+  if (value === undefined) return;
+  if (!/^[a-z0-9][a-z0-9_-]*$/.test(value)) throw new Error(`Invalid ${agent} group; run ws profile ${agent} again`);
   return value;
 }
 
@@ -101,33 +101,34 @@ function configureProfile(args: string[]) {
   if ((agent !== "codex" && agent !== "claude") || args.length > 2 || (option && option !== "--clear")) {
     throw new Error("Usage: ws profile [codex|claude [--clear]]");
   }
-  const key = `workspace.${agent}Launcher`;
+  const key = `workspace.${agent}Group`;
+  const oldKey = `workspace.${agent}Launcher`;
   if (option === "--clear") {
-    if (savedProfile(agent)) run(["git", "config", "--local", "--unset-all", key]);
-    console.log(`${agent}: launcher cleared`);
+    for (const name of [key, oldKey]) if (localConfig(name) !== undefined) run(["git", "config", "--local", "--unset-all", name]);
+    console.log(`${agent}: group cleared`);
     return;
   }
   if (!Bun.which("fzf")) throw new Error("fzf is required; use your Nix environment to provide it");
-  const launchers = ccspaceLaunchers(agent);
-  if (!launchers.length) throw new Error(`No ${agent} launchers found; run ccspace add first`);
+  const groups = r1hnGroups();
+  if (!groups.length) throw new Error("No r1hn groups found; run r1hn group add first");
   const selected = Bun.spawnSync([
     "fzf", "--reverse", "--height=40%",
-    "+m", "--no-print-query", "--no-expect", `--prompt=${agent} launcher> `,
-  ], { stdin: Buffer.from(launchers.join("\n") + "\n"), stdout: "pipe", stderr: "inherit" });
+    "+m", "--no-print-query", "--no-expect", `--prompt=${agent} group> `,
+  ], { stdin: Buffer.from(groups.join("\n") + "\n"), stdout: "pipe", stderr: "inherit" });
   if (selected.exitCode === 1 || selected.exitCode === 130) return;
-  if (selected.exitCode !== 0) throw new Error("Launcher selection failed; retry ws profile");
-  const launcher = selected.stdout.toString().trimEnd();
-  if (!launchers.includes(launcher)) throw new Error("Invalid launcher selection");
-  if (!Bun.which(launcher)) throw new Error(`Launcher not on PATH: ${launcher}; run ccspace sync`);
-  run(["git", "config", "--local", "--replace-all", key, launcher]);
-  console.log(`${agent}: ${launcher}`);
+  if (selected.exitCode !== 0) throw new Error("Group selection failed; retry ws profile");
+  const group = selected.stdout.toString().trimEnd();
+  if (!groups.includes(group)) throw new Error("Invalid group selection");
+  run(["git", "config", "--local", "--replace-all", key, group]);
+  if (localConfig(oldKey) !== undefined) run(["git", "config", "--local", "--unset-all", oldKey]);
+  console.log(`${agent}: ${group}`);
 }
 
 function agentCommand(agent: Agent): string[] {
-  const launcher = savedProfile(agent);
-  if (!launcher) return [agent];
-  if (!Bun.which(launcher)) throw new Error(`${launcher} is required for the saved launcher; restore it or run ws profile ${agent} --clear`);
-  return [launcher];
+  const group = savedProfile(agent);
+  if (!group) return [agent];
+  if (!Bun.which("r1hn")) throw new Error(`r1hn is required for the saved group ${group}; install it or run ws profile ${agent} --clear`);
+  return ["r1hn", "run", "--group", group, "--runtime", agent, "--"];
 }
 
 function writeManifest(data: Record<string, string>) {
@@ -288,7 +289,7 @@ function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
     console.log("workspace init <dir> | clone <workspace-URL> <dir> | add <repository-URL> [alias] | remove <alias> | sync | status | snapshot | verify | rg <args...> | search <query> | orient <task> | index | query <purpose> | codex [args...] | claude [args...]\nCore: Git + Bun. Optional: ghq for ghq mode; ripgrep for rg; indexion for index/search/query/orient; agent CLI for codex/claude.");
-    console.log("workspace profile [codex|claude [--clear]]: select a saved ccspace launcher with fzf, show settings, or clear one. Requires ccspace and fzf.");
+    console.log("workspace profile [codex|claude [--clear]]: select an r1hn group with fzf, show settings, or clear one. Requires r1hn and fzf.");
     return;
   }
   if (command === "init") return init(args[0]);

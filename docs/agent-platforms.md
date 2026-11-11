@@ -46,10 +46,10 @@
 - runtime state を含む `~/.claude.json`
 - Antigravityのprovider・credential・session state
 
-Claude・Codexのaccount切り替えは外部tool `ccspace`(`Omakase-Robotics-Org/ccspace`)で管理する。
-Orca managed accountからproviderとOrca account IDベースの`launcher`を自動同期し、
-credential・session・plugin cacheをlauncherごとに分離する。
-詳細は[ccspaceガイド](guides/ccspace.md)を参照。
+Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
+accountをgroupにまとめ、起動と切り替えをgroupの中で閉じる。
+台帳はdotfilesの外(`~/.config/r1hn/`)に置き、credentialには触れない。
+詳細は[r1hnガイド](guides/r1hn.md)を参照。
 
 ## 現在の方針
 

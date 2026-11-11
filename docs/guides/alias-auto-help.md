@@ -34,7 +34,7 @@ ws = {
 };
 ```
 
-`help`がない項目も説明と展開先をpreviewする。`ccspace`・`clgpt`・`clproxy`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
+`help`がない項目も説明と展開先をpreviewする。`r1hn`・`clgpt`・`clproxy`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
 
 ## 背景・課題
 
@@ -149,7 +149,7 @@ $ hv
 | Claude Code    | Claude Code関連（clc, clr, cld, cls）      |
 | Codex          | Codex関連（cx, cxc, cxr, cxrev）           |
 | Workspace      | `ws`から`workspace`への短縮入口            |
-| Agent Commands | `ccspace`・`clgpt`・`clproxy`              |
+| Agent Commands | `r1hn`・`clgpt`・`clproxy`                 |
 | Help           | `h`・`hp`・`hv`                            |
 
 `Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。
@@ -167,7 +167,7 @@ shell aliasやabbrには変換しないため、実体のcommandをshadowしな�
 - Docker containerの起動には`docker run`を使用
 - `cl`・`cx`系の既存prefixとsession操作の短縮名は維持
 
-`clp`・`cxp`は廃止し`ccspace`へ置き換えた。補完はccspace自身の`install.sh`が生成する。
+`clp`・`cxp`は廃止した。account選択は`r1hn`が担い`cl`と`cx`は`r1hn run`へ展開する。
 
 ## Runtime abbreviation
 

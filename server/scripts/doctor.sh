@@ -44,7 +44,6 @@ check 'Inotify instance capacity' test \
 check 'Google Chrome desktop app' command -v google-chrome
 check 'ChatGPT desktop app' command -v chatgpt
 check '1Password desktop app' command -v 1password
-check 'ccspace CLI' command -v ccspace
 check 'Devin CLI' command -v devin
 check 'Syncthing user service' systemctl --user is-active syncthing
 check 'Homelab Compose service' systemctl is-enabled homelab-compose.service

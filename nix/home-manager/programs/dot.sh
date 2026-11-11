@@ -32,7 +32,7 @@ brew_bin() {
 }
 
 update_stages() {
-  echo flake github-apps claude-code codex antigravity ccspace
+  echo flake github-apps claude-code codex antigravity
   if [ "$dot_kind" = darwin ]; then
     echo brew
   fi

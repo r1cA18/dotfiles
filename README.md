@@ -50,7 +50,7 @@ dot server apply  # Linuxのsystem設定とHome Managerを一括適用
 h      # エイリアス一覧（説明付き）
 hv nix # エイリアス一覧を絞り込み
 dr     # dot applyの短縮形。macOS全体またはLinuxのHome Managerをリビルド
-dot update # flake・GitHub apps・Claude Code・Codex・Antigravity・ccspace・Homebrewを更新
+dot update # flake・GitHub apps・Claude Code・Codex・Antigravity・Homebrewを更新
 dot help   # dotfiles操作のsubcommand一覧
 ```
 

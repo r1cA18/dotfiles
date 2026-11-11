@@ -278,7 +278,7 @@ let
         syncは不足repoを取得します。既存repoのpullは行いません。
         workspaceへの移動: wsg
 
-        account profileの選択と保存:
+        account groupの選択と保存 (r1hnが必要):
           ws profile codex
           ws profile claude
         設定確認: ws profile

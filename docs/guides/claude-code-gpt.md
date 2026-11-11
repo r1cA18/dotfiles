@@ -36,15 +36,15 @@ Claude Code起動後に以下を1回実行してplugin health checkを完了す�
 
 ## コマンド
 
-| コマンド | 用途                                      |
-| -------- | ----------------------------------------- |
-| `claude` | 純正Claude Codeのprimary profile          |
-| `cl`     | 純正Claude Codeのaccount picker           |
-| `clgpt`  | GPT backend版Claude Codeのprimary profile |
-| `clg`    | GPT backend版Claude Codeのaccount picker  |
-| `clgc`   | GPT backendの直近sessionをcontinue        |
-| `clgr`   | GPT backendのsession picker               |
-| `clgd`   | GPT backendをpermission promptなしで起動  |
+| コマンド | 用途                                       |
+| -------- | ------------------------------------------ |
+| `claude` | 純正Claude Codeのprimary profile           |
+| `cl`     | `r1hn run --runtime claude`でgroupから起動 |
+| `clgpt`  | GPT backend版Claude Codeのprimary profile  |
+| `clg`    | GPT backend版Claude Codeのaccount picker   |
+| `clgc`   | GPT backendの直近sessionをcontinue         |
+| `clgr`   | GPT backendのsession picker                |
+| `clgd`   | GPT backendをpermission promptなしで起動   |
 
 ## Proxy管理
 
@@ -81,11 +81,11 @@ CLGPT_FAST_MODEL='gpt-5.6-luna[1m]' clgpt
 
 ## Claude account管理
 
-複数accountの切り替えは外部tool `ccspace`が担う(旧`clp`は`archive/agent-profile-manager/`へ退避済み)。
-`ccspace add cc-work`のようにlauncherを作成すると、launcherごとにconfig homeが分離される。
-GPT backendを特定のlauncherと組み合わせる場合は、そのlauncherのconfig homeで`clgpt`を起動する。
+複数accountの切り替えは`r1hn`が担う(旧`clp`は`archive/agent-profile-manager/`へ退避済み)。
+accountは公式clientでlogin済みの設定directoryとして登録し、groupの中で選ばれる。
+GPT backendを特定のaccountと組み合わせる場合は、そのaccountの設定directoryを`CLAUDE_CONFIG_DIR`に指定して`clgpt`を起動する。
 
-Codexを含む共通構造は[ccspaceガイド](ccspace.md)を参照。
+Codexを含む共通構造は[r1hnガイド](r1hn.md)を参照。
 
 ## Antigravityの境界
 

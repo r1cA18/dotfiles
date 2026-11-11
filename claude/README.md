@@ -72,7 +72,7 @@ python3 ~/dotfiles/claude/scripts/sync-mcp-servers.py \
 
 新しいslash commandは`claude/commands/<name>.md`へ置く。新しいcustom agentは`claude/agents/<name>.md`へ置く。どちらもout-of-store symlinkなので`dr`せず反映される。
 
-accountの追加と切り替えは[ccspaceガイド](../docs/guides/ccspace.md)を参照する。
+accountの追加と切り替えは[r1hnガイド](../docs/guides/r1hn.md)を参照する。
 
 ## 注意
 
