@@ -1,19 +1,12 @@
 # nix-darwin configuration
 {
   inputs,
-  lib,
   pkgs,
   username,
   hostname,
   system,
-  profile ? "workstation",
-  # Set to false when using Determinate Nix installer
-  nixEnable ? true,
   ...
 }:
-let
-  isServer = profile == "server";
-in
 {
   nixpkgs = {
     overlays = [
@@ -22,18 +15,16 @@ in
     config.allowUnfree = true;
   };
 
-  # nix.enable = false when using Determinate Nix installer (manages its own daemon)
   nix = {
-    enable = nixEnable;
-    settings = lib.mkIf nixEnable {
+    settings = {
       experimental-features = "nix-command flakes";
       extra-substituters = [ "https://r1ca18.cachix.org" ];
       extra-trusted-public-keys = [
         "r1ca18.cachix.org-1:1QuS/Gqqw3o1atOCkrgl+5hQoLlEvTiRN8OwQT6e6lc="
       ];
     };
-    optimise.automatic = lib.mkIf nixEnable true;
-    gc = lib.mkIf nixEnable {
+    optimise.automatic = true;
+    gc = {
       automatic = true;
       interval = {
         Weekday = 0;
@@ -56,50 +47,53 @@ in
 
   homebrew = {
     enable = true;
-    onActivation.autoUpdate = true;
-    casks =
-      lib.optionals (!isServer) [
-        "1password"
-        "affinity"
-        "alt-tab"
-        "amical"
-        "arc"
-        "nikitabobko/tap/aerospace"
-        "audacity"
-        "autodesk-fusion"
-        "balenaetcher"
-        "bambu-studio"
-        "beeper"
-        "chatgpt"
-        "claude"
-        "discord"
-        "figma"
-        "ghostty"
-        "google-chrome"
-        "google-drive"
-        "google-japanese-ime"
-        "karabiner-elements"
-        "keyboardcleantool"
-        "microsoft-excel"
-        "microsoft-outlook"
-        "microsoft-powerpoint"
-        "microsoft-word"
-        "notunes"
-        "ollama-app"
-        "orbstack"
-        "stablyai/orca/orca"
-        "raycast"
-        "steam"
-        "stirling-pdf"
-        "tailscale-app"
-        "utm"
-        "zed"
-      ]
-      ++ lib.optionals isServer [
-        "1password"
-        "tailscale-app"
-      ];
-    masApps = lib.mkIf (!isServer) {
+    # Homebrew is updated by `dot update`, not on activation.
+    onActivation.autoUpdate = false;
+    taps = [
+      {
+        name = "r1cA18/orca";
+        clone_target = "https://github.com/r1cA18/orca.git";
+        trusted = true;
+      }
+    ];
+    casks = [
+      "1password"
+      "affinity"
+      "alt-tab"
+      "amical"
+      "arc"
+      "nikitabobko/tap/aerospace"
+      "audacity"
+      "autodesk-fusion"
+      "balenaetcher"
+      "bambu-studio"
+      "beeper"
+      "chatgpt"
+      "claude"
+      "discord"
+      "figma"
+      "ghostty"
+      "google-chrome"
+      "google-drive"
+      "google-japanese-ime"
+      "karabiner-elements"
+      "keyboardcleantool"
+      "microsoft-excel"
+      "microsoft-outlook"
+      "microsoft-powerpoint"
+      "microsoft-word"
+      "notunes"
+      "ollama-app"
+      "orbstack"
+      "r1cA18/orca/orca-personal"
+      "raycast"
+      "steam"
+      "stirling-pdf"
+      "tailscale-app"
+      "utm"
+      "zed"
+    ];
+    masApps = {
       "Developer" = 640199958;
       "Keynote" = 361285480;
       "Kindle" = 302584613;
@@ -155,8 +149,6 @@ in
   };
 
   security.pam.services.sudo_local.touchIdAuth = true;
-
-  services.openssh.enable = isServer;
 
   networking.hostName = hostname;
 

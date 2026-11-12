@@ -8,14 +8,14 @@ let
   orcaCli = "/Applications/Orca.app/Contents/Resources/bin/orca";
   orcaDir = "${config.home.homeDirectory}/Library/Application Support/Orca";
   # The default Codex home is the real primary account store. Orca's managed
-  # Codex home is a symlink into this directory, so System default, cx-orca,
+  # Codex home is a symlink into this directory, so System default, ~/.codex-orca
   # and bare `codex` all share the same credentials and session history.
   orcaCodexHome = "${config.home.homeDirectory}/.codex";
 
   # Claude managed credentials live in the "Orca Claude Code Managed
   # Credentials" keychain item keyed by account uuid; the managed auth dir
   # itself holds no token file. Exporting them into .credentials.json lets
-  # ccspace launchers (cc-*) and bare `claude` use the same dirs without Orca.
+  # r1hn accounts and bare `claude` use the same dirs without Orca.
   # Re-run after adding a managed account in Orca.
   orcaExportClaudeCreds = pkgs.writeShellApplication {
     name = "orca-export-claude-creds";
@@ -90,7 +90,7 @@ let
     '';
   };
 in
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # Orca GUI is installed via the homebrew cask in nix/darwin/configuration.nix.
   # Orca skills come from the orca-skills flake input via agent-skills.nix.
   # Orca owns live settings in profile-state.db. Do not patch legacy
@@ -102,7 +102,7 @@ lib.mkIf pkgs.stdenv.isDarwin {
       ".local/bin/orca".source = config.lib.file.mkOutOfStoreSymlink orcaCli;
 
       # Unified layout: ~/.codex is the real primary account home. Orca's
-      # managed Codex home and cx-orca both resolve through this path.
+      # managed Codex home and ~/.codex-orca both resolve through this path.
       ".codex-orca".source = config.lib.file.mkOutOfStoreSymlink orcaCodexHome;
     };
 

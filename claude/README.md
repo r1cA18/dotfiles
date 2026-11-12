@@ -46,7 +46,7 @@ Claude Codeが`settings.json`を書き換えてregular fileにした場合も、
 
 ## Binary更新
 
-初回の`dr`は公式installerで`~/.local/bin/claude`をbootstrapする。background auto-updateは無効化してある。`update-all`が`~/.claude/managed-channel`を読み、`update-claude-code`経由で明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
+初回の`dr`は公式installerで`~/.local/bin/claude`をbootstrapする。background auto-updateは無効化してある。`dot update`の`claude-code`段階が`~/.claude/managed-channel`を読み、明示的に更新する。versionを固定する場合は`claude-code.nix`の`claudeChannel`を変更して`dr`する。
 
 ## MCP管理
 
@@ -72,7 +72,7 @@ python3 ~/dotfiles/claude/scripts/sync-mcp-servers.py \
 
 新しいslash commandは`claude/commands/<name>.md`へ置く。新しいcustom agentは`claude/agents/<name>.md`へ置く。どちらもout-of-store symlinkなので`dr`せず反映される。
 
-accountの追加と切り替えは[ccspaceガイド](../docs/guides/ccspace.md)を参照する。
+accountの追加と切り替えは[r1hnガイド](../docs/guides/r1hn.md)を参照する。
 
 ## 注意
 

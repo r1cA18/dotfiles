@@ -17,7 +17,6 @@
     agent-skills-nix = {
       url = "github:Kyure-A/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
     };
 
     # Claude Code -> ChatGPT/Codex protocol proxy
@@ -27,10 +26,6 @@
     # nix-index-database (for comma)
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
-
-    # Herdr terminal multiplexer
-    herdr.url = "github:herdrdev/herdr/v0.7.5";
-    herdr.inputs.nixpkgs.follows = "nixpkgs";
 
     # Anthropic official skills
     anthropic-skills.url = "github:anthropics/skills";
@@ -45,10 +40,6 @@
     trailofbits-skills.url = "github:trailofbits/skills";
     trailofbits-skills.flake = false;
 
-    # difit skills
-    difit-skills.url = "github:yoshiko-pg/difit";
-    difit-skills.flake = false;
-
     # App Store screenshot generation skill
     app-store-screenshots.url = "github:ParthJadhav/app-store-screenshots";
     app-store-screenshots.flake = false;
@@ -61,13 +52,17 @@
     typst-skills.url = "github:apcamargo/typst-skills";
     typst-skills.flake = false;
 
-    # taste-skill: anti-slop frontend skill collection (13 variants)
-    taste-skill.url = "github:Leonxlnx/taste-skill";
+    # Keep the skill collection: newer revisions remove six enabled skills.
+    taste-skill.url = "github:Leonxlnx/taste-skill/a6153b39e495b8d62666f33f6a7019fcba3b777f";
     taste-skill.flake = false;
 
     # text-to-lottie: author Lottie (Bodymovin) animations in a local skia player
     lottie.url = "github:diffusionstudio/lottie";
     lottie.flake = false;
+
+    # unslop: audit and redesign AI-looking UI. Pinned: young repo without tags.
+    unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
+    unslop.flake = false;
 
     # Codex plugin: ask local Claude Code from Codex
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
@@ -85,20 +80,16 @@
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
+    # r1hn: account groups and the harness endpoint. Private repository, fetched
+    # over SSH and pinned to a commit of feature/r1hn-groups. Only
+    # nix/home-manager/programs/r1hn.nix reads this input, and only where
+    # dotfiles.r1hn.enable is set, so other hosts and CI never fetch it.
+    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-groups&rev=0441614a7cfd6ee730f5c1df1827c1501c3dcd3d";
+    r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      nix-darwin,
-      home-manager,
-      agent-skills-nix,
-      nix-index-database,
-      treefmt-nix,
-      git-hooks-nix,
-      ...
-    }@inputs:
+    { nixpkgs, ... }@inputs:
     let
       # Supported systems (macOS + Linux)
       systems = [
@@ -114,54 +105,14 @@
           config.allowUnfree = true;
         };
 
-      # Helper to build a darwin configuration
-      mkDarwinConfig =
-        {
-          hostname,
-          username,
-          system ? "aarch64-darwin",
-          nixEnable ? true,
-          profile ? "workstation",
-        }:
-        nix-darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = {
-            inherit
-              inputs
-              username
-              hostname
-              system
-              nixEnable
-              profile
-              ;
-          };
-          modules = [
-            ./nix/darwin/configuration.nix
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "hm-backup";
-                extraSpecialArgs = {
-                  inherit
-                    inputs
-                    username
-                    hostname
-                    profile
-                    ;
-                };
-                users.${username} = {
-                  imports = [
-                    agent-skills-nix.homeManagerModules.default
-                    nix-index-database.homeModules.nix-index
-                    (import ./nix/home-manager/home.nix)
-                  ];
-                };
-              };
-            }
-          ];
-        };
+      development = forAllSystems (
+        system:
+        import ./nix/flake/development.nix {
+          inherit inputs system;
+          pkgs = nixpkgs.legacyPackages.${system};
+        }
+      );
+
       # Backwards-compatible project dev-shell helper.
       # Usage in project flake.nix:
       #   inputs.dotfiles.url = "git+file:///Users/r1ca18/dotfiles";
@@ -183,191 +134,25 @@
         system:
         let
           pkgs = pkgsFor system;
-          mkGithubReleaseApp = pkgs.callPackage ./nix/lib/github-app.nix { };
         in
         import ./nix/pkgs pkgs
-        // nixpkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
-          recordly = pkgs.callPackage ./nix/pkgs/recordly { inherit mkGithubReleaseApp; };
-        }
       );
 
-      # treefmt (unified formatting)
-      formatter = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
-        in
-        treefmtEval.config.build.wrapper
-      );
+      formatter = forAllSystems (system: development.${system}.formatter);
+      checks = forAllSystems (system: development.${system}.checks);
+      devShells = forAllSystems (system: development.${system}.devShells);
 
-      # Flake checks (treefmt + git-hooks)
-      checks = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
-          hooks = git-hooks-nix.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              treefmt = {
-                enable = true;
-                package = treefmtEval.config.build.wrapper;
-              };
-              deadnix.enable = true;
-              statix.enable = true;
-            };
-          };
-        in
-        {
-          formatting = treefmtEval.config.build.check self;
-          pre-commit = hooks;
-        }
-        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          server =
-            pkgs.runCommand "server-check"
-              {
-                nativeBuildInputs = [
-                  pkgs.ansible
-                  pkgs.ansible-lint
-                  pkgs.shellcheck
-                ];
-              }
-              ''
-                export HOME="$TMPDIR"
-                shellcheck ${./server/scripts}/*.sh
-                cd ${./server/ansible}
-                ansible-playbook --syntax-check -i inventory.yml playbook.yml
-                ansible-lint --offline playbook.yml
-                touch "$out"
-              '';
-        }
-      );
-
-      # Dev shell with pre-commit hooks
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
-          hooks = git-hooks-nix.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              treefmt = {
-                enable = true;
-                package = treefmtEval.config.build.wrapper;
-              };
-              deadnix.enable = true;
-              statix.enable = true;
-            };
-          };
-        in
-        {
-          default = pkgs.mkShell {
-            inherit (hooks) shellHook;
-            buildInputs = hooks.enabledPackages ++ [
-              treefmtEval.config.build.wrapper
-            ];
-          };
-        }
-      );
-
-      # Flake apps
       apps = forAllSystems (
         system:
-        let
+        import ./nix/flake/apps.nix {
+          inherit inputs system;
           pkgs = nixpkgs.legacyPackages.${system};
-          serverManager = pkgs.writeShellApplication {
-            name = "server";
-            runtimeInputs = [
-              pkgs.ansible
-              pkgs.coreutils
-              pkgs.curl
-              pkgs.gawk
-              pkgs.gnugrep
-              pkgs.systemd
-              home-manager.packages.${system}.default
-            ];
-            text = builtins.readFile ./server/scripts/manage.sh;
-          };
-          mkServerApp = action: {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "server-${action}";
-                runtimeInputs = [ serverManager ];
-                text = ''
-                  exec server ${action} "$@"
-                '';
-              }
-            }/bin/server-${action}";
-            meta.description = "Run the server ${action} workflow";
-          };
-        in
-        {
-          fmt = {
-            type = "app";
-            program = "${(treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix).config.build.wrapper}/bin/treefmt";
-            meta.description = "Format the dotfiles repository";
-          };
-        }
-        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          server-apply = mkServerApp "apply";
-          server-restore = mkServerApp "restore";
-          server-start = mkServerApp "start";
-          server-stop = mkServerApp "stop";
-          server-rdp-setup = mkServerApp "rdp-setup";
-          server-doctor = mkServerApp "doctor";
+          formatter = development.${system}.formatter;
         }
       );
 
       # Custom overlays
       overlays = import ./nix/overlays;
-
-      # Darwin configurations (macOS)
-      # Build with: nh darwin switch . -H <hostname>
-      darwinConfigurations = {
-        RMB = mkDarwinConfig {
-          hostname = "RMB";
-          username = "r1ca18";
-        };
-        "MBP187-Z" = mkDarwinConfig {
-          hostname = "MBP187-Z";
-          username = "mbp187";
-          profile = "server";
-          nixEnable = false;
-        };
-        r1ca18lab = mkDarwinConfig {
-          hostname = "r1ca18lab";
-          username = "r1ca18lab";
-          nixEnable = false;
-        };
-      };
-
-      # Standalone Home Manager configuration used by server-apply.
-      homeConfigurations."r1ca18@homelab" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config.allowUnfree = true;
-        };
-        extraSpecialArgs = {
-          inherit inputs;
-          username = "r1ca18";
-          hostname = "homelab";
-          profile = "workstation";
-        };
-        modules = [
-          agent-skills-nix.homeManagerModules.default
-          nix-index-database.homeModules.nix-index
-          ./nix/home-manager/hosts/homelab.nix
-          {
-            nixpkgs.config.allowUnfree = true;
-            nixpkgs.overlays = [
-              self.overlays.additions
-            ];
-          }
-        ];
-      };
-
-    };
+    }
+    // import ./nix/flake/configurations.nix { inherit inputs; };
 }

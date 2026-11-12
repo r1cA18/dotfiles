@@ -103,7 +103,7 @@ Linux版はpreview。Computer Useは未対応。Wayland native modeはexperiment
 
 ### 8. Agent CLIセットアップ
 
-`programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`update-all`から明示的に更新する。
+`programs.claude-code`は`package = null`でsettings・plugin宣言・更新channelを管理し、binary自体は公式installerで`~/.local/bin/claude`へ入れる。background auto-updateは無効で、以後は`dot update`から明示的に更新する。
 
 Codexも同様に公式installerで`~/.local/bin/codex`へ入れる。Home Managerは未導入時に両方をbootstrapするため、通常は`dr`だけでよい。手動導入する場合は次を実行する。
 
@@ -137,20 +137,21 @@ codex --version
 
 ### よく使うエイリアス
 
-| Alias        | 説明                                                               |
-| ------------ | ------------------------------------------------------------------ |
-| `dr`         | `nh home switch ~/dotfiles -c r1ca18@homelab` - user設定だけを適用 |
-| `db`         | `nh home build ~/dotfiles -c r1ca18@homelab` - ビルドのみ          |
-| `dp`         | `home-manager generations` - 世代一覧                              |
-| `update-all` | flakeと関連ツールを更新                                            |
-| `ds`         | パッケージ検索                                                     |
-| `dg`         | 古い世代と store path を削除                                       |
+| Alias / Command | 説明                                                                             |
+| --------------- | -------------------------------------------------------------------------------- |
+| `dr`            | `dot apply` (`nh home switch ~/dotfiles -c r1ca18@homelab`) - user設定だけを適用 |
+| `db`            | `dot build` (`nh home build ~/dotfiles -c r1ca18@homelab`) - ビルドのみ          |
+| `dp`            | `dot generations` (`home-manager generations`) - 世代一覧                        |
+| `dot update`    | flakeと関連ツールを更新                                                          |
+| `dot server`    | `dot server apply`などで`nix run ~/dotfiles#server-<動作>`を実行                 |
+| `ds`            | `dot search` - パッケージ検索                                                    |
+| `dg`            | `dot clean` - 古い世代と store path を削除                                       |
 
 ### 定期メンテナンス
 
 ```bash
 # 週1回: 依存を最新化
-update-all && dr
+dot update && dr
 git add flake.lock && git commit -m "chore: update flake.lock"
 
 # 月1回: ディスク容量を確保

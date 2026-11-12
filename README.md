@@ -11,7 +11,7 @@ Nix (nix-darwin + home-manager) によるクロスプラットフォーム環境
 
 共通のCLI・shell・agent設定は`nix/home-manager/home.nix`から両OSへ配布する。
 macOSのsystem設定とHomebrewは`nix/darwin/`に閉じ、Ubuntuのsystem設定とservice運用は`server/`に閉じる。
-共有module内で差が必要な設定だけ`pkgs.stdenv.isDarwin`または`isLinux`で分岐する。
+共有module内で差が必要な設定だけ`pkgs.stdenv.hostPlatform.isDarwin`または`isLinux`で分岐する。
 
 ## クイックスタート
 
@@ -31,12 +31,6 @@ cd ~/dotfiles
 
 # macOS (RMB / r1ca18)
 nix run nix-darwin -- switch --flake .#RMB
-
-# macOS minimal server (MBP187-Z / mbp187)
-nix run nix-darwin -- switch --flake '.#MBP187-Z'
-
-# macOS (r1ca18lab)
-nix run nix-darwin -- switch --flake .#r1ca18lab
 ```
 
 ### Ubuntu homelab
@@ -46,8 +40,8 @@ UbuntuはNixの前に必要なbootstrap packageがある。初回手順は[serve
 ### 3. 以降の更新
 
 ```bash
-dr  # macOS全体またはLinuxのHome Managerだけを適用
-nix run ~/dotfiles#server-apply  # Linuxのsystem設定とHome Managerを一括適用
+dr  # dot applyの短縮形。macOS全体またはLinuxのHome Managerだけを適用
+dot server apply  # Linuxのsystem設定とHome Managerを一括適用
 ```
 
 ## よく使うコマンド
@@ -55,8 +49,9 @@ nix run ~/dotfiles#server-apply  # Linuxのsystem設定とHome Managerを一括�
 ```bash
 h      # エイリアス一覧（説明付き）
 hv nix # エイリアス一覧を絞り込み
-dr     # macOS全体またはLinuxのHome Managerをリビルド
-update-all # flake・GitHub apps・Claude Code・Codex・Antigravityを更新
+dr     # dot applyの短縮形。macOS全体またはLinuxのHome Managerをリビルド
+dot update # flake・GitHub apps・Claude Code・Codex・Antigravity・Homebrewを更新
+dot help   # dotfiles操作のsubcommand一覧
 ```
 
 ### Claude Code
@@ -82,6 +77,7 @@ dotfiles/
 ├── flake.nix                     # flake エントリポイント
 ├── flake.lock                    # 依存ロック
 ├── nix/
+│   ├── flake/                    # host構成・開発環境・app定義
 │   ├── darwin/configuration.nix  # macOS設定、Homebrew
 │   └── home-manager/
 │       ├── home.nix              # ユーザー設定
@@ -111,7 +107,7 @@ dotfiles/
 - `agent-browser`
 - `ast-grep`
 
-`Claude Code`・`Codex`・`Antigravity`本体はnative installer版を使う。Home Managerは未導入時のbootstrapと宣言設定を管理し、`update-all`から明示的に更新する。runtime stateはprofileごとに分離する。
+`Claude Code`・`Codex`・`Antigravity`本体はnative installer版を使う。Home Managerは未導入時のbootstrapと宣言設定を管理し、`dot update`から明示的に更新する。runtime stateはprofileごとに分離する。
 
 ### Skills
 

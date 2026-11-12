@@ -61,6 +61,12 @@
         subdir = "skills";
       };
 
+      # unslop: discovery finds skills/unslop/SKILL.md (same layout as lottie).
+      unslop = {
+        path = inputs.unslop;
+        subdir = "skills";
+      };
+
       # Orca skills
       orca = {
         path = inputs.orca-skills;
@@ -106,6 +112,8 @@
         "frontend-design"
         "baseline-ui"
         "web-design-guidelines"
+        # unslop is enabled through skills.explicit below (listing it here too
+        # is an id collision).
         # notebooklm
         "notebooklm-skill"
         # vault (global)
@@ -121,9 +129,10 @@
         # in active use (2026-07 skill audit). Style variants (taste-skill-v1 /
         # soft-skill / minimalist-skill / brutalist-skill / gpt-tasteskill /
         # stitch-skill) remain in the flake input; re-add IDs here to enable.
+        # redesign-skill (name: redesign-existing-projects) is disabled in
+        # favor of unslop, which covers the same audit + upgrade role.
         # IDs are directory names; the frontmatter `name` (what triggers) differs.
         "taste-skill" # name: design-taste-frontend (flagship, contextual anti-slop)
-        "redesign-skill" # name: redesign-existing-projects (audit + upgrade)
         "output-skill" # name: full-output-enforcement (anti-truncation)
         "image-to-code-skill" # name: image-to-code (image-first then implement)
         "brandkit" # name: brandkit (brand identity image generation)
@@ -131,7 +140,7 @@
         "imagegen-frontend-mobile" # name: imagegen-frontend-mobile (mobile images)
         # orca
         "orca-cli"
-        "computer-use"
+        "orca-computer-use"
         "orchestration"
       ];
 
@@ -160,6 +169,31 @@
               effort metadata and add these distribution notes.
               Full license: ${inputs.trailofbits-skills}/LICENSE.
               Use the target project's existing test runner and dependency manager.
+            '';
+        };
+
+        unslop = {
+          from = "unslop";
+          # Upstream tells the agent to hand out an install command when
+          # Playwright or ffmpeg is missing; its scripts suggest npm and brew.
+          transform =
+            { original, ... }:
+            original
+            + ''
+
+              ## Local environment (Nix)
+
+              This note is a local addition; the skill above is unchanged.
+              Original by Damir Sokolovsky, https://github.com/heydamir/unslop, CC BY 4.0.
+
+              - This machine is managed with Nix. Do not run or suggest `npm install -g`,
+                `brew install`, or `npx playwright install`, including when a script's
+                error message recommends them.
+              - ffmpeg and Node.js are already installed through Nix.
+              - Playwright: use the target project's existing devDependency. Otherwise
+                run the tool temporarily with `, <cmd>`, `nix shell`, or `nix run`.
+              - If a dependency is still missing, report it and skip the story video or
+                snapshot step instead of installing anything.
             '';
         };
 

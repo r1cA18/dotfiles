@@ -8,9 +8,9 @@
   ...
 }:
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isHomelabLinux = pkgs.stdenv.isLinux && hostname == "homelab";
-  homeDir = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isHomelabLinux = pkgs.stdenv.hostPlatform.isLinux && hostname == "homelab";
+  homeDir = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
   olympusLinuxRoot = "/home/r1ca18/Develop/github.com/r1cA18/olympus";
   olympusMcpEntry = "${olympusLinuxRoot}/apps/mcp/src/index.ts";
@@ -23,7 +23,19 @@ let
   installCodex = ''
     ${pkgs.coreutils}/bin/install -d "$HOME/.codex" "$HOME/.local/bin"
     ${pkgs.curl}/bin/curl -fsSL https://chatgpt.com/codex/install.sh \
-      | PATH="$HOME/.local/bin:${pkgs.curl}/bin:${pkgs.gnutar}/bin:${pkgs.coreutils}/bin:$PATH" \
+      | PATH="$HOME/.local/bin:${
+        lib.makeBinPath (
+          with pkgs;
+          [
+            curl
+            gnutar
+            gzip
+            gawk
+            coreutils
+            bash
+          ]
+        )
+      }:$PATH:/usr/bin:/bin" \
         CODEX_HOME="$HOME/.codex" \
         CODEX_INSTALL_DIR="$HOME/.local/bin" \
         CODEX_NON_INTERACTIVE=1 \
@@ -37,7 +49,7 @@ let
     dotfilesDir
     "${homeDir}/vault"
   ]
-  ++ lib.optionals pkgs.stdenv.isDarwin [
+  ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
     "/Users/r1ca18/Develop/github.com/r1cA18/syoki"
     "/Users/r1ca18/Develop/github.com/r1cA18/NomadPad-app"
     "/Users/r1ca18/Develop/github.com/r1cA18/mado"
@@ -64,7 +76,8 @@ let
   codexSettings = {
     # Top-level model is the default. Named config layers are generated as
     # $CODEX_HOME/<name>.config.toml below.
-    model = "gpt-5.5";
+    # Do not pin the default model here; let Codex use its own default or the
+    # runtime /model selection.
     model_reasoning_effort = "medium";
 
     # Account profiles rely on CODEX_HOME isolation. Force file storage so
@@ -143,11 +156,9 @@ let
 
   codexConfigProfiles = {
     heavy = {
-      model = "gpt-5.5";
       model_reasoning_effort = "high";
     };
     spark = {
-      model = "gpt-5.3-codex-spark";
       model_reasoning_effort = "medium";
     };
   };
@@ -170,7 +181,7 @@ let
   ) (builtins.readDir ../../../codex/prompts);
 
   updateCodex = pkgs.writeShellApplication {
-    name = "update-codex";
+    name = "dot-update-codex";
     text = ''
       echo "[codex] updating to latest..."
       ${installCodex}
@@ -233,8 +244,8 @@ in
         )}
       '';
 
-      # Codex CLI native 版の初回導入。更新は update-all の
-      # update-codex が担う。
+      # Codex CLI native 版の初回導入。更新は dot update の
+      # codex 段階が担う。
       setupCodex = lib.hm.dag.entryAfter [ "codexConfig" ] ''
         bin="$HOME/.local/bin/codex"
         log="$HOME/.local/state/codex/install.log"

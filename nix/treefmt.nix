@@ -20,6 +20,7 @@ _: {
     "*.patch"
     "result"
     "nvim/**"
+    "nvim-next/**"
     "agents/**"
     "claude/**"
     "karabiner/**"

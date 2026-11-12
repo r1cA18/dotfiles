@@ -75,3 +75,70 @@ repositoryの責務は分けつつ入力契約と状態所有者を統合する�
 - export 13,340 rows・1,108 blobsからrestoreしcanonical table一致を確認
 - Bun test 10件が成功。localhost listenは実行環境の制限でintegration testから除外
 - semantic STT・LLM整理・embedding・外部公開・既存vault切替は未実施
+
+## 2026-09-28のHarness接続調査
+
+- [開発Harnessと生活Harnessの接続案](life-harness-integration-2026-09-28.md)を追加
+- Harness CoreとOlympusの責務を現行設計文書で照合
+- OlympusとHarnessの双方がSchedule正本を持つ設計上の衝突を確認
+- 日常ユースケース、Day view、TaskとAttemptとArtifact、Capability導入、承認境界を提案
+- OpenClaw、Google Calendar、MCP、OctoPrint、1Passwordの一次資料を確認
+- 既存の承認済み設計や実サービスは変更していない
+
+次の具体的な判断はScheduleの単一所有者と最初の縦断flowの選択。3D印刷adapterは機種と接続方式の確認後に選定する。成果物の実画面と実機の動作は未検証。
+
+## 2026-09-29の追加要件
+
+- RDPは本人によるOvershell実接続成功を確認済み。server READMEへ記録
+- Life Harness接続案にJev分類、Account Group別weekly予算、自動待機、Playground UIと昇降格の提案を追記
+- Grok Botの設計記事とSystem One APIの一次資料を確認
+- Harness Coreの操作モデルを[PR #31](https://github.com/r1cA18/harness-core/pull/31)として実装。fmt・clippy・7件のintegration testとCLI smoke testが成功
+- RFC 8785 canonical JSONとdigestを[PR #32](https://github.com/r1cA18/harness-core/pull/32)として#31に積んだ。fmt・clippy・13件のintegration testが成功
+- Account Group別の使用予算と自動待機を[harness-core#33](https://github.com/r1cA18/harness-core/issues/33)へ、Today/WeekとPlaygroundを[olympus#2](https://github.com/r1cA18/olympus/issues/2)へ分割
+- PRにはCI checkの報告がなく、mergeと実環境適用は未実施
+
+## 2026-10-02のOrca account profile同期要件
+
+- 本人の意図は各hostのOrcaセッションでagentを実行し、homelabのOrca managed accountとprofileを同期すること
+- 現行`ccspace-sync-orca`はlocal Orcaからccspaceへの投影のみ。host間同期もOrca managed account登録も行わない
+- [Orca account同期案](life-harness-integration-2026-09-28.md)にCloud worker起動前のaccount確認を記録
+- Orca terminalで`cx`/`cl`を起動する経路はccspace profileを同期すれば成立する見込み
+- Orca native pickerと`worker-start --agent`にはmanaged account登録が必要。公開CLIの非対話importは確認できず、追加の技術課題
+- 認証fileのhost間複製とOrcaへの登録は未実装・未検証
+- homelab切断時のHarness管理Task新規起動は現行Control Host規則と衝突するため別ADRが必要
+
+## 2026-10-02の実装状況確認
+
+- Harness Coreの操作モデルとlocal state initはfeature branchに実装済み。Task実行loopは未実装
+- Canonical JSONとdigestは別のfeature branchに実装済み。ledger本体は未実装
+- OlympusにはTimes・Task・Calendar・Portal・Schedule CRUDの既存codeがある。Schedule APIは`driver_available: false`を返す
+- OlympusとHarness CoreのTask・Artifact・承認連携は未実装
+- Account Group別予算とToday/Week・Playgroundはissue化済み。code実装は未確認
+- homelab正本のOrca/ccspace account profile同期は基礎PRと分ける。実装と実機検証は未着手
+- GitHub APIへ接続できず、private PRの現在のmerge・CI状態は未確認。local branchと前回記録で判断
+
+## 2026-10-24の構想照合と統合workspace
+
+所有者が提示したTimesと関連会話の整理を基にUI要件と責務とAPI契約とbackendの実装順を提案した。詳細の正本は新しいlifeos workspaceのdocsへ置く。LifeOSは全体の仮称であり製品改名ではない。
+
+- Core main 4dd4bebとOlympus main acf0bc8をGitHub APIで確認
+- Core #61/#63/#65/#66とOlympus #11がopenであることを確認
+- Coreの未commit destination dispatchとOlympus mainの個別sourceを確認
+- Coding Contractと論理会話と生活actionの違いを整理
+- UI要件12項目とendpoint案とstate遷移と受入条件を作成
+- 9製品の公式資料から類似体験と採用候補を比較
+- 既存5repoとMessagesの5projectとdotfilesと進行中Coreへの参照を統合workspaceへ配置
+- MessagesのMatrix採用とlocal repo群を維持
+- 14個のeditor folderとMarkdown相対linkと横断検索とstatusを検証
+
+通常checkoutと未merge PRと未commit実装と配備済み状態を区別する。Harness web/CLIはGitHub上の存在を確認したがnetworkとSSH失敗でlocal取得は未完了。Core/Olympusの実行testの再実行と本番操作は今回行っていない。既存checkoutの移動とbranch切替とmergeとpushと環境適用は行っていない。
+
+同日の所有者補足により実装順と責務を改訂した。次はProfile切替を含むUI要件からCoreの外部公開APIとeventとrouting契約を確定する。Olympus以外のclientからも利用可能な契約を検証してからProfileとintakeを接続する。提案routeは未実装であり具体schemaを採用済みとして扱わない。
+
+### 公開APIとProfileの責務に関する補足
+
+Coreの仕組みを使う用途とscheduleとworkflow定義は利用側が所有する。Coreは汎用の実行受付とGroup内routingと予算待機と実行状態と結果とeventを提供する。旧ADRのschedule移管案は後続で改訂する。Core内部の検証と復旧手順はCoreに残す。
+
+OlympusのProfileが会話と知識の参照範囲と外部接続とagent profileとGroupを束ねる。通常はruntime/modelを意識せず利用可能な範囲へroutingする。情報境界はProfile切替でcontextを混ぜない内部規則として扱う。明示account指定を維持しUI切替で実行中の仕事を変更しない。
+
+lifeos workspaceの設計資料7件を更新した。相対linkとfenceと末尾空白とprivate path混入を検査し最終配置とstageの一致を確認した。backendと実行設定は変更していない。

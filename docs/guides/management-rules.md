@@ -58,8 +58,8 @@ runtime installerをactivationへ直接埋め込まない。再現可能なCLI�
 
 ```nix
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
 in {
   # 条件分岐
   something = if isDarwin then "mac" else "linux";

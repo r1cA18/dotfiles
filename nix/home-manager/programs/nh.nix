@@ -5,16 +5,20 @@
 }:
 let
   flakePath =
-    if pkgs.stdenv.isDarwin then "/Users/${username}/dotfiles" else "/home/${username}/dotfiles";
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      "/Users/${username}/dotfiles"
+    else
+      "/home/${username}/dotfiles";
 in
 {
   programs.nh = {
     enable = true;
-    clean.enable = true;
+    # Darwin user profiles are cleaned by developer-cleanup; system GC runs separately.
+    clean.enable = !pkgs.stdenv.hostPlatform.isDarwin;
     clean.dates = "weekly";
 
-    darwinFlake = if pkgs.stdenv.isDarwin then flakePath else null;
+    darwinFlake = if pkgs.stdenv.hostPlatform.isDarwin then flakePath else null;
 
-    homeFlake = if pkgs.stdenv.isLinux then flakePath else null;
+    homeFlake = if pkgs.stdenv.hostPlatform.isLinux then flakePath else null;
   };
 }

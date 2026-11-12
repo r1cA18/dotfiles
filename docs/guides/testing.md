@@ -36,7 +36,7 @@ nix shell --no-write-lock-file --inputs-from . \
   --command bash scripts/test.sh all
 ```
 
-生成物だけを再確認するときは`bash scripts/test.sh integration`を使う。旧`clp`/`cxp`をNix buildして検証していた`tests/agent-profiles.test.ts`は、`ccspace`への置き換えに伴い`archive/agent-profile-manager/`へ退避し、このunit/integration testsuiteの対象からも外れた。
+生成物だけを再確認するときは`bash scripts/test.sh integration`を使う。旧`clp`/`cxp`をNix buildして検証していた`tests/agent-profiles.test.ts`は、`clp`/`cxp`の廃止に伴い`archive/agent-profile-manager/`へ退避し、このunit/integration testsuiteの対象からも外れた。
 
 ## 検証範囲
 

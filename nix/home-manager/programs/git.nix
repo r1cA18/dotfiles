@@ -36,7 +36,7 @@ let
   # 1Password 未導入のマシン (初期セットアップ直後の Ubuntu 等) では
   # include が空になり、commit は無署名で通る。導入後に dr すれば有効化。
   opSshSign =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
     else
       "/opt/1Password/op-ssh-sign";

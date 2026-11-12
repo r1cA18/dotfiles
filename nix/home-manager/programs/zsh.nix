@@ -1,13 +1,14 @@
 {
-  hostname ? null,
+  config,
   pkgs,
   lib,
   username,
   ...
 }:
 let
-  inherit (pkgs.stdenv) isDarwin;
-  linuxConfigName = if hostname == null then "${username}@linux" else "${username}@${hostname}";
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  # Hosts without r1hn (programs/r1hn.nix) start the official client directly.
+  r1hnEnabled = config.dotfiles.r1hn.enable;
 
   generalAliases = {
     ll = {
@@ -18,10 +19,6 @@ let
       cmd = "nvim";
       desc = "Open Neovim";
     };
-    dot = {
-      cmd = "cd ~/dotfiles";
-      desc = "Go to dotfiles";
-    };
     gacm = {
       cmd = "git add -A && git commit -m";
       desc = "Add all + commit";
@@ -31,18 +28,25 @@ let
   nixCommonAliases = {
     nx = {
       cmd = "cd ~/dotfiles";
-      desc = "Go to dotfiles (compatibility name; prefer dot)";
+      desc = "Go to dotfiles";
     };
-    update-all = {
-      cmd = "nix flake update --flake ~/dotfiles && update-github-apps && update-claude-code && update-codex && update-antigravity && update-ccspace";
-      desc = "Update flake + GitHub apps + Claude Code + Codex + Antigravity + ccspace";
+    dr = {
+      cmd = "dot apply";
+      desc = "Apply this host's config";
+      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n${
+        if isDarwin then "適用前の状態へ戻す場合: dot rollback" else "世代を確認する場合: dot generations"
+      }";
+    };
+    db = {
+      cmd = "dot build";
+      desc = "Build this host's config";
     };
     ds = {
-      cmd = "nix search nixpkgs";
+      cmd = "dot search";
       desc = "Search nixpkgs";
     };
     dg = {
-      cmd = "nh clean all --keep-since 14d --keep 5";
+      cmd = "dot clean";
       desc = "Clean old generations and store paths";
     };
     nd = {
@@ -52,41 +56,15 @@ let
   };
 
   nixDarwinAliases = {
-    dr = {
-      cmd = "nh darwin switch ~/dotfiles -H ${hostname}";
-      desc = "Apply Darwin config";
-      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n適用前の状態へ戻す場合: dot-rollback";
-    };
-    db = {
-      cmd = "nh darwin build ~/dotfiles -H ${hostname}";
-      desc = "Build Darwin config";
-    };
     dp = {
-      cmd = "darwin-rebuild switch --rollback";
-      desc = "Rollback Darwin config (compatibility name; prefer dot-rollback)";
-    };
-    dot-rollback = {
-      cmd = "darwin-rebuild switch --rollback";
+      cmd = "dot rollback";
       desc = "Rollback Darwin config";
     };
   };
 
   nixLinuxAliases = {
-    dr = {
-      cmd = "nh home switch ~/dotfiles -c ${linuxConfigName}";
-      desc = "Apply Home Manager config";
-      help = "まず db でbuildを確認してから dr で適用してください。\n\n  db\n  dr\n\n世代を確認する場合: dot-generations";
-    };
-    db = {
-      cmd = "nh home build ~/dotfiles -c ${linuxConfigName}";
-      desc = "Build Home Manager config";
-    };
     dp = {
-      cmd = "home-manager generations";
-      desc = "List Home Manager generations (compatibility name; prefer dot-generations)";
-    };
-    dot-generations = {
-      cmd = "home-manager generations";
+      cmd = "dot generations";
       desc = "List Home Manager generations";
     };
   };
@@ -139,14 +117,14 @@ let
   # interception — each variation gets its own abbr so the resolved command is
   # always visible.
   #
-  # Account switching used to go through clp (archived; see
-  # archive/agent-profile-manager/). ccspace (docs/guides/ccspace.md) replaces
-  # it with per-account launcher shims (e.g. cc-work); cl reproduces the old
-  # picker via ccspace-pick (ccspace.nix).
+  # Accounts are chosen by r1hn (docs/guides/r1hn.md): cl picks the group from
+  # the current directory or a picker and r1hn picks the account inside it.
+  # Client arguments go after "--", e.g. `cl -- --resume`. The other entries
+  # start the client directly with the default config directory.
   claudeAliases = {
     cl = {
-      cmd = "ccspace-pick claude";
-      desc = "Start Claude Code with account picker";
+      cmd = if r1hnEnabled then "r1hn run --runtime claude" else "claude";
+      desc = "Start Claude Code in an r1hn group";
     };
     clw = {
       cmd = "ANTHROPIC_API_KEY=\${CLAUDE_CSTYLE_API_KEY} claude";
@@ -222,13 +200,11 @@ let
 
   # Codex abbreviations (primary account). Named model layers are loaded from
   # the default CODEX_HOME as heavy.config.toml / spark.config.toml.
-  # Account switching used to go through cxp (archived; see
-  # archive/agent-profile-manager/) and is now ccspace launcher shims
-  # (e.g. cx-work); cx reproduces the old picker via ccspace-pick (ccspace.nix).
+  # cx goes through r1hn like cl; client arguments go after "--".
   codexAliases = {
     cx = {
-      cmd = "ccspace-pick codex";
-      desc = "Start Codex with account picker";
+      cmd = if r1hnEnabled then "r1hn run --runtime codex" else "codex";
+      desc = "Start Codex in an r1hn group";
     };
     cxh = {
       cmd = "codex --profile heavy";
@@ -302,7 +278,7 @@ let
         syncは不足repoを取得します。既存repoのpullは行いません。
         workspaceへの移動: wsg
 
-        account profileの選択と保存:
+        account groupの選択と保存 (r1hnが必要):
           ws profile codex
           ws profile claude
         設定確認: ws profile
@@ -314,29 +290,40 @@ let
 
   # Executables do not become abbreviations. Keep them visible in h without
   # adding shell aliases that could shadow the real commands.
-  canonicalCommands = {
-    ccspace = {
-      cmd = "ccspace <command>";
-      desc = "Manage Claude/Codex account spaces and launchers";
-      help = ''
-        accountごとにconfig homeを分けたlauncher (cc-<name> / cx-<name>) を管理します。
-          ccspace list
-          ccspace add cc-work
-          ccspace usage
-          ccspace doctor
-        詳細: docs/guides/ccspace.md
-        workspaceから起動する場合: ./ws claude / ./ws codex
-      '';
-    };
-    clgpt = {
-      cmd = "clgpt [args]";
-      desc = "Run Claude Code through the GPT proxy";
-    };
-    clproxy = {
-      cmd = "clproxy <command>";
-      desc = "Manage the Claude Code proxy";
+  dotCommands = {
+    dot = {
+      cmd = "dot <command>";
+      desc = "Operate dotfiles (apply / build / update / rollback / clean ...)";
+      help = "dotfilesの操作をまとめた実行fileです。subcommand一覧: dot help\n\n  dot apply\n  dot build\n  dot update\n  dot update help\n\ndot update は各段階を順に実行し失敗した段階があっても続行します。";
     };
   };
+
+  canonicalCommands =
+    lib.optionalAttrs r1hnEnabled {
+      r1hn = {
+        cmd = "r1hn <command>";
+        desc = "Run agents by account group and show usage";
+        help = ''
+          accountをgroupにまとめ、group内のaccountで公式clientを起動します。
+            r1hn group list
+            r1hn account list
+            r1hn usage
+            r1hn run --group <group> --runtime claude -- --resume
+          cl / cx は r1hn run --runtime claude / codex の短縮形です。
+          詳細: docs/guides/r1hn.md
+        '';
+      };
+    }
+    // {
+      clgpt = {
+        cmd = "clgpt [args]";
+        desc = "Run Claude Code through the GPT proxy";
+      };
+      clproxy = {
+        cmd = "clproxy <command>";
+        desc = "Manage the Claude Code proxy";
+      };
+    };
 
   aliasOnlyDefs = {
     ".." = {
@@ -381,7 +368,7 @@ let
     }
     {
       title = "Nix";
-      defs = nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases);
+      defs = dotCommands // nixCommonAliases // (if isDarwin then nixDarwinAliases else nixLinuxAliases);
     }
     {
       title = "Directory";
