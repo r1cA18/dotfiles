@@ -1,3 +1,4 @@
+# shellcheck shell=bash disable=SC2154 # dot_kind and dot_target come from dot.nix
 # dot: single entry point for dotfiles operations.
 # dot.nix prepends dot_kind (darwin or home) and dot_target (the nix-darwin
 # host name or the Home Manager configuration name) before this text.

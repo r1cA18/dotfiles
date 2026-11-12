@@ -12,22 +12,21 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - name: Check flake
         run: nix flake check
-      - name: Check documentation paths
-        run: bash scripts/lint-doc-paths.sh
 
   regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
-      - name: Test scripts and Nix integrations
+      - name: Repository checks and Nix integrations
         run: |
           nix shell --no-write-lock-file --inputs-from . \
             nixpkgs#bash nixpkgs#bun nixpkgs#coreutils nixpkgs#findutils \
             nixpkgs#gawk nixpkgs#gnugrep nixpkgs#gnused nixpkgs#git \
             nixpkgs#ghq nixpkgs#ripgrep nixpkgs#jq nixpkgs#python3 \
             nixpkgs#zsh nixpkgs#fzf \
-            --command bash scripts/test.sh all
+            nixpkgs#statix nixpkgs#deadnix nixpkgs#shellcheck \
+            --command bash -c 'scripts/check full && bash scripts/test.sh integration'
 
   secret-scan:
     runs-on: ubuntu-latest
