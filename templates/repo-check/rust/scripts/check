@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes (template: Rust workspace).
+#
+#   scripts/check fast <file>...   formatting of the given files (seconds; agent hooks)
+#   scripts/check changed [base]   fmt, clippy and tests when Rust files changed
+#                                  since base (default HEAD), untracked included
+#   scripts/check full             everything for the whole workspace; CI runs this
+#
+# "Done" means `scripts/check full` ends with status 0.
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+# The edition rustfmt uses for single files. Keep it equal to Cargo.toml.
+edition=2024
+
+# Use the tools on PATH (inside `nix develop`, in CI). Otherwise enter the dev shell.
+run() {
+  if command -v cargo >/dev/null 2>&1 && command -v rustfmt >/dev/null 2>&1; then
+    "$@"
+  else
+    nix develop -c "$@"
+  fi
+}
+
+step() { echo "check: $*" >&2; }
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  files=()
+  for file in "$@"; do
+    case "$file" in
+    *.rs) if [ -f "$file" ]; then files+=("$file"); fi ;;
+    esac
+  done
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  run rustfmt --check --edition "$edition" "${files[@]}"
+  ;;
+changed)
+  base=${1:-HEAD}
+  if ! {
+    git diff --name-only "$base" --
+    git ls-files --others --exclude-standard
+  } | grep -qE '(\.rs|Cargo\.toml|Cargo\.lock|clippy\.toml)$'; then
+    exit 0
+  fi
+  step fmt
+  run cargo fmt --all --check
+  step clippy
+  run cargo clippy --workspace --all-targets -- -D warnings
+  step test
+  run cargo test --workspace
+  ;;
+full)
+  step fmt
+  run cargo fmt --all --check
+  step clippy
+  run cargo clippy --workspace --all-targets -- -D warnings
+  step test
+  run cargo test --workspace
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

@@ -1,0 +1,20 @@
+# Copy to .github/workflows/check.yaml. Replace <owner> and pin <sha> to a
+# commit of the dotfiles main branch. The required status check is "check / check".
+name: Check
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: <owner>/dotfiles/.github/workflows/repo-check.yaml@<sha>
+    with:
+      # Rust and Nix: keep the defaults (Nix installed, tools from the flake).
+      # Bun without a flake: nix: false, bun: true
+      # Swift: runs-on: macos-latest, nix: false
+      dev-shell: true

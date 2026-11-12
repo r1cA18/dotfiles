@@ -1,0 +1,54 @@
+# Reusable CI for repositories that follow the scripts/check contract
+# (docs/guides/repo-checks.md). A caller copies
+# templates/repo-check/check.yaml into its own .github/workflows/.
+name: Repo check
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label. Swift needs macos-latest (billed at 10x on private repos).
+        type: string
+        default: ubuntu-latest
+      nix:
+        description: Install Nix before running the command.
+        type: boolean
+        default: true
+      dev-shell:
+        description: Run the command inside `nix develop` (the flake's default dev shell).
+        type: boolean
+        default: false
+      bun:
+        description: Install Bun before running the command.
+        type: boolean
+        default: false
+      command:
+        description: The command that decides pass or fail.
+        type: string
+        default: scripts/check full
+      timeout-minutes:
+        type: number
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: inputs.nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - if: inputs.bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - name: Run the check
+        env:
+          COMMAND: ${{ inputs.command }}
+          DEV_SHELL: ${{ inputs.dev-shell }}
+        run: |
+          if [ "$DEV_SHELL" = true ]; then
+            nix develop -c bash -c "$COMMAND"
+          else
+            bash -c "$COMMAND"
+          fi

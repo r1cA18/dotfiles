@@ -21,6 +21,8 @@ dotfiles/
 │   └── skills/               # Agent Skillsのsource of truth
 │
 ├── templates/workspace/     # 個人dotfilesに依存しないworkspace生成元
+├── templates/repo-check/    # 各repoの scripts/check・CI・main保護の雛形
+├── scripts/check            # このrepoの検査の入口 (fast / changed / full)
 ├── tests/                   # workspaceとaccount profileの回帰test
 │
 ├── nix/                      # Nix設定（メイン）
