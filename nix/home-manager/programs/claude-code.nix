@@ -189,6 +189,13 @@ in
                 command = ''${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/check-knowledge-index.ts"'';
                 timeout = 5;
               }
+              {
+                # 編集したrepoの scripts/check fast を呼び、失敗を知らせるだけ
+                # (block しない)。Codex 側は codex/hooks.json の PostToolUse
+                type = "command";
+                command = ''PATH="${lib.makeBinPath [ pkgs.git ]}:$PATH" ${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/run-repo-check.ts"'';
+                timeout = 15;
+              }
             ];
           }
           {
