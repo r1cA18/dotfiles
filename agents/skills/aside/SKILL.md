@@ -19,7 +19,9 @@ changes with releases. Run `aside guide repl` before using `aside repl`.
 - `aside exec "<task>"` or the MCP `exec` tool: delegate a whole browser task. Default choice
 - `aside repl` or the MCP `repl` tool: Playwright-style control when screenshots or DOM are needed
 - `aside memory search "<query>" --json`: read the owner's context before asking them about it
-- `agent-browser`: isolated headless checks such as a local dev server, and hosts without Aside
+- `agent-browser`: isolated headless checks such as a local dev server
+- From Linux hosts: `aside host list`, then `--host <mac>`. This needs `aside login` on that host and Remote Control enabled in Aside
+- Fallback: when Aside does not answer (the Mac is asleep or offline), use `agent-browser` without the owner's sign-ins and tell the owner which steps need their login
 
 ## Rules
 
