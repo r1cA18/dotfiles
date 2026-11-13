@@ -5,27 +5,27 @@
 
 ## Source Of Truth
 
-| 項目                         | Source of truth                                   | 補足                                                                  |
-| ---------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
-| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`        | Nixで結合してClaude・Codex・Geminiへ配布する                          |
-| Codex追加instruction         | `codex/rules/`                                    | 共通instructionの後へCodexの単独実行ルールを結合する                  |
-| project-specific instruction | `AGENTS.md`とこのドキュメント                     | `CLAUDE.md`は`AGENTS.md`をimport                                      |
-| reusable skills              | `agents/skills/`                                  | `~/.claude/skills` と `~/.codex/skills` に同期                        |
-| shared hook implementations  | `agents/hooks/`                                   | 製品ごとのhook登録から呼び出す                                        |
-| Claude hooks                 | `claude/hooks/`                                   | Claude 専用                                                           |
-| Claude commands              | `claude/commands/`                                | 可能なら `agents/skills/` へ昇格                                      |
-| Codex prompt wrappers        | `codex/prompts/`                                  | deprecated なので reusable workflow は skill が正本                   |
-| Claude agents                | `claude/agents/`                                  | Markdown frontmatter 形式                                             |
-| Codex agents                 | `.codex/agents/`                                  | TOML 形式                                                             |
-| Codex user config            | `nix/home-manager/programs/codex.nix`             | `~/.codex/config.toml` を writable copy 生成                          |
-| Claude settings              | `nix/home-manager/programs/claude-code.nix`       | `programs.claude-code.settings` から `~/.claude/settings.json` を生成 |
-| GPT backend wrapper          | `nix/home-manager/programs/claude-code-proxy.nix` | `clgpt`・`clproxy`・user serviceを生成                                |
-| Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                           |
-| Claude user MCP seed         | `claude/mcp-servers.json`                         | `~/.claude.json` へ merge する前提                                    |
-| Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                    |
-| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新               |
-| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新               |
-| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | native installをbootstrapして既存user configへ管理項目をmergeする     |
+| 項目                         | Source of truth                                   | 補足                                                                               |
+| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`        | Nixで結合してClaude・Codex・Geminiへ配布する                                       |
+| Codex追加instruction         | `codex/rules/`                                    | 共通instructionの後へCodexの単独実行ルールを結合する                               |
+| project-specific instruction | `AGENTS.md`とこのドキュメント                     | `CLAUDE.md`は`AGENTS.md`をimport                                                   |
+| capability catalog           | `agents/capabilities/catalog.nix`                 | skill・MCP・plugin・toolを1 entry 1 attrsetで宣言し`r1hn`が全account dirへ投影する |
+| reusable skills              | `agents/skills/`                                  | 本体。tierとdetectは`agents/capabilities/catalog.nix`で決める                      |
+| shared hook implementations  | `agents/hooks/`                                   | 製品ごとのhook登録から呼び出す                                                     |
+| Claude hooks                 | `claude/hooks/`                                   | Claude 専用                                                                        |
+| Claude commands              | `claude/commands/`                                | 可能なら `agents/skills/` へ昇格                                                   |
+| Codex prompt wrappers        | `codex/prompts/`                                  | deprecated なので reusable workflow は skill が正本                                |
+| Claude agents                | `claude/agents/`                                  | Markdown frontmatter 形式                                                          |
+| Codex agents                 | `.codex/agents/`                                  | TOML 形式                                                                          |
+| Codex user config            | `nix/home-manager/programs/codex.nix`             | 管理keyだけを`~/.codex/config.toml`へmergeし他のkeyは残す                          |
+| Claude settings              | `nix/home-manager/programs/claude-code.nix`       | 管理keyだけを`~/.claude/settings.json`へmergeし他のkeyは残す                       |
+| GPT backend wrapper          | `nix/home-manager/programs/claude-code-proxy.nix` | `clgpt`・`clproxy`・user serviceを生成                                             |
+| Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                                        |
+| Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                                 |
+| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
+| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
+| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | native installをbootstrapして既存user configへ管理項目をmergeする                  |
 
 ## 共有できるもの
 
@@ -131,19 +131,40 @@ dotfilesへ追加しない。`~/.gemini/antigravity-cli/settings.json`も変更�
 
 詳細は[GPT backend版Claude Code](guides/claude-code-gpt.md)を参照。
 
-## MCP の扱い
+## Capability catalog
 
-### Codex
+skill・MCP server・plugin・CLI toolは`agents/capabilities/catalog.nix`に1 entry 1 attrsetで宣言する。
+型と投影は`r1hn`のflakeが出すHome Manager module `capabilities`が持ち、値だけをこのrepoに置く。
+詳細はr1hnのrepoにある`r1hn.md`の「Capabilities」節を参照する。
 
-`Codex` の MCP は `nix/home-manager/programs/codex.nix` で declarative に管理する。
-必要になったら user config 側へ明示的に追加する。
+- `tier = "baseline"`: 全client・全accountに入る。descriptionの総量がClaudeとCodexのskill一覧の予算を超えない数に保つ
+- `tier = "catalog"`: 一覧と提案だけ。projectごとに`r1hn capability enable ID --project .`で有効にする
+- `tier = "off"`: 一覧だけ。sourceにあるが未分類のskillは自動でここに入る
+- tierの変更はrebuild不要: `r1hn capability enable|disable|reset ID`。所有者の設定はsessionから変更できない
+- `hosts = [ "mac" ]`のMCPは他のhostで`mcp.remote`を使う。Asideは`aside mcp --host remote`、olympusはsshで届く
+- secretはreferenceだけを書く(`env:NAME`、`file:PATH`、`op://...`)。値を書くとevalが失敗する
 
-### Claude Code
+### 投影
 
-`Claude Code` の user-level MCP は runtime file の `~/.claude.json` に入るため、
-dotfiles では `claude/mcp-servers.json` を source of truth にして、必要な server 定義だけ merge する。
-この merge は `nix/home-manager/programs/claude-code.nix` の activation でprimary profileにだけ実行する。
-追加profileへの同期と宣言から削除したserverの除去は未対応なので、runtime file全体を管理済みとは扱わない。
+macOSでは`r1hn`が投影する。activationと各起動前(`r1hn run`、sessionの各turn)に次を行う。
+
+- skill: account dirと既定dirの`skills/`へentryごとのsymlinkを置く。dir自体は置き換えない。Claude CodeやCodexの中で追加したskillは残す
+- MCPとplugin: `.claude.json`、`settings.json`、`config.toml`、`~/.gemini/config/mcp_config.json`へkeyをmergeする。r1hnが書いたkeyだけを記録して消す
+- projectで有効にしたskillはprojectの`.claude/skills/`と`.agents/skills/`へ置き、`.git/info/exclude`に足す。MCPは起動時の引数で渡す
+- `r1hn capability doctor`がcatalog外の項目とずれを出し、`adopt NAME`がcatalogへ貼るattrsetを出す
+
+homelabなど`r1hn`のないhostでは`agent-skills.nix`がbaselineのskillを、`programs/capabilities.nix`がbaselineのtoolとMCPとpluginを既定dirへ入れる。
+
+### 更新
+
+- skill repoとMCP serverはflake inputかnixpkgsのpackageにする。`dot update`のflake updateで上がり、`dr`で反映する
+- nixpkgsにないMCPだけ版を固定した`npx`か`uvx`で起動し、tagに`pinned runner`を付ける
+- 自己更新するnative CLI(Claude Code、Codex、agy、Aside)は従来どおり
+
+### Session開始時の提案
+
+`agents/hooks/capability-suggest.ts`がClaudeとCodexのSessionStartで`r1hn capability suggest`を実行し、projectに合うcatalog entryをproject単位で1回だけagentへ伝える。
+agentは所有者に確認してから有効にする。手順は`r1hn-capabilities` skillに書く。
 
 ## CLI 依存 skill の扱い
 
@@ -152,7 +173,7 @@ dotfiles 側で runtime も含めて宣言的に入れる。
 
 - パッケージ定義: `nix/pkgs/`
 - user environment への追加: `nix/home-manager/programs/packages.nix`
-- skill の有効化: `nix/home-manager/programs/agent-skills.nix`
+- skill の分類: `agents/capabilities/catalog.nix`
 
 現時点でこの方針で管理している代表例:
 

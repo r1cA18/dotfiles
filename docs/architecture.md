@@ -81,7 +81,6 @@ dotfiles/
 │   └── README.md            # bootstrap・data同期・検証
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
-│   ├── mcp-servers.json     # Claude用MCP seed定義
 │   ├── rules/               # ドメイン別ルール（常時ロード）
 │   ├── hooks/               # 自動実行フック
 │   ├── commands/            # スラッシュコマンド
@@ -136,7 +135,7 @@ dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSだけに入れる。
 - Codex 固有の custom agent は `.codex/agents/` に置く
 - Codex custom prompt は deprecated なので、`codex/prompts/` には skill wrapper だけを置く
 - Claude / Codex plugin 本体や runtime cache は source of truth にしない
-- Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
+- skill・MCP・plugin・toolの分類は `agents/capabilities/catalog.nix` に置き、`r1hn` が全client・全account dirへ投影する (r1hnのないhostは `programs/capabilities.nix` と `agent-skills.nix`)
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
 
 詳細: [docs/agent-platforms.md](./agent-platforms.md)
@@ -273,27 +272,24 @@ agents/skills/my-new-skill/
 └── SKILL.md
 ```
 
-追加したスキル名を `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に追加する。
+追加したスキルのentryを `agents/capabilities/catalog.nix` に足してtierを決める。未記載のskillは`off`として一覧に出る。
 
 Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `agents/skills/` を検討する。
 
-### 公式スキルを有効化
+### 外部スキルを追加
 
-**編集:** `nix/home-manager/programs/agent-skills.nix`
+**編集:** `flake.nix`(input)、`nix/home-manager/programs/agent-skills.nix`(source)、`agents/capabilities/catalog.nix`(tier)
 
 ```nix
-skills.enable = [
-  "pdf"
-  "xlsx"
-];
+pdf = baseline [ "docs" ] "Read, fill and create PDF files" { };
 ```
 
-### Claude の MCP seed を更新
+### MCP server・plugin・skillのtierを変更
 
-**編集:** `claude/mcp-servers.json`
+**編集:** `agents/capabilities/catalog.nix`
 
-Claude の実ランタイム設定は `~/.claude.json` にあり、そのままでは dotfiles 管理されない。
-`claude/mcp-servers.json` を source of truth にして、必要に応じて `claude/scripts/sync-mcp-servers.py` で同期する。
+1 entry 1 attrsetで宣言する。`r1hn`が既定dirと各account dirの`.claude.json`・`settings.json`・`config.toml`・`mcp_config.json`へ管理keyだけをmergeする。
+rebuildせずにtierを変えるときは`r1hn capability enable|disable ID`を使う。
 
 ### Karabiner設定を変更
 
