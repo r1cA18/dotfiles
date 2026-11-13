@@ -50,6 +50,7 @@ dotfiles/
 │   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
+│   │       ├── r1hnd-service.nix # homelabのr1hndとT3 Code user service
 │   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
@@ -123,10 +124,13 @@ Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
 `cl`と`cx`は`r1hn run`へ展開される。台帳は`~/.config/r1hn/`にありdotfilesでは管理しない。
 詳細は[r1hnガイド](guides/r1hn.md)を参照。
 
-flake input `r1hn`はprivate repositoryをSSHで取得する。flake inputは参照されたときだけ取得されるので、
-`dotfiles.r1hn.enable`が偽のhost(homelabとCI)は認証なしで評価とbuildができる。
+flake input `r1hn`はprivate repositoryをHTTPSとgitのcredential helper(gh)で取得する。
+flake inputは参照されたときだけ取得されるので、`dotfiles.r1hn.enable`が偽のhost(CI)は認証なしで評価とbuildができる。
 privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
-dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSだけに入れる。
+dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
+
+homelabは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
+r1hn gatewayだけを使うT3 Codeのuser serviceを置く。各unitは台帳とbuildが揃うまで起動しない。
 
 ## Agent 運用の基本方針
 

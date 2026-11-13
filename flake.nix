@@ -81,10 +81,11 @@
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # r1hn: account groups and the harness endpoint. Private repository, fetched
-    # over SSH and pinned to a commit of feature/r1hn-groups. Only
-    # nix/home-manager/programs/r1hn.nix reads this input, and only where
-    # dotfiles.r1hn.enable is set, so other hosts and CI never fetch it.
-    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-groups&rev=0441614a7cfd6ee730f5c1df1827c1501c3dcd3d";
+    # over HTTPS with git's credential helper (gh) and pinned to a commit of
+    # feature/r1hn-subscription-auto. HTTPS works on hosts whose SSH agent needs
+    # a person to approve each use (homelab). Only the r1hn modules read this
+    # input, and only where dotfiles.r1hn.enable is set, so CI never fetches it.
+    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-subscription-auto&rev=621d3cb1255716cfeb6c820ee1587907552687d9";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
