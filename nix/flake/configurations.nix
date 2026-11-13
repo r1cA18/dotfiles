@@ -44,6 +44,10 @@ let
               imports = [
                 agent-skills-nix.homeManagerModules.default
                 nix-index-database.homeModules.nix-index
+                # Option types and projection of the capability catalog. From
+                # the private r1hn input, so only hosts that use r1hn import it
+                # (homelab and CI never fetch it); see programs/capabilities.nix.
+                inputs.r1hn.homeManagerModules.capabilities
                 (import ../home-manager/home.nix)
               ];
             };

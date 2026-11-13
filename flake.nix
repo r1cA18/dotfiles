@@ -64,6 +64,18 @@
     unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
     unslop.flake = false;
 
+    # Hugging Face skills (Apache-2.0): catalog entries for Python and ML
+    huggingface-skills.url = "github:huggingface/skills";
+    huggingface-skills.flake = false;
+
+    # last30days (MIT): recent discussion research across platforms
+    last30days-skill.url = "github:mvanhorn/last30days-skill";
+    last30days-skill.flake = false;
+
+    # SwiftUI Pro (MIT): SwiftUI review and modern API guidance
+    swiftui-agent-skill.url = "github:twostraws/SwiftUI-Agent-Skill";
+    swiftui-agent-skill.flake = false;
+
     # Codex plugin: ask local Claude Code from Codex
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
@@ -81,10 +93,10 @@
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # r1hn: account groups and the harness endpoint. Private repository, fetched
-    # over SSH and pinned to a commit of feature/r1hn-groups. Only
-    # nix/home-manager/programs/r1hn.nix reads this input, and only where
-    # dotfiles.r1hn.enable is set, so other hosts and CI never fetch it.
-    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-groups&rev=0441614a7cfd6ee730f5c1df1827c1501c3dcd3d";
+    # over SSH and pinned to a commit of feature/r1hn-capabilities. Only the
+    # darwin configuration reads it (the r1hn package and the capabilities
+    # Home Manager module), so homelab and CI never fetch it.
+    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-capabilities&rev=13840c1f9aa2baf5644354e2289aba455a238e57";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
