@@ -8,7 +8,7 @@
 {
   # r1hn comes from a private flake input (see flake.nix). Flake inputs are
   # fetched only when read, so a host with this switch off never needs access
-  # to that repository. homelab and CI stay off until they have credentials.
+  # to that repository. CI stays off; homelab turns it on in r1hnd-service.nix.
   options.dotfiles.r1hn.enable = lib.mkOption {
     type = lib.types.bool;
     default = pkgs.stdenv.hostPlatform.isDarwin;

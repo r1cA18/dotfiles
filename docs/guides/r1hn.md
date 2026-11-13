@@ -73,8 +73,12 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 ## Nixでの導入
 
 - `r1hn`はprivateなflake input `r1hn`から入る。定義は`nix/home-manager/programs/r1hn.nix`
-- `dotfiles.r1hn.enable`がtrueのhostだけがinputを取得する。既定はmacOSだけtrue
+- `dotfiles.r1hn.enable`がtrueのhostだけがinputを取得する。既定はmacOSだけtrueでhomelabは`r1hnd-service.nix`がtrueにする
+- inputはHTTPSで取得する。gitのcredential helper(`gh auth login`済み)があればSSH agentの承認なしで取得できる
 - 無効なhostでは`cl`と`cx`は`claude`と`codex`へ展開される
 - 更新は`flake.nix`の`rev`を書き換えて`nix flake update r1hn`を実行する
 - dshは`nix/pkgs/deepseek-harness/`のpackageでmacOSに入る。`config.toml`の`[runtime] dsh`は`dsh`かNixが入れた絶対pathを指す
-- homelabで有効にするにはGitHubへのSSH鍵を用意し`nix/home-manager/hosts/homelab.nix`で`dotfiles.r1hn.enable = true`を設定する
+- homelabでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`t3-r1hn`のuser serviceを置く。r1hndは`~/.config/r1hn/accounts.toml`が、`t3-r1hn`はそれに加えて`t3-r1hn-build`のbuildがあるときだけ起動する
+- ファイルを用意した後は`systemctl --user start r1hnd t3-r1hn`で一度起動する。logは`journalctl --user -u r1hnd`と`-u t3-r1hn`で見る
+- T3 Codeに出すgroupは`~/.config/t3-r1hn/env`の`T3CODE_R1HN_GROUPS`で決める。group名はこのrepositoryに書かない
+- `t3 up`と`t3 service install`は使わない。upstreamのserviceが別に入る

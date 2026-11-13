@@ -43,7 +43,10 @@ let
   };
 in
 {
-  imports = [ ../home.nix ];
+  imports = [
+    ../home.nix
+    ../programs/r1hnd-service.nix
+  ];
 
   # Headless Orca runtime for mobile pairing.
   # The binary is not named `orca` because that resolves to GNOME's screen reader.
