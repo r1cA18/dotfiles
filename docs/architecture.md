@@ -49,6 +49,7 @@ dotfiles/
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
 │   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
+│   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
 │   │       ├── r1hnd-service.nix # homelabのr1hndとT3 Code user service
 │   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
