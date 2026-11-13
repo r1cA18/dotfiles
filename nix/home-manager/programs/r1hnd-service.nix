@@ -114,8 +114,6 @@ in
     home.packages = [
       t3Build
       t3Cli
-      # dsh for the Mistral accounts; macOS gets it from packages.nix.
-      pkgs.deepseek-harness
     ];
 
     systemd.user.services = {

@@ -131,7 +131,6 @@ dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
 
 homelabは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
 r1hn gatewayだけを使うT3 Codeのuser serviceを置く。各unitは台帳とbuildが揃うまで起動しない。
-このmoduleはhomelabにもdshを入れる。
 
 ## Agent 運用の基本方針
 
