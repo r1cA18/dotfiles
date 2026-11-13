@@ -29,3 +29,8 @@ Use `agent-browser` only when the task requires an actual browser UI, such as:
 
 If built-in Web retrieval fails because the page requires browser interaction,
 then switch to `agent-browser` and state why.
+
+On macOS, use Aside (the `aside` skill, CLI, or MCP server) instead of
+`agent-browser` when the task needs the owner's logged-in sites, cookies, or
+browsing context. Keep `agent-browser` for isolated checks such as a local dev
+server and for hosts where Aside is not installed.

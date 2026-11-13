@@ -64,6 +64,7 @@ in
         "alt-tab"
         "amical"
         "arc"
+      "aside"
         "nikitabobko/tap/aerospace"
         "audacity"
         "autodesk-fusion"
