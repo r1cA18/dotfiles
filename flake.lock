@@ -146,6 +146,38 @@
         "type": "github"
       }
     },
+    "huggingface-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793287931,
+        "narHash": "sha256-dGsDjTi5GUO7YA2jwlrMzV4vqg5fWrNddmyFQE6qM2o=",
+        "owner": "huggingface",
+        "repo": "skills",
+        "rev": "25910b3d0ba31a2ba102f901cdc9e008c278a69c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "huggingface",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "last30days-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794538972,
+        "narHash": "sha256-nSRECSQo3ucNkJCLqLrrf9BJOk6E+BYx+bzGHBMpyow=",
+        "owner": "mvanhorn",
+        "repo": "last30days-skill",
+        "rev": "b4eb381ad2f93de86fedb3f40118de6a43d0e6e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mvanhorn",
+        "repo": "last30days-skill",
+        "type": "github"
+      }
+    },
     "lottie": {
       "flake": false,
       "locked": {
@@ -274,17 +306,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794585693,
-        "narHash": "sha256-UDjqQFXjeEEmGpLibQPVs4gbDXfjp6jhfLk46kLnZvg=",
-        "ref": "feature/r1hn-subscription-auto",
-        "rev": "621d3cb1255716cfeb6c820ee1587907552687d9",
-        "revCount": 216,
+        "lastModified": 1794590754,
+        "narHash": "sha256-MGd+vMtrukQFERbQ5zRsqSPotwVHohR9Ig8zno96wC8=",
+        "ref": "feature/r1hn-platform",
+        "rev": "45b4062035e094ac3a80520772bb1c1e12d1f5f4",
+        "revCount": 225,
         "type": "git",
         "url": "https://github.com/r1cA18/harness-core.git"
       },
       "original": {
-        "ref": "feature/r1hn-subscription-auto",
-        "rev": "621d3cb1255716cfeb6c820ee1587907552687d9",
+        "ref": "feature/r1hn-platform",
+        "rev": "45b4062035e094ac3a80520772bb1c1e12d1f5f4",
         "type": "git",
         "url": "https://github.com/r1cA18/harness-core.git"
       }
@@ -298,6 +330,8 @@
         "claude-plugin-codex": "claude-plugin-codex",
         "git-hooks-nix": "git-hooks-nix",
         "home-manager": "home-manager",
+        "huggingface-skills": "huggingface-skills",
+        "last30days-skill": "last30days-skill",
         "lottie": "lottie",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
@@ -306,11 +340,28 @@
         "openai-skills": "openai-skills",
         "orca-skills": "orca-skills",
         "r1hn": "r1hn",
+        "swiftui-agent-skill": "swiftui-agent-skill",
         "taste-skill": "taste-skill",
         "trailofbits-skills": "trailofbits-skills",
         "treefmt-nix": "treefmt-nix",
         "typst-skills": "typst-skills",
         "unslop": "unslop"
+      }
+    },
+    "swiftui-agent-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793033598,
+        "narHash": "sha256-HOEP7KiY3gQRuE1ttj55BzuXBzV1ksn5UYRm54bV5HA=",
+        "owner": "twostraws",
+        "repo": "SwiftUI-Agent-Skill",
+        "rev": "f2920b63995263f57b3e198674e89a602efba6d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "twostraws",
+        "repo": "SwiftUI-Agent-Skill",
+        "type": "github"
       }
     },
     "taste-skill": {

@@ -5,7 +5,7 @@
 ## 概要
 
 Skills はエージェントの能力を拡張するための定義ファイル。
-このディレクトリの内容は Nix store を経由して `~/.claude/skills/` と `~/.codex/skills/` に同期される。
+このディレクトリの内容は Nix store を経由し、`r1hn` が catalog のtierに従って各client・各account dirへentryごとにlinkする。
 
 ## ディレクトリ構造
 
@@ -24,7 +24,7 @@ agents/skills/
 ### カスタムスキル（自作）
 
 `agents/skills/` 直下にディレクトリを作成し、`SKILL.md` を配置。
-`nix/home-manager/programs/agent-skills.nix` の `skills.enable` にIDを追加して有効化。
+`agents/capabilities/catalog.nix` にentryを1つ追加してtierを決める(未記載のskillは`off`)。
 
 ### 公式スキル
 
@@ -73,7 +73,7 @@ agent-skills-nix が提供するスキル。
    スキルの詳細な指示...
    ```
 
-3. `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に `my-new-skill` を追加
+3. `agents/capabilities/catalog.nix` に `my-new-skill` のentryを追加
 
 4. `dr` でビルド・適用
 

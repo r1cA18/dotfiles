@@ -64,6 +64,18 @@
     unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
     unslop.flake = false;
 
+    # Hugging Face skills (Apache-2.0): catalog entries for Python and ML
+    huggingface-skills.url = "github:huggingface/skills";
+    huggingface-skills.flake = false;
+
+    # last30days (MIT): recent discussion research across platforms
+    last30days-skill.url = "github:mvanhorn/last30days-skill";
+    last30days-skill.flake = false;
+
+    # SwiftUI Pro (MIT): SwiftUI review and modern API guidance
+    swiftui-agent-skill.url = "github:twostraws/SwiftUI-Agent-Skill";
+    swiftui-agent-skill.flake = false;
+
     # Codex plugin: ask local Claude Code from Codex
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
@@ -82,10 +94,11 @@
 
     # r1hn: account groups and the harness endpoint. Private repository, fetched
     # over HTTPS with git's credential helper (gh) and pinned to a commit of
-    # feature/r1hn-subscription-auto. HTTPS works on hosts whose SSH agent needs
-    # a person to approve each use (homelab). Only the r1hn modules read this
-    # input, and only where dotfiles.r1hn.enable is set, so CI never fetches it.
-    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-subscription-auto&rev=621d3cb1255716cfeb6c820ee1587907552687d9";
+    # feature/r1hn-platform. HTTPS works on hosts whose SSH agent needs a
+    # person to approve each use (homelab). Only the hosts that use r1hn read
+    # this input (the r1hn package, the r1hnd service and the capabilities
+    # Home Manager module), so CI never fetches it.
+    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-platform&rev=45b4062035e094ac3a80520772bb1c1e12d1f5f4";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
