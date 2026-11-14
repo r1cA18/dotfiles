@@ -18,7 +18,7 @@ keybindは実際の利用で必要性を確認してから追加する。
 | ------------------ | ------------------------------------- | --------------------------------- |
 | Ghostty            | terminal windowの表示・描画           | Homebrew cask + Home Manager設定  |
 | Herdr              | agentのworkspace・tab・pane・状態表示 | Nix flake input                   |
-| AeroSpace          | macOS全体のwindow配置・workspace移動  | Homebrew cask                     |
+| AeroSpace          | macOS全体のwindow配置・workspace移動  | Homebrew cask + Home Manager設定  |
 | Raycast            | command palette・検索・ツール起動     | Homebrew cask                     |
 | Karabiner-Elements | keyboard remap                        | Home Managerからdotfilesをsymlink |
 | Hammerspoon        | gestureと条件付きautomation           | 未導入                            |
@@ -41,7 +41,18 @@ CodexとClaude Codeのintegration installerは、設定ファイルを書き換�
 
 ### AeroSpace
 
-公式推奨のHomebrew cask `nikitabobko/tap/aerospace`で導入する。初期設定は追加しない。標準のwindow管理・workspace操作を使い、日常作業で必要になった操作だけを後から設定へ昇格させる。
+公式推奨のHomebrew cask `nikitabobko/tap/aerospace`で導入する。設定は`nix/home-manager/programs/aerospace.nix`から`~/.config/aerospace/aerospace.toml`を生成する。
+
+- Workspaceは1-10を常に維持する
+- 1-5はmain monitorへ割り当てる
+- 6-10はsecondary monitorへ割り当てる。monitorが1台の場合はmainに載る
+- Monitor名に依存しないため内蔵画面と外部画面のどの組み合わせでも同じ配置になる
+- `alt-1`-`alt-0`でworkspaceを切り替える
+- `alt-shift-1`-`alt-shift-0`でwindowをworkspaceへ移動する
+- Monitor間はworkspaceではなくwindowを移動する
+- 操作はmoNa2のZMK Window layerから送る。キー配置は`r1cA18/zmk-config-moNa2-v2`のREADMEで管理する
+
+AeroSpaceは設定に不正なkeyがあると再読み込みに失敗し、古い設定のまま動き続ける。設定を変えたら`dr`の後に`aerospace reload-config --dry-run`で検証する。
 
 ## 保留した設定
 
