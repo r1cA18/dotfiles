@@ -36,7 +36,8 @@ dotfiles/
 │   ├── home-manager/         # ユーザー設定
 │   │   ├── home.nix          # home-managerエントリポイント
 │   │   ├── hosts/            # host固有profile
-│   │   │   └── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   ├── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   └── olympus-legacy.nix # r1hn jobsへ移行中のOlympus unit
 │   │   └── programs/         # 各プログラムの設定
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
 │   │       ├── zsh.nix       # Zsh、abbr、help
@@ -49,7 +50,9 @@ dotfiles/
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
 │   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
+│   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
+│   │       ├── r1hnd-service.nix # homelabとMacのr1hndとT3 Code service
 │   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
@@ -81,7 +84,6 @@ dotfiles/
 │   └── README.md            # bootstrap・data同期・検証
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
-│   ├── mcp-servers.json     # Claude用MCP seed定義
 │   ├── rules/               # ドメイン別ルール（常時ロード）
 │   ├── hooks/               # 自動実行フック
 │   ├── commands/            # スラッシュコマンド
@@ -123,10 +125,16 @@ Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
 `cl`と`cx`は`r1hn run`へ展開される。台帳は`~/.config/r1hn/`にありdotfilesでは管理しない。
 詳細は[r1hnガイド](guides/r1hn.md)を参照。
 
-flake input `r1hn`はprivate repositoryをSSHで取得する。flake inputは参照されたときだけ取得されるので、
-`dotfiles.r1hn.enable`が偽のhost(homelabとCI)は認証なしで評価とbuildができる。
+flake input `r1hn`はprivate repositoryをHTTPSとgitのcredential helper(gh)で取得する。
+flake inputは参照されたときだけ取得されるので、`dotfiles.r1hn.enable`が偽のhost(CI)は認証なしで評価とbuildができる。
 privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
-dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSだけに入れる。
+dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
+
+homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
+r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
+各serviceは台帳とbuildが揃うまで起動しない。
+同期されるvaultを書くのは`dotfiles.r1hn.serve.role = "primary"`のhomelabだけで、Macは既定の`coding`である。
+MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして使う。
 
 ## Agent 運用の基本方針
 
@@ -136,7 +144,7 @@ dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSだけに入れる。
 - Codex 固有の custom agent は `.codex/agents/` に置く
 - Codex custom prompt は deprecated なので、`codex/prompts/` には skill wrapper だけを置く
 - Claude / Codex plugin 本体や runtime cache は source of truth にしない
-- Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
+- skill・MCP・plugin・toolの分類は `agents/capabilities/catalog.nix` に置き、`r1hn` が全client・全account dirへ投影する (r1hnのないhostは `programs/capabilities.nix` と `agent-skills.nix`)
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
 
 詳細: [docs/agent-platforms.md](./agent-platforms.md)
@@ -273,27 +281,24 @@ agents/skills/my-new-skill/
 └── SKILL.md
 ```
 
-追加したスキル名を `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に追加する。
+追加したスキルのentryを `agents/capabilities/catalog.nix` に足してtierを決める。未記載のskillは`off`として一覧に出る。
 
 Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `agents/skills/` を検討する。
 
-### 公式スキルを有効化
+### 外部スキルを追加
 
-**編集:** `nix/home-manager/programs/agent-skills.nix`
+**編集:** `flake.nix`(input)、`nix/home-manager/programs/agent-skills.nix`(source)、`agents/capabilities/catalog.nix`(tier)
 
 ```nix
-skills.enable = [
-  "pdf"
-  "xlsx"
-];
+pdf = baseline [ "docs" ] "Read, fill and create PDF files" { };
 ```
 
-### Claude の MCP seed を更新
+### MCP server・plugin・skillのtierを変更
 
-**編集:** `claude/mcp-servers.json`
+**編集:** `agents/capabilities/catalog.nix`
 
-Claude の実ランタイム設定は `~/.claude.json` にあり、そのままでは dotfiles 管理されない。
-`claude/mcp-servers.json` を source of truth にして、必要に応じて `claude/scripts/sync-mcp-servers.py` で同期する。
+1 entry 1 attrsetで宣言する。`r1hn`が既定dirと各account dirの`.claude.json`・`settings.json`・`config.toml`・`mcp_config.json`へ管理keyだけをmergeする。
+rebuildせずにtierを変えるときは`r1hn capability enable|disable ID`を使う。
 
 ### Karabiner設定を変更
 

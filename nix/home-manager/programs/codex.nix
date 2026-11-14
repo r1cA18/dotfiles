@@ -1,19 +1,13 @@
 {
   config,
-  inputs,
   lib,
   username,
-  hostname,
   pkgs,
   ...
 }:
 let
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-  isHomelabLinux = pkgs.stdenv.hostPlatform.isLinux && hostname == "homelab";
   homeDir = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
-  olympusLinuxRoot = "/home/r1ca18/Develop/github.com/r1cA18/olympus";
-  olympusMcpEntry = "${olympusLinuxRoot}/apps/mcp/src/index.ts";
 
   tomlFormat = pkgs.formats.toml { };
   codexAgentInstructions = import ../../lib/agent-instructions.nix {
@@ -58,19 +52,6 @@ let
     "/Users/r1ca18/Develop/github.com/C-Style-team/MobileAndon"
     "/Users/r1ca18/Develop/github.com/C-Style-team/MobileAndon/MobileAndon-Revised"
     "/Users/r1ca18/Develop/github.com/C-Style-team/meeting-logs/aipf-pkg-gijiroku-frontend"
-  ];
-
-  enabledPlugins = [
-    "claude-code-advisor@claude-plugin-codex"
-    "google-calendar@openai-curated"
-    "github@openai-curated"
-    "browser-use@openai-bundled"
-    "documents@openai-primary-runtime"
-    "pdf@openai-primary-runtime"
-    "spreadsheets@openai-primary-runtime"
-    "presentations@openai-primary-runtime"
-    "browser@openai-bundled"
-    "chrome@openai-bundled"
   ];
 
   codexSettings = {
@@ -118,41 +99,12 @@ let
       "five-hour-limit"
     ];
 
-    projects = lib.listToAttrs (
-      map (p: lib.nameValuePair p { trust_level = "trusted"; }) trustedProjects
-    );
-
-    plugins = lib.listToAttrs (map (p: lib.nameValuePair p { enabled = true; }) enabledPlugins);
-
-    marketplaces.claude-plugin-codex = {
-      source_type = "local";
-      source = "${inputs.claude-plugin-codex}";
-    };
-
-    mcp_servers = lib.optionalAttrs (isDarwin || isHomelabLinux) {
-      olympus =
-        if isDarwin then
-          {
-            command = "/usr/bin/ssh";
-            args = [
-              "-T"
-              "homelab"
-              "/home/r1ca18/.nix-profile/bin/bun"
-              "run"
-              olympusMcpEntry
-            ];
-          }
-        else
-          {
-            command = "${pkgs.bun}/bin/bun";
-            args = [
-              "run"
-              olympusMcpEntry
-            ];
-          };
-    };
-
   };
+
+  # Trusted projects are entries: projects the owner trusts inside Codex stay.
+  codexProjects = lib.listToAttrs (
+    map (p: lib.nameValuePair p { trust_level = "trusted"; }) trustedProjects
+  );
 
   codexConfigProfiles = {
     heavy = {
@@ -163,7 +115,7 @@ let
     };
   };
 
-  codexConfigFile = tomlFormat.generate "codex-config.toml" codexSettings;
+  merge = import ../../lib/merge-managed.nix { inherit pkgs lib; };
   codexConfigProfileFiles = lib.mapAttrs (
     name: settings: tomlFormat.generate "codex-${name}-config.toml" settings
   ) codexConfigProfiles;
@@ -197,8 +149,11 @@ in
   # selection, default model preference) and fails with errors like:
   #   "Failed to save default model: failed to persist config.toml at /nix/store/..."
   #
-  # Instead we copy the generated toml as a real writable file each dr.
-  # Codex can write at runtime; next dr resets dotfiles defaults.
+  # Instead each dr merges the managed keys into the live writable file:
+  # top-level settings are reset to these values, trusted projects are
+  # added, and everything Codex or the owner added (plugins, MCP servers,
+  # trust decisions) stays. Plugins and MCP servers come from the capability
+  # catalog (r1hn on macOS, capabilities.nix elsewhere).
 
   home = {
     packages = [
@@ -227,22 +182,35 @@ in
         fi
       '';
 
-      codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        install -d "$HOME/.codex"
-        # Remove possible old symlink-to-store (from previous programs.codex.settings setup),
-        # then install fresh writable copy of the Nix-generated toml.
-        rm -f "$HOME/.codex/config.toml"
-        install -m 644 "${codexConfigFile}" "$HOME/.codex/config.toml"
-
-        # Codex 0.134.0+ loads named config layers from
-        # $CODEX_HOME/<name>.config.toml.
-        ${lib.concatStringsSep "\n        " (
-          lib.mapAttrsToList (name: file: ''
-            rm -f "$HOME/.codex/${name}.config.toml"
-            install -m 644 "${file}" "$HOME/.codex/${name}.config.toml"
-          '') codexConfigProfileFiles
-        )}
-      '';
+      codexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] (
+        ''
+          install -d "$HOME/.codex"
+          # An old generation linked config.toml into the store.
+          if [ -L "$HOME/.codex/config.toml" ]; then
+            target=$(readlink "$HOME/.codex/config.toml")
+            case "$target" in /nix/store/*) rm -f "$HOME/.codex/config.toml" ;; esac
+          fi
+        ''
+        + merge {
+          format = "toml";
+          target = "$HOME/.codex/config.toml";
+          name = "codex-config";
+          fragment = {
+            set = codexSettings;
+            entries.projects = codexProjects;
+          };
+        }
+        + ''
+          # Codex 0.134.0+ loads named config layers from
+          # $CODEX_HOME/<name>.config.toml.
+          ${lib.concatStringsSep "\n        " (
+            lib.mapAttrsToList (name: file: ''
+              rm -f "$HOME/.codex/${name}.config.toml"
+              install -m 644 "${file}" "$HOME/.codex/${name}.config.toml"
+            '') codexConfigProfileFiles
+          )}
+        ''
+      );
 
       # Codex CLI native 版の初回導入。更新は dot update の
       # codex 段階が担う。

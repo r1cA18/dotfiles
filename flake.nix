@@ -64,6 +64,18 @@
     unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
     unslop.flake = false;
 
+    # Hugging Face skills (Apache-2.0): catalog entries for Python and ML
+    huggingface-skills.url = "github:huggingface/skills";
+    huggingface-skills.flake = false;
+
+    # last30days (MIT): recent discussion research across platforms
+    last30days-skill.url = "github:mvanhorn/last30days-skill";
+    last30days-skill.flake = false;
+
+    # SwiftUI Pro (MIT): SwiftUI review and modern API guidance
+    swiftui-agent-skill.url = "github:twostraws/SwiftUI-Agent-Skill";
+    swiftui-agent-skill.flake = false;
+
     # Codex plugin: ask local Claude Code from Codex
     claude-plugin-codex.url = "github:yanchuk/claude-plugin-codex";
     claude-plugin-codex.flake = false;
@@ -81,10 +93,14 @@
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # r1hn: account groups and the harness endpoint. Private repository, fetched
-    # over SSH and pinned to a commit of feature/r1hn-groups. Only
-    # nix/home-manager/programs/r1hn.nix reads this input, and only where
-    # dotfiles.r1hn.enable is set, so other hosts and CI never fetch it.
-    r1hn.url = "git+ssh://git@github.com/r1cA18/harness-core?ref=feature/r1hn-groups&rev=0441614a7cfd6ee730f5c1df1827c1501c3dcd3d";
+    # over HTTPS with git's credential helper (gh) and pinned to a commit of
+    # feature/r1hn-platform (for now feature/r1hn-review-fixes-2, whose
+    # [worker] role the r1hnd service writes; back to the platform branch
+    # once it is merged). HTTPS works on hosts whose SSH agent needs a
+    # person to approve each use (homelab). Only the hosts that use r1hn read
+    # this input (the r1hn package, the r1hnd service and the capabilities
+    # Home Manager module), so CI never fetches it.
+    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-review-fixes-2&rev=f4f6b002b601cd1301f5019636c53ae647b0337d";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 

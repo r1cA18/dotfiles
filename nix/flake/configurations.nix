@@ -44,7 +44,15 @@ let
               imports = [
                 agent-skills-nix.homeManagerModules.default
                 nix-index-database.homeModules.nix-index
+                # Option types and projection of the capability catalog. From
+                # the private r1hn input, so only hosts that use r1hn import it
+                # (CI never fetches it); see programs/capabilities.nix.
+                inputs.r1hn.homeManagerModules.capabilities
                 (import ../home-manager/home.nix)
+                # The Mac is an r1hn worker like homelab: r1hnd and T3 Code
+                # as launchd agents. A coding worker (the default role):
+                # sessions only, never a writer of the vault.
+                ../home-manager/programs/r1hnd-service.nix
               ];
             };
           };
@@ -76,6 +84,9 @@ in
     modules = [
       agent-skills-nix.homeManagerModules.default
       nix-index-database.homeModules.nix-index
+      # homelab runs r1hnd (hosts/homelab.nix), so r1hn projects the catalog
+      # into its accounts as on macOS.
+      inputs.r1hn.homeManagerModules.capabilities
       ../home-manager/hosts/homelab.nix
       {
         nixpkgs.config.allowUnfree = true;
