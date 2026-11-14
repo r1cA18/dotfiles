@@ -121,6 +121,14 @@ in
         package = inputs.r1hn.packages.${pkgs.stdenv.hostPlatform.system}.r1hn;
         skillsBundle = config.programs.agent-skills.bundlePath;
         inherit entries;
+        bundles.work = {
+          description = "Work time, contracts, invoices and income (Workfolio)";
+          tags = [ "work" ];
+          members = [
+            "workfolio"
+            "workfolio-mcp"
+          ];
+        };
       };
     })
 

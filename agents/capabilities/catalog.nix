@@ -190,6 +190,9 @@ let
       "orca"
       "mac"
     ] "Orca computer use" { };
+    workfolio = catalog [
+      "work"
+    ] "Workfolio time, overtime, invoices and income through its MCP tools" { };
 
     # MCP servers. Context7 and DeepWiki cost a few tool schemas each.
     context7 = {
@@ -207,6 +210,27 @@ let
       description = "Questions about public GitHub repositories (DeepWiki, no key)";
       source = "https://mcp.deepwiki.com/mcp";
       mcp.local.url = "https://mcp.deepwiki.com/mcp";
+    };
+    # Runs from the Workfolio checkout (bun install done there). The URL and
+    # the group's token come from r1hn's [env.<group>], never from this file.
+    workfolio-mcp = {
+      kind = "mcp";
+      tier = "catalog";
+      tags = [ "work" ];
+      description = "Workfolio over its API, scoped to the session group's token";
+      source = "workfolio mcp/ (private repository checkout)";
+      mcp.local = {
+        command = lib.getExe pkgs.bun;
+        args = [
+          "run"
+          "${homeDir}/Develop/github.com/r1cA18/workfolio/mcp/index.ts"
+        ];
+        env = {
+          WORKFOLIO_URL = "env:WORKFOLIO_URL";
+          WORKFOLIO_TOKEN = "env:WORKFOLIO_TOKEN";
+          WORKFOLIO_MCP_TOOLS = "env:WORKFOLIO_MCP_TOOLS";
+        };
+      };
     };
     olympus = {
       kind = "mcp";
