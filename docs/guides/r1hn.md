@@ -78,7 +78,42 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - 無効なhostでは`cl`と`cx`は`claude`と`codex`へ展開される
 - 更新は`flake.nix`の`rev`を書き換えて`nix flake update r1hn`を実行する
 - dshは`nix/pkgs/deepseek-harness/`のpackageでmacOSに入る。`config.toml`の`[runtime] dsh`は`dsh`かNixが入れた絶対pathを指す
-- homelabでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`t3-r1hn`のuser serviceを置く。r1hndは`~/.config/r1hn/accounts.toml`が、`t3-r1hn`はそれに加えて`t3-r1hn-build`のbuildがあるときだけ起動する
-- ファイルを用意した後は`systemctl --user start r1hnd t3-r1hn`で一度起動する。logは`journalctl --user -u r1hnd`と`-u t3-r1hn`で見る
-- T3 Codeに出すgroupは`~/.config/t3-r1hn/env`の`T3CODE_R1HN_GROUPS`で決める。group名はこのrepositoryに書かない
+- homelabとMacでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`t3-r1hn`を置く。homelabはsystemd user service、Macはlaunchd agent(`org.dotfiles.r1hnd`と`org.dotfiles.t3-r1hn`)である
+- r1hndは`~/.config/r1hn/accounts.toml`が、`t3-r1hn`はそれに加えて`t3-r1hn-build`のbuildがあるときだけ起動する
+- ファイルを用意した後に一度起動する。homelabは`systemctl --user start r1hnd t3-r1hn`、Macは`launchctl kickstart gui/$(id -u)/org.dotfiles.r1hnd`と`.../org.dotfiles.t3-r1hn`
+- logはhomelabが`journalctl --user -u r1hnd`と`-u t3-r1hn`、Macが`~/Library/Logs/r1hn/`
+- Macのlaunchd agentは失敗終了だけを再起動する。入力が無いときのwrapperは0で終わるので再起動を繰り返さない。consoleの再起動(exit 75)は`R1HN_SUPERVISED=1`とKeepAliveで動く
+- T3 Codeに出すgroupは起動時に台帳から読む。accountを持つgroupをすべて出す(`r1hn group list --json`)
+- `~/.config/t3-r1hn/env`の`T3CODE_R1HN_GROUPS`があればそれを優先する。fileは`KEY=value`の行をsystemdのEnvironmentFileと同じく文字通りに読む。`T3CODE_R1HN_COMMAND`・`T3CODE_LAN`・`T3CODE_PORT`も置ける。group名はこのrepositoryに書かない
 - `t3 up`と`t3 service install`は使わない。upstreamのserviceが別に入る
+
+## T3 Code
+
+T3 Codeはr1hn gatewayだけを持つfork(`r1cA18/t3code`の`feature/r1hn-gateway`)のserverを各hostで動かす。
+各hostのproviderへのloginはそのhostの`r1hn`の台帳で行い、credentialをhost間で複製しない。
+
+### serverのbuild
+
+```bash
+git clone -b feature/r1hn-gateway https://github.com/r1cA18/t3code.git ~/.local/share/t3-r1hn/src
+t3-r1hn-build ~/.local/share/t3-r1hn/src
+```
+
+checkoutは`~/Develop`の外に置く。`~/Develop`はSyncthingで同期される。
+buildの後は表示された再起動commandを実行する。
+
+### Macのdesktop app
+
+Macではupstreamのcask `t3-code`をclientとして使う。
+desktop appは通常は内蔵serverを起動し、そのserverは`claude`と`codex`のloginを直接使う。
+`r1hnd-service.nix`のactivationが`~/.t3/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。
+falseのdesktopは内蔵serverを起動せず、pairingで追加したenvironmentだけを使う。
+`t3-r1hn`が`~/.t3`を使用中のときはlocal environmentを有効にしてもdesktopは起動を拒む。
+
+desktopへのenvironmentの追加:
+
+1. Macの`t3-r1hn`のpairing URLを出す: `t3 pair`
+2. desktopのSettings → Connections → Add environmentで「Remote link」を選び、URLを貼る
+3. homelabは同じ手順でhomelabの`t3 pair`のURLを使う。tailnetかT3 Connectで到達する
+
+`t3 connect`をsubcommandなしで実行しない。desktop appの更新はapp自身とcaskが行う。

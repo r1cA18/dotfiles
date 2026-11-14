@@ -51,7 +51,7 @@ dotfiles/
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
-│   │       ├── r1hnd-service.nix # homelabのr1hndとT3 Code user service
+│   │       ├── r1hnd-service.nix # homelabとMacのr1hndとT3 Code service
 │   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
@@ -129,8 +129,10 @@ flake inputは参照されたときだけ取得されるので、`dotfiles.r1hn.
 privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
 dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
 
-homelabは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
-r1hn gatewayだけを使うT3 Codeのuser serviceを置く。各unitは台帳とbuildが揃うまで起動しない。
+homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
+r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
+各serviceは台帳とbuildが揃うまで起動しない。
+MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして使う。
 
 ## Agent 運用の基本方針
 
