@@ -87,6 +87,51 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - `~/.config/t3-r1hn/env`の`T3CODE_R1HN_GROUPS`があればそれを優先する。fileは`KEY=value`の行をsystemdのEnvironmentFileと同じく文字通りに読む。`T3CODE_R1HN_COMMAND`・`T3CODE_LAN`・`T3CODE_PORT`も置ける。group名はこのrepositoryに書かない
 - `t3 up`と`t3 service install`は使わない。upstreamのserviceが別に入る
 
+## config.tomlの管理するkey
+
+`~/.config/r1hn/config.toml`は所有者のfileのままにする。r1hndのconsoleも書く。
+`r1hnd-service.nix`のactivationは次のkeyだけをmergeし、他のkeyとtableは残す。
+Nixで管理しなくなったkeyは次のactivationで消える。
+既存の内容は変わらないがmergeで書き直すとcommentは消える。
+
+| key                                          | 値                                                             |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `[jobs] enabled`                             | `dotfiles.r1hn.serve.jobs.enable`。homelabだけtrueでMacはfalse |
+| `[jobs] dir` / `tz` / `tick_seconds`         | `~/vault/40_AI/r1/jobs` / `Asia/Tokyo` / `30`                  |
+| `[records] root` / `times_dir` / `tasks_dir` | `~/vault` / `11_Times` / `32_Tasks`                            |
+| `[assistant] cwd`                            | `~/vault`                                                      |
+
+- 新しいfileは0600で作る。既存fileのmodeは変えない
+- homelabでは値が変わると`r1hnd.service`が再起動する。Macは`launchctl kickstart -k gui/$(id -u)/org.dotfiles.r1hnd`で読み直す
+- assistantのgroupはrepositoryに書かない。consoleかappで選び、r1hndが`~/.local/state/r1hn/assistant.json`へ保存する
+- permission modeもrepositoryに書かない。r1hndが`permissions.json`へ保存し、consoleかappか`/mode`で変える
+
+### 所有者が書くkey
+
+次はprivateな値なので、homelabの`config.toml`へ所有者が直接書く。
+
+```toml
+[push]
+key = "op://<vault>/<item>/<field>"   # または "file:~/.config/r1hn/apns.p8" (0600)
+key_id = "<10文字のkey id>"
+team_id = "<10文字のteam id>"
+bundle_id = "<appのbundle id>"
+env = "production"                    # Xcodeから入れたbuildだけなら "sandbox"
+```
+
+- `key`がなければpushは送らない。`key`だけを書いて他を空にしない
+- `[fallback]`は既定(`cross_provider = false`)のままにする。groupごとの上書き`[fallback.group.<group>]`もここへ書く
+- 書いた後は`systemctl --user restart r1hnd`で読み直す
+
+## jobsとOlympusの移行
+
+- homelabのr1hndが`~/vault/40_AI/r1/jobs/`のjobを実行する。夜のfeedは組み込みjob `feed-nightly`である
+- 以前の`r1hn-feed.timer`はdotfilesにもhomelabにも無い。feedが二重に走ることはない
+- 秘書のskillは`secretary` bundleにまとめた。vaultで有効にする: `r1hn capability enable bundle:secretary --project ~/vault`
+- `olympus-times-triage`と`olympus-deadline-scheduler`は`nix/home-manager/hosts/olympus-legacy.nix`に残す
+- jobの`times-triage`と`deadline-allocation`が1週間動いたら、`homelab.nix`に`dotfiles.olympus.legacyUnits.enable = false;`を書いてapplyする
+- 並行期間に片方だけ止めるときは`systemctl --user stop olympus-times-triage.timer`を実行し`~/.local/state/olympus-times-triage/enabled`を消す。flag fileが無いtimerは再起動後も起動しない。deadlineも同じ手順である
+
 ## T3 Code
 
 T3 Codeはr1hn gatewayだけを持つfork(`r1cA18/t3code`の`feature/r1hn-gateway`)のserverを各hostで動かす。

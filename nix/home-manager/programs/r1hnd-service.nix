@@ -19,6 +19,11 @@
 # or `launchctl kickstart gui/$(id -u)/org.dotfiles.r1hnd` and
 # `.../org.dotfiles.t3-r1hn`); later logins start them by themselves.
 # Logs: `journalctl --user -u r1hnd` / `-u t3-r1hn`, or `~/Library/Logs/r1hn/`.
+#
+# `~/.config/r1hn/config.toml` stays the owner's file (r1hnd's console writes
+# it too). Activation merges only the keys in `managedSettings` into it and
+# keeps the rest, so private keys ([push], groups, [env.<group>]) live there
+# and never in this repository; see docs/guides/r1hn.md.
 let
   cfg = config.dotfiles.r1hn.serve;
   inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
@@ -35,6 +40,30 @@ let
   # with t3-r1hn.
   t3DesktopSettings = "${home}/.t3/userdata/desktop-settings.json";
   launchdLabel = name: "org.dotfiles.${name}";
+  configToml = "${config.xdg.configHome}/r1hn/config.toml";
+
+  # Public keys of config.toml, merged by activation. Jobs run only where
+  # `dotfiles.r1hn.serve.jobs.enable` is set (the secretary's home); the vault
+  # and its job files reach every host, so every other host says false.
+  managedSettings = {
+    jobs = {
+      enabled = cfg.jobs.enable;
+      dir = "~/vault/40_AI/r1/jobs";
+      tz = "Asia/Tokyo";
+      tick_seconds = 30;
+    };
+    records = {
+      root = "~/vault";
+      times_dir = "11_Times";
+      tasks_dir = "32_Tasks";
+    };
+    assistant.cwd = "~/vault";
+  };
+  settingsFragment = {
+    entries = managedSettings;
+  };
+  settingsFile = pkgs.writeText "r1hn-settings.json" (builtins.toJSON settingsFragment);
+  merge = import ../../lib/merge-managed.nix { inherit pkgs lib; };
 
   # Official clients (claude, codex, agy) live in ~/.local/bin and Nix
   # profiles. r1hn hands this PATH to the clients it starts.
@@ -192,6 +221,7 @@ in
       default = "127.0.0.1:7790";
       description = "Loopback address of r1hnd. Publish it to the tailnet with `tailscale serve` by hand.";
     };
+    jobs.enable = lib.mkEnableOption "r1hn jobs on this host (`[jobs] enabled`); only the secretary's home runs them";
   };
 
   config = lib.mkMerge [
@@ -202,6 +232,25 @@ in
         t3Build
         t3Cli
       ];
+
+      # Before the units restart, so r1hnd starts with the merged file. A new
+      # file is made owner-only first (the merge keeps an existing mode).
+      home.activation.r1hnSettings =
+        lib.hm.dag.entryBetween [ "reloadSystemd" "setupLaunchAgents" ] [ "writeBoundary" ]
+          (
+            ''
+              if [ ! -e ${lib.escapeShellArg configToml} ]; then
+                run ${pkgs.coreutils}/bin/install -d -m 700 ${lib.escapeShellArg (dirOf configToml)}
+                run ${pkgs.coreutils}/bin/install -m 600 /dev/null ${lib.escapeShellArg configToml}
+              fi
+            ''
+            + merge {
+              format = "toml";
+              target = configToml;
+              name = "r1hn-settings";
+              fragment = settingsFragment;
+            }
+          );
     }
 
     (lib.mkIf isLinux {
@@ -210,6 +259,9 @@ in
           Unit = {
             Description = "r1hn endpoint (r1hnd)";
             ConditionPathExists = [ ledger ];
+            # r1hnd reads config.toml at start: restart it when the merged
+            # keys change.
+            X-Restart-Triggers = [ "${settingsFile}" ];
             StartLimitIntervalSec = 300;
             StartLimitBurst = 5;
           };

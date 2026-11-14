@@ -36,7 +36,8 @@ dotfiles/
 │   ├── home-manager/         # ユーザー設定
 │   │   ├── home.nix          # home-managerエントリポイント
 │   │   ├── hosts/            # host固有profile
-│   │   │   └── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   ├── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   └── olympus-legacy.nix # r1hn jobsへ移行中のOlympus unit
 │   │   └── programs/         # 各プログラムの設定
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
 │   │       ├── zsh.nix       # Zsh、abbr、help
