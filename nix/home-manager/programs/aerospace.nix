@@ -27,7 +27,7 @@
       10 = ['secondary', 'main']
 
       [mode.main.binding]
-      # Workspace切り替え（ZMK Window層 右手上段=1-5 左手上段=6-10）
+      # Workspace切り替え（ZMK Window層 左手上段=1-5 右手上段=6-10）
       alt-1 = "workspace 1"
       alt-2 = "workspace 2"
       alt-3 = "workspace 3"
