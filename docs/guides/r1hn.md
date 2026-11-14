@@ -94,17 +94,38 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 Nixで管理しなくなったkeyは次のactivationで消える。
 既存の内容は変わらないがmergeで書き直すとcommentは消える。
 
-| key                                          | 値                                                             |
-| -------------------------------------------- | -------------------------------------------------------------- |
-| `[jobs] enabled`                             | `dotfiles.r1hn.serve.jobs.enable`。homelabだけtrueでMacはfalse |
-| `[jobs] dir` / `tz` / `tick_seconds`         | `~/vault/40_AI/r1/jobs` / `Asia/Tokyo` / `30`                  |
-| `[records] root` / `times_dir` / `tasks_dir` | `~/vault` / `11_Times` / `32_Tasks`                            |
-| `[assistant] cwd`                            | `~/vault`                                                      |
+| key                                          | 値                                                              |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| `[worker] role`                              | `dotfiles.r1hn.serve.role`。homelabだけ`primary`でMacは`coding` |
+| `[jobs] enabled`                             | roleが`primary`のhostだけtrue                                   |
+| `[jobs] dir` / `tz` / `tick_seconds`         | `~/vault/40_AI/r1/jobs` / `Asia/Tokyo` / `30`                   |
+| `[records] root` / `times_dir` / `tasks_dir` | `~/vault` / `11_Times` / `32_Tasks`                             |
+| `[assistant] cwd`                            | `~/vault`                                                       |
 
 - 新しいfileは0600で作る。既存fileのmodeは変えない
 - homelabでは値が変わると`r1hnd.service`が再起動する。Macは`launchctl kickstart -k gui/$(id -u)/org.dotfiles.r1hnd`で読み直す
 - assistantのgroupはrepositoryに書かない。consoleかappで選び、r1hndが`~/.local/state/r1hn/assistant.json`へ保存する
 - permission modeもrepositoryに書かない。r1hndが`permissions.json`へ保存し、consoleかappか`/mode`で変える
+- 何も設定しないときの既定modeは`auto`である。以前のr1hndが`permissions.json`を書いたworkerはその既定が残るので、device tokenを発行する前に各workerで`GET /v1/permissions`(consoleの設定)を確認し、必要なら`auto`へ変える
+
+## vaultを書くworker
+
+vaultはSyncthingで全hostに届く。2台のr1hndが同じTimesにidを付けるとconflict fileと重複postができるので、vaultを書くのは`primary`の1台だけにする。
+
+- homelabは`dotfiles.r1hn.serve.role = "primary"`である。Times・tasksのwatcher・assistant(mainとside chat・memory・feed)・jobsを動かす
+- Macは既定の`coding`である。sessionとT3・ACP・承認だけを扱い、Times・tasks・jobs・threadsなどのrouteは409を返す
+- appとDiscord adapterはhomelabを向ける。Macのconsoleからは`/v1/peers/homelab/relay/...`でhomelabへ届く
+- `r1hn peer check`とconsoleのワーカー画面は2台がprimaryのとき警告する
+- roleを変えたらr1hndを再起動する
+
+## workerとsession
+
+- `config.toml`の`[[dir]]`はhostごとのfileにある。Macとhomelabのfileへ同じ規則を書く
+- 別groupの`[[dir]]`に入るdirectoryではT3(ACP)・`POST /v1/sessions`・agentの`session_start`がsessionを作らない。所有者だけが`POST /v1/sessions`の`allow_other_group: true`で1回だけ上書きできる
+- `r1hn session move ID --to homelab`はsessionのpermission modeも運ぶ。homelabの方が広いmodeでもsessionは元のmode以下で動く
+- Macが閉じている間はpullできない。Macを閉じる前にsessionをhomelabへ移す
+- `11_Times`と`10_Daily`の削除と書き換えはClaudeならどのmodeでも所有者の承認になる。r1hnが起動時にPreToolUse hook(`r1hn mcp guard`)を渡す。Codexは`full`と`auto`では対象外なので、vaultでは`ask`で使う
+- projectのskill link(`.claude/skills/<id>`と`.agents/skills/<id>`)は`~/.local/share/r1hn/skills/<id>`への相対linkである。各hostが自分のNix storeへのlinkをそこに持つので、Syncthingで同期してもhost同士がlinkを書き換え合わない
 
 ### 所有者が書くkey
 

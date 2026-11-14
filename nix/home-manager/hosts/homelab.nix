@@ -49,9 +49,11 @@ in
     ./olympus-legacy.nix
   ];
 
-  # The secretary's home: r1hnd runs the jobs in ~/vault/40_AI/r1/jobs
+  # The secretary's home and the only writer of the vault: r1hnd keeps the
+  # Times and tasks, the assistant, and runs the jobs in ~/vault/40_AI/r1/jobs
   # (times-triage, deadline-allocation, weekly-review, the nightly feed).
-  dotfiles.r1hn.serve.jobs.enable = true;
+  # Every other host is a coding worker.
+  dotfiles.r1hn.serve.role = "primary";
 
   # Headless Orca runtime for mobile pairing.
   # The binary is not named `orca` because that resolves to GNOME's screen reader.

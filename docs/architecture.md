@@ -133,6 +133,7 @@ dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
 homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
 r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
 各serviceは台帳とbuildが揃うまで起動しない。
+同期されるvaultを書くのは`dotfiles.r1hn.serve.role = "primary"`のhomelabだけで、Macは既定の`coding`である。
 MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして使う。
 
 ## Agent 運用の基本方針

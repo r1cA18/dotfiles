@@ -42,12 +42,16 @@ let
   launchdLabel = name: "org.dotfiles.${name}";
   configToml = "${config.xdg.configHome}/r1hn/config.toml";
 
-  # Public keys of config.toml, merged by activation. Jobs run only where
-  # `dotfiles.r1hn.serve.jobs.enable` is set (the secretary's home); the vault
-  # and its job files reach every host, so every other host says false.
+  # Public keys of config.toml, merged by activation. The vault reaches every
+  # host through Syncthing, so one worker writes it: the primary (homelab)
+  # runs the Times and tasks watcher, the assistant and the jobs; every other
+  # host is a coding worker that runs sessions only and refuses the vault's
+  # routes (`[worker] role`, see harness-core docs/r1hn-workers.md).
+  primary = cfg.role == "primary";
   managedSettings = {
+    worker.role = cfg.role;
     jobs = {
-      enabled = cfg.jobs.enable;
+      enabled = primary;
       dir = "~/vault/40_AI/r1/jobs";
       tz = "Asia/Tokyo";
       tick_seconds = 30;
@@ -221,7 +225,18 @@ in
       default = "127.0.0.1:7790";
       description = "Loopback address of r1hnd. Publish it to the tailnet with `tailscale serve` by hand.";
     };
-    jobs.enable = lib.mkEnableOption "r1hn jobs on this host (`[jobs] enabled`); only the secretary's home runs them";
+    role = lib.mkOption {
+      type = lib.types.enum [
+        "primary"
+        "coding"
+      ];
+      default = "coding";
+      description = ''
+        `[worker] role` of r1hnd. Exactly one host is "primary": it writes the
+        synced vault (Times and tasks watcher, ids, reply callouts), keeps the
+        assistant and runs the jobs. A "coding" host runs sessions only.
+      '';
+    };
   };
 
   config = lib.mkMerge [

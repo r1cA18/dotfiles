@@ -94,11 +94,13 @@
 
     # r1hn: account groups and the harness endpoint. Private repository, fetched
     # over HTTPS with git's credential helper (gh) and pinned to a commit of
-    # feature/r1hn-platform. HTTPS works on hosts whose SSH agent needs a
+    # feature/r1hn-platform (for now feature/r1hn-review-fixes-2, whose
+    # [worker] role the r1hnd service writes; back to the platform branch
+    # once it is merged). HTTPS works on hosts whose SSH agent needs a
     # person to approve each use (homelab). Only the hosts that use r1hn read
     # this input (the r1hn package, the r1hnd service and the capabilities
     # Home Manager module), so CI never fetches it.
-    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-platform&rev=e0e47756df9f2f384cf29b92e765d10c49ba14bc";
+    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-review-fixes-2&rev=f4f6b002b601cd1301f5019636c53ae647b0337d";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
