@@ -6,36 +6,50 @@
       start-at-login = true
       auto-reload-config = true
 
-      # 今回使うworkspaceだけを維持
-      persistent-workspaces = ["1", "2", "3", "4", "5"]
+      # ZMK Window層で操作できる1-10を維持
+      persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
       on-focused-monitor-changed = []
       focus-follows-mouse.enabled = false
 
+      # monitor名に依存せずmain/secondaryで割り当てる
+      # 1台だけの場合はすべてmainに載る
       [workspace-to-monitor-force-assignment]
-      # BenQ GW2780 (左/メイン)
-      1 = ['^BenQ GW2780$', 'main']
-      3 = ['^BenQ GW2780$', 'main']
-      5 = ['^BenQ GW2780$', 'main']
-
-      # Pixio PX277P (右/サブ)
-      2 = ['^Pixio PX277P$', 'main']
-      4 = ['^Pixio PX277P$', 'main']
+      1 = 'main'
+      2 = 'main'
+      3 = 'main'
+      4 = 'main'
+      5 = 'main'
+      6 = ['secondary', 'main']
+      7 = ['secondary', 'main']
+      8 = ['secondary', 'main']
+      9 = ['secondary', 'main']
+      10 = ['secondary', 'main']
 
       [mode.main.binding]
-      # Workspace切り替え（ZMK Window層 右手上段）
+      # Workspace切り替え（ZMK Window層 右手上段=1-5 左手上段=6-10）
       alt-1 = "workspace 1"
       alt-2 = "workspace 2"
       alt-3 = "workspace 3"
       alt-4 = "workspace 4"
       alt-5 = "workspace 5"
+      alt-6 = "workspace 6"
+      alt-7 = "workspace 7"
+      alt-8 = "workspace 8"
+      alt-9 = "workspace 9"
+      alt-0 = "workspace 10"
 
-      # フォーカス中のwindowをworkspaceへ移動してfocusも追従（ZMK Window層 右手下段）
+      # フォーカス中のwindowをworkspaceへ移動してfocusも追従（ZMK Window層 +右親指Shift）
       alt-shift-1 = "move-node-to-workspace --focus-follows-window 1"
       alt-shift-2 = "move-node-to-workspace --focus-follows-window 2"
       alt-shift-3 = "move-node-to-workspace --focus-follows-window 3"
       alt-shift-4 = "move-node-to-workspace --focus-follows-window 4"
       alt-shift-5 = "move-node-to-workspace --focus-follows-window 5"
+      alt-shift-6 = "move-node-to-workspace --focus-follows-window 6"
+      alt-shift-7 = "move-node-to-workspace --focus-follows-window 7"
+      alt-shift-8 = "move-node-to-workspace --focus-follows-window 8"
+      alt-shift-9 = "move-node-to-workspace --focus-follows-window 9"
+      alt-shift-0 = "move-node-to-workspace --focus-follows-window 10"
 
       # Focus移動
       alt-h = "focus left"
@@ -58,9 +72,10 @@
       alt-comma = "focus-monitor --wrap-around prev"
       alt-period = "focus-monitor --wrap-around next"
 
-      # Workspaceを別monitorへ移動
-      alt-shift-comma = "move-workspace-to-monitor --wrap-around prev"
-      alt-shift-period = "move-workspace-to-monitor --wrap-around next"
+      # Windowを別monitorへ移動してfocusも追従
+      # workspaceはmonitorへ固定しているのでworkspace単位では動かさない
+      alt-shift-comma = "move-node-to-monitor --focus-follows-window --wrap-around prev"
+      alt-shift-period = "move-node-to-monitor --focus-follows-window --wrap-around next"
 
       # Workspace履歴
       alt-tab = "workspace-back-and-forth"
@@ -81,7 +96,7 @@
       run = "move-node-to-workspace 1"
 
       [[on-window-detected]]
-      if.app-id = "company.thebrowser.Browser"
+      if.app-id = "at.studio.AsideBrowser"
       run = "move-node-to-workspace 2"
 
       [[on-window-detected]]
