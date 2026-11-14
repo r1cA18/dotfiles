@@ -129,6 +129,20 @@ in
             "workfolio-mcp"
           ];
         };
+        # Enable in the vault on the secretary's home:
+        # `r1hn capability enable bundle:secretary --project ~/vault`.
+        bundles.secretary = {
+          description = "The assistant's Times triage, deadline allocation, weekly review and calendar";
+          tags = [ "secretary" ];
+          detect.files = [ "11_Times" ];
+          members = [
+            "times-triage"
+            "deadline-allocation"
+            "weekly-review"
+            "knowledge-extract"
+            "codex-google-calendar"
+          ];
+        };
       };
     })
 

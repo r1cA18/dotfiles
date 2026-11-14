@@ -194,6 +194,27 @@ let
       "work"
     ] "Workfolio time, overtime, invoices and income through its MCP tools" { };
 
+    # The secretary (r1hnd's assistant and jobs, working in the vault). The
+    # `secretary` bundle in programs/capabilities.nix groups them.
+    times-triage = catalog [ "secretary" ] "Route pending Times posts to tasks, research, notes or replies" {
+      detect.files = [ "11_Times" ];
+    };
+    deadline-allocation = catalog [ "secretary" ] "Give open tasks with a deadline a day before it" {
+      detect.files = [ "32_Tasks" ];
+    };
+    weekly-review = catalog [ "secretary" ] "Read-only review of the week from notes, Times and tasks" {
+      detect.files = [ "11_Times" ];
+    };
+
+    # The owner's design system lives in a private checkout. The entry links
+    # to it in place, so nothing is copied here and evaluation never reads
+    # it; where the checkout is missing the link dangles and the skill is
+    # simply absent.
+    r1-design = catalog [ "web" "design" ] "Apply the owner's house design system to a UI" {
+      source = "${homeDir}/Develop/github.com/r1cA18/r1-design/skill";
+      detect = web;
+    };
+
     # MCP servers. Context7 and DeepWiki cost a few tool schemas each.
     context7 = {
       kind = "mcp";
