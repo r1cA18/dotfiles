@@ -155,7 +155,9 @@ in
           WorkingDirectory = home;
           Environment = [
             "PATH=${t3Path}"
-            "T3CODE_R1HN_COMMAND=${r1hn}/bin/r1hn acp"
+            # Quoted: systemd splits an unquoted Environment= value at spaces,
+            # which dropped `acp` and left T3 with only its default model.
+            ''"T3CODE_R1HN_COMMAND=${r1hn}/bin/r1hn acp"''
             "T3CODE_R1HN_GROUPS=${cfg.t3Groups}"
           ];
           # Optional: T3CODE_R1HN_GROUPS, T3CODE_LAN, T3CODE_PORT.
