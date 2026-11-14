@@ -49,6 +49,9 @@ let
                 # (CI never fetches it); see programs/capabilities.nix.
                 inputs.r1hn.homeManagerModules.capabilities
                 (import ../home-manager/home.nix)
+                # The Mac is an r1hn worker like homelab: r1hnd and T3 Code
+                # as launchd agents.
+                ../home-manager/programs/r1hnd-service.nix
               ];
             };
           };
