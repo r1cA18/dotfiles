@@ -252,6 +252,14 @@ let
     };
   };
 
+  # Antigravity CLI through r1hn like cl and cx; client arguments go after "--".
+  agyAliases = {
+    ag = {
+      cmd = if r1hnEnabled then "r1hn run --runtime agy" else "agy";
+      desc = "Start Antigravity (agy) in an r1hn group";
+    };
+  };
+
   workspaceAliases = {
     ws = {
       cmd = "workspace";
@@ -389,6 +397,10 @@ let
       defs = codexAliases;
     }
     {
+      title = "Antigravity";
+      defs = agyAliases;
+    }
+    {
       title = "Workspace";
       defs = workspaceAliases;
     }
@@ -413,6 +425,7 @@ let
     // researchAliases
     // claudeAliases
     // codexAliases
+    // agyAliases
     // workspaceAliases;
 
   managedShellAliases = aliasOnlyDefs // abbrDefs;
