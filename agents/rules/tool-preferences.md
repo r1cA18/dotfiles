@@ -29,3 +29,9 @@ Use `agent-browser` only when the task requires an actual browser UI, such as:
 
 If built-in Web retrieval fails because the page requires browser interaction,
 then switch to `agent-browser` and state why.
+
+Use Aside (the `aside` skill, CLI, or MCP server) first when the task needs
+the owner's logged-in sites, cookies, or browsing context. On other hosts reach
+the Mac's Aside with `--host`. When Aside is unreachable, for example because
+the Mac is asleep, fall back to `agent-browser` without the owner's sign-ins
+and say so. Keep `agent-browser` for isolated checks such as a local dev server.

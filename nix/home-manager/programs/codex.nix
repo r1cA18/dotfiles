@@ -137,6 +137,12 @@ let
               olympusMcpEntry
             ];
           };
+    }
+    // lib.optionalAttrs isDarwin {
+      aside = {
+        command = "${homeDir}/.local/bin/aside";
+        args = [ "mcp" ];
+      };
     };
 
   };

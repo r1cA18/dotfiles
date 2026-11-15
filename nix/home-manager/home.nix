@@ -22,6 +22,7 @@ in
     ./programs/agent-skills.nix
     ./programs/model-profiles.nix
     ./programs/antigravity.nix
+    ./programs/aside.nix
     ./programs/ccspace.nix
     ./programs/devin.nix
     ./programs/claude-code.nix
