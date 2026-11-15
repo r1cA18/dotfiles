@@ -88,10 +88,6 @@
       if.app-id = "com.openai.chat"
       run = "move-node-to-workspace 4"
 
-      [[on-window-detected]]
-      if.app-id = "com.hnc.Discord"
-      run = "move-node-to-workspace 4"
-
       # すべてのアプリを強制 tiling
       [[on-window-detected]]
       if.app-id-regex = ".*"

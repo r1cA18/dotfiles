@@ -63,6 +63,7 @@
       "affinity"
       "alt-tab"
       "amical"
+      "aqua-voice"
       "aside"
       "nikitabobko/tap/aerospace"
       "autodesk-fusion"
@@ -86,6 +87,7 @@
       "r1cA18/orca/orca-personal"
       "raycast"
       "stirling-pdf"
+      "switchbar"
       # T3 Code desktop as a client only: r1hnd-service.nix turns off its
       # bundled server, so agents run on the t3-r1hn servers through r1hn.
       "t3-code"
@@ -94,9 +96,8 @@
     ];
     # Installed by hand and not declared here:
     # - casks exist but the apps were not installed by Homebrew; declaring one
-    #   needs `brew install --cask --adopt <cask>` first: Aqua Voice
-    #   (aqua-voice), AWS VPN Client (aws-vpn-client), Switchbar (switchbar),
-    #   CH34x VCP Driver (wch-ch34x-usb-serial-driver)
+    #   needs `brew install --cask --adopt <cask>` first: AWS VPN Client
+    #   (aws-vpn-client)
     # - no cask: AutoRaise, Blackmagic Proxy Generator Lite, Blackmagic RAW,
     #   DaVinci Resolve, Overshell, CCSpace (~/Applications)
     masApps = {
