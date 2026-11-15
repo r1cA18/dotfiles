@@ -100,7 +100,7 @@
     # person to approve each use (homelab). Only the hosts that use r1hn read
     # this input (the r1hn package, the r1hnd service and the capabilities
     # Home Manager module), so CI never fetches it.
-    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-platform&rev=d765f1f995af4add7d61b32b0e392af4bb67a4c8";
+    r1hn.url = "git+https://github.com/r1cA18/harness-core.git?ref=feature/r1hn-platform&rev=713e4c0d56d3028553db1417ed95da12c4f4153c";
     r1hn.inputs.nixpkgs.follows = "nixpkgs";
   };
 
