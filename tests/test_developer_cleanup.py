@@ -128,6 +128,12 @@ class CleanupTests(unittest.TestCase):
         run.assert_not_called()
         self.assertTrue(cleanup.tracked(self.root / "unknown"))
 
+    def test_keep_marker_preserves_rust_output(self):
+        (self.project / cleanup.KEEP_MARKER).touch()
+        with self.clean_context(), patch.object(cleanup, "run") as run:
+            cleanup.clean_artifact("rust", self.target, True, 0, stats())
+        run.assert_not_called()
+
     def test_dry_run_never_cleans(self):
         with self.clean_context(), patch.object(cleanup, "run") as run:
             cleanup.clean_artifact("rust", self.target, False, 0, stats())
@@ -558,6 +564,126 @@ class CleanupTests(unittest.TestCase):
         self.assertEqual(result["failures"], 1)
         self.assertEqual((data / "repositories.json").read_text(), "invalid fixture")
         self.assertEqual(json.loads((state / "repo-report.json").read_text())["review_candidates"], 1)
+
+    def node_project(self, name="web"):
+        repo = self.repo(name)
+        (repo / "package.json").write_text("{}")
+        modules = repo / "node_modules"
+        (modules / "dep").mkdir(parents=True)
+        (modules / "dep/index.js").write_text("")
+        (repo / ".gitignore").write_text("node_modules\n")
+        return repo, modules
+
+    def age(self, *paths, days=30):
+        past = time.time() - days * 86400
+        for path in paths:
+            for entry in [path, *path.rglob("*")] if path.is_dir() else [path]:
+                os.utime(entry, (past, past), follow_symlinks=False)
+
+    def git_activity(self, repo):
+        return [Path(self.git(repo, "rev-parse", "--path-format=absolute", "--git-path", name).stdout.strip())
+                for name in ("logs/HEAD",)]
+
+    def test_dependency_output_needs_its_manifest(self):
+        repo, modules = self.node_project()
+        venv = repo / ".venv"
+        venv.mkdir()
+        (repo / "plain/node_modules").mkdir(parents=True)
+        found = set(cleanup.artifacts([self.root / "Develop"]))
+        self.assertIn(("node", modules), found)
+        self.assertNotIn(("venv", venv), found)
+        self.assertNotIn(("node", repo / "plain/node_modules"), found)
+        (venv / "pyvenv.cfg").write_text("home = /usr\n")
+        self.assertIn(("venv", venv), set(cleanup.artifacts([self.root / "Develop"])))
+
+    def test_idle_dependency_output_is_removed_only_with_apply(self):
+        repo, modules = self.node_project()
+        self.age(modules, repo / "package.json", *self.git_activity(repo))
+        cutoff = time.time() - 14 * 86400
+        with patch.object(cleanup.Usage, "read", return_value=self.idle):
+            result = stats()
+            cleanup.clean_build_output("node", modules, False, cutoff, result)
+            self.assertEqual(result["candidates"], 1)
+            self.assertTrue(modules.exists())
+            cleanup.clean_build_output("node", modules, True, cutoff, result)
+        self.assertFalse(modules.exists())
+        self.assertEqual(result["cleaned"], 1)
+        self.assertEqual(list(repo.glob(".developer-cleanup-*")), [])
+        self.assertTrue((repo / "package.json").exists())
+
+    def test_recent_activity_marker_and_busy_keep_dependency_output(self):
+        repo, modules = self.node_project()
+        cutoff = time.time() - 14 * 86400
+        with patch.object(cleanup.Usage, "read", return_value=self.idle):
+            result = stats()
+            cleanup.clean_build_output("node", modules, True, cutoff, result)
+            self.assertEqual(result["skipped"], {"recent_project": 1})
+            self.age(modules, repo / "package.json", *self.git_activity(repo))
+            (repo.parent / cleanup.KEEP_MARKER).touch()
+            cleanup.clean_build_output("node", modules, True, cutoff, result)
+            self.assertEqual(result["skipped"]["protected_or_kept"], 1)
+            (repo.parent / cleanup.KEEP_MARKER).unlink()
+        busy = cleanup.Usage({}, {modules / "dep/index.js"}, {})
+        with patch.object(cleanup.Usage, "read", return_value=busy):
+            cleanup.clean_build_output("node", modules, True, cutoff, result)
+        self.assertEqual(result["skipped"]["active_project"], 1)
+        self.assertTrue((modules / "dep/index.js").exists())
+
+    def test_output_restored_when_project_becomes_active_after_detach(self):
+        repo, modules = self.node_project()
+        self.age(modules, repo / "package.json", *self.git_activity(repo))
+        busy = cleanup.Usage({}, {repo / "package.json"}, {})
+        with patch.object(cleanup.Usage, "read", side_effect=[self.idle, busy]):
+            with self.assertRaises(cleanup.Busy):
+                cleanup.clean_build_output("node", modules, True, time.time() - 14 * 86400, stats())
+        self.assertTrue((modules / "dep/index.js").exists())
+        self.assertEqual(list(repo.glob(".developer-cleanup-*")), [])
+
+    def test_untracked_project_output_is_kept(self):
+        project = self.root / "loose"
+        (project / "node_modules").mkdir(parents=True)
+        (project / "package.json").write_text("{}")
+        self.age(project)
+        result = stats()
+        with patch.object(cleanup.Usage, "read", return_value=self.idle):
+            cleanup.clean_build_output("node", project / "node_modules", True, time.time() - 86400, result)
+        self.assertEqual(result["skipped"], {"protected_or_kept": 1})
+        self.assertTrue((project / "node_modules").exists())
+
+    def test_old_derived_data_is_removed_and_recent_or_protected_is_kept(self):
+        root = self.root / "Library/Developer/Xcode/DerivedData"
+        old, recent, ios = root / "App-old", root / "App-new", root / "MobileAndon-abc"
+        for path in (old, recent, ios):
+            (path / "Build").mkdir(parents=True)
+            (path / "info.plist").write_text("")
+        self.age(old, ios)
+        result = stats()
+        cutoff = time.time() - 14 * 86400
+        with patch.object(cleanup.Usage, "read", return_value=self.idle):
+            for path in cleanup.derived_data(self.root):
+                cleanup.clean_derived_data(path, True, cutoff, result)
+        self.assertFalse(old.exists())
+        self.assertTrue(recent.exists())
+        self.assertTrue(ios.exists())
+        self.assertEqual(result["cleaned"], 1)
+        self.assertEqual(result["skipped"], {"recent_derived_data": 1, "protected_or_kept": 1})
+
+    def test_daily_prunes_unused_package_caches_outside_projects(self):
+        with patch.object(cleanup.shutil, "disk_usage", return_value=shutil_usage(120)), \
+                patch.object(cleanup.Usage, "read", return_value=self.idle), \
+                patch.object(cleanup, "run", return_value="") as run:
+            cleanup.cleanup(self.root, True)
+        calls = {tuple(call.args[0]): call.kwargs.get("cwd") for call in run.call_args_list}
+        for command in (("pnpm", "store", "prune"), ("cargo-cache", "--autoclean"), ("uv", "cache", "prune")):
+            self.assertIn(command, calls)
+            self.assertNotIn(str(self.root), calls[command])
+        busy = cleanup.Usage({"1": "cargo"}, set(), {"1": self.root / "elsewhere"})
+        with patch.object(cleanup.shutil, "disk_usage", return_value=shutil_usage(120)), \
+                patch.object(cleanup.Usage, "read", return_value=busy), \
+                patch.object(cleanup, "run", return_value="") as run:
+            result = cleanup.cleanup(self.root, True)
+        self.assertNotIn(["cargo-cache", "--autoclean"], [call.args[0] for call in run.call_args_list])
+        self.assertEqual(result["skipped"]["cargo_running"], 1)
 
 
 def shutil_usage(gib):
