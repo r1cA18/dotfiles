@@ -49,6 +49,8 @@
     enable = true;
     # Homebrew is updated by `dot update`, not on activation.
     onActivation.autoUpdate = false;
+    # cleanup stays "none": removing an entry only stops managing the app,
+    # so apps removed by hand are dropped here without uninstalling anything.
     taps = [
       {
         name = "r1cA18/orca";
@@ -61,17 +63,12 @@
       "affinity"
       "alt-tab"
       "amical"
-      "arc"
       "aside"
       "nikitabobko/tap/aerospace"
-      "audacity"
       "autodesk-fusion"
       "balenaetcher"
       "bambu-studio"
       "beeper"
-      "chatgpt"
-      "claude"
-      "discord"
       "figma"
       "ghostty"
       "google-chrome"
@@ -79,34 +76,36 @@
       "google-japanese-ime"
       "karabiner-elements"
       "keyboardcleantool"
-      "microsoft-excel"
-      "microsoft-outlook"
       "microsoft-powerpoint"
       "microsoft-word"
+      "notion"
       "notunes"
       "ollama-app"
       "orbstack"
+      # Personal Orca build; kept until Orca is retired.
       "r1cA18/orca/orca-personal"
       "raycast"
-      "steam"
       "stirling-pdf"
       # T3 Code desktop as a client only: r1hnd-service.nix turns off its
       # bundled server, so agents run on the t3-r1hn servers through r1hn.
       "t3-code"
       "tailscale-app"
-      "utm"
       "zed"
     ];
+    # Installed by hand and not declared here:
+    # - casks exist but the apps were not installed by Homebrew; declaring one
+    #   needs `brew install --cask --adopt <cask>` first: Aqua Voice
+    #   (aqua-voice), AWS VPN Client (aws-vpn-client), Switchbar (switchbar),
+    #   CH34x VCP Driver (wch-ch34x-usb-serial-driver)
+    # - no cask: AutoRaise, Blackmagic Proxy Generator Lite, Blackmagic RAW,
+    #   DaVinci Resolve, Overshell, CCSpace (~/Applications)
     masApps = {
       "Developer" = 640199958;
-      "Keynote" = 361285480;
-      "Kindle" = 302584613;
       "Numbers" = 361304891;
       "Pages" = 361309726;
       "RunCat Neo" = 6757801838;
-      "Swift Playgrounds" = 1496833156;
       "TestFlight" = 899247664;
-      "Windows App" = 1295203466;
+      "WeChat" = 836500024;
       "Xcode" = 497799835;
     };
   };
