@@ -48,6 +48,7 @@ in
     ../programs/r1hnd-service.nix
     ./olympus-legacy.nix
     ../programs/vault-commit.nix
+    ../programs/r1-discord.nix
   ];
 
   # The secretary's home and the only writer of the vault: r1hnd keeps the
