@@ -306,17 +306,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794687375,
-        "narHash": "sha256-sSRueiISdENAbMkrhT6BQa26VMyczRm8hOu/s+Z+Hgk=",
-        "ref": "feature/r1hn-review-fixes-2",
-        "rev": "f4f6b002b601cd1301f5019636c53ae647b0337d",
-        "revCount": 292,
+        "lastModified": 1794708554,
+        "narHash": "sha256-dhhMZ2Dl72ztZ5UWoj/5Vxpu0MdEJJG+7TG7e+0LCos=",
+        "ref": "feature/r1hn-platform",
+        "rev": "386ef5e413d35fc4415e0e4bdc82dea3890c7c26",
+        "revCount": 312,
         "type": "git",
         "url": "https://github.com/r1cA18/harness-core.git"
       },
       "original": {
-        "ref": "feature/r1hn-review-fixes-2",
-        "rev": "f4f6b002b601cd1301f5019636c53ae647b0337d",
+        "ref": "feature/r1hn-platform",
+        "rev": "386ef5e413d35fc4415e0e4bdc82dea3890c7c26",
         "type": "git",
         "url": "https://github.com/r1cA18/harness-core.git"
       }
