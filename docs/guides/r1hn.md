@@ -171,7 +171,7 @@ git clone -b feature/r1hn-gateway https://github.com/r1cA18/t3code.git ~/.local/
 t3-r1hn-build ~/.local/share/t3-r1hn/src
 ```
 
-checkoutは`~/Develop`の外に置く。`~/Develop`はSyncthingで同期される。
+checkoutは`~/Develop`の外に置く。
 buildの後は表示された再起動commandを実行する。
 
 ### Macのdesktop app

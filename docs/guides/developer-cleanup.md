@@ -125,7 +125,7 @@ cloneが消えても台帳の行は削除しない。
 このツールによるclone削除履歴は現時点では存在しない。
 将来clone削除を実装する場合は削除前の復元情報と実行結果を追記する必要がある。
 この台帳は改ざんを防ぐ証明や完全なbackupではない。台帳専用のbackup設定は追加していない。
-所有者の承認によりDevelopの既存Syncthing同期に台帳も含める。同期先の追加は行わない。
+台帳は各hostの`~/Develop`に置き、host間で同期しない。
 
 日次処理は新規候補も登録する。
 `--inventory-only`は前回の候補と台帳の既知cloneだけを再確認しcacheを掃除しない。
@@ -139,9 +139,8 @@ cloneが消えても台帳の行は削除しない。
 | Linux | Home Managerの`nh-clean.timer`が毎週`--keep 5 --keep-since 14d`で世代を削除しstore GCを行う                 |
 | Linux | Ansibleが`/etc/nix/nix.custom.conf`へ`auto-optimise-store = true`を書く。`dot server apply`で反映する       |
 
-Syncthingの`~/Develop`は`.stignore`で生成物を同期しない。
-homelabのDevelop folderはstaggered versioningで置き換えたファイルを7日保持する。vaultは30日保持する。
-MacのDevelop folderはversioningを使わない。Macのfolder設定はNixで宣言していない。
+`~/Develop`はSyncthingで同期しない。host間の作業の移動はr1hnのsession moveがgitで運ぶ。
+vaultはSyncthingで同期し、homelabは置き換えたファイルを30日保持する。
 `dot storage`は`~/Develop/.stversions`が10GiBを超えると警告する。
 
 ## 容量の確認とworktree

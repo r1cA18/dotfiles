@@ -153,28 +153,6 @@ in
             };
           };
         };
-        Develop = {
-          id = "tj9sr-r4ieg";
-          label = "Develop";
-          path = "${config.home.homeDirectory}/Develop";
-          type = "sendreceive";
-          devices = [ "RMB" ];
-          ignorePerms = true;
-          fsWatcherEnabled = true;
-          rescanIntervalS = 3600;
-          maxConflicts = 20;
-          # Git holds the history of Develop, so replaced files are kept for
-          # 7 days only (the vault keeps 30). Build output is never synced
-          # (.stignore in programs/syncthing.nix); `dot storage` warns when
-          # .stversions grows past 10GiB.
-          versioning = {
-            type = "staggered";
-            params = {
-              cleanInterval = "3600";
-              maxAge = "604800";
-            };
-          };
-        };
       };
     };
   };

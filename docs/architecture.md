@@ -53,7 +53,7 @@ dotfiles/
 │   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
 │   │       ├── r1hnd-service.nix # homelabとMacのr1hndとT3 Code service
-│   │       ├── syncthing.nix # Syncthingと~/Develop/.stignoreの配布
+│   │       ├── syncthing.nix # Syncthingとvaultの.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
