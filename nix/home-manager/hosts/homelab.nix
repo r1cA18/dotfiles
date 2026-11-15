@@ -51,14 +51,28 @@ in
     ../programs/r1-discord.nix
   ];
 
-  # The secretary's home and the only writer of the vault: r1hnd keeps the
-  # Times and tasks, the assistant, and runs the jobs in ~/vault/40_AI/r1/jobs
-  # (times-triage, deadline-allocation, weekly-review, the nightly feed).
-  # Every other host is a coding worker.
-  dotfiles.r1hn.serve.role = "primary";
+  dotfiles = {
+    # The secretary's home and the only writer of the vault: r1hnd keeps the
+    # Times and tasks, the assistant, and runs the jobs in ~/vault/40_AI/r1/jobs
+    # (times-triage, deadline-allocation, weekly-review, the nightly feed).
+    # Every other host is a coding worker.
+    r1hn.serve.role = "primary";
 
-  # Olympus is retired; this stops and removes its triage and deadline units.
-  dotfiles.olympus.legacyUnits.enable = false;
+    # GitHub signing uses the host file key ~/.ssh/github-signing, not 1Password.
+    git.signing.backend = "file";
+
+    # Olympus is retired; this stops and removes its triage and deadline units.
+    olympus.legacyUnits.enable = false;
+  };
+
+  # GitHub auth uses ~/.ssh/github-auth, not the 1Password agent (see
+  # docs/guides/github-auth.md). This block must precede `Host *`, whose
+  # IdentityAgent would otherwise apply to GitHub.
+  programs.ssh.settings."github.com" = {
+    IdentityFile = "~/.ssh/github-auth";
+    IdentitiesOnly = "yes";
+    IdentityAgent = "none";
+  };
 
   # Headless Orca runtime for mobile pairing.
   # The binary is not named `orca` because that resolves to GNOME's screen reader.

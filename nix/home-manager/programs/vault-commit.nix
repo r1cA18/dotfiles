@@ -1,9 +1,9 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 let
   # The vault syncs through Syncthing (.git is ignored there, see
   # programs/syncthing.nix); only homelab commits it, once a night.
-  # Signing follows the global git config (1Password SSH signing). It is never
-  # disabled here: when signing cannot work headless the unit fails loudly.
+  # Auth and signing follow the global host config (~/.ssh/github-auth and
+  # ~/.ssh/github-signing). Signing is never disabled here: when signing cannot work headless the unit fails loudly.
   vaultCommit = pkgs.writeShellApplication {
     name = "vault-commit";
     runtimeInputs = [
@@ -56,8 +56,6 @@ in
       Service = {
         Type = "oneshot";
         ExecStart = "${vaultCommit}/bin/vault-commit";
-        # 1Password SSH agent for signing and push.
-        Environment = [ "SSH_AUTH_SOCK=${config.home.homeDirectory}/.1password/agent.sock" ];
         Nice = 10;
       };
     };
