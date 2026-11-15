@@ -78,6 +78,12 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - 無効なhostでは`cl`と`cx`は`claude`と`codex`へ展開される
 - 更新は`flake.nix`の`rev`を書き換えて`nix flake update r1hn`を実行する
 - dshは`nix/pkgs/deepseek-harness/`のpackageでmacOSに入る。`config.toml`の`[runtime] dsh`は`dsh`かNixが入れた絶対pathを指す
+- homelabでは`r1hnd-service.nix`がdshを入れる。Linuxでは公式Node binaryのinterpreterとC++ runtimeだけをpatchする。RPATHを書き換えると起動時にsegfaultする
+- dshはDeepSeekとMistralの2つのproviderを動かす。1つのDSH homeにDeepSeekのloginとMistralのkeyがあれば、同じ`config_dir`でproviderごとに1 accountずつ登録する
+- 片方のproviderが上限に達すると同じdsh sessionのままもう片方のmodelへ切り替わる
+- DeepSeekとMistralのaccountは既定で従量課金として扱う。subscriptionとして使うaccountには`billing = "subscription"`を書く
+- dshを優先するgroupでは`r1hn model priority set dsh --group G`を実行する
+- r1hndはdshを`--profile acp`で起動する。providerの設定はそのhomeの`profiles/acp/cordis.patch.yml`にも必要である。`web`と`tui`のpatchだけでは足りない
 - homelabとMacでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`t3-r1hn`を置く。homelabはsystemd user service、Macはlaunchd agent(`org.dotfiles.r1hnd`と`org.dotfiles.t3-r1hn`)である
 - r1hndは`~/.config/r1hn/accounts.toml`が、`t3-r1hn`はそれに加えて`t3-r1hn-build`のbuildがあるときだけ起動する
 - ファイルを用意した後に一度起動する。homelabは`systemctl --user start r1hnd t3-r1hn`、Macは`launchctl kickstart gui/$(id -u)/org.dotfiles.r1hnd`と`.../org.dotfiles.t3-r1hn`

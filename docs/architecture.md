@@ -129,6 +129,7 @@ flake input `r1hn`はprivate repositoryをHTTPSとgitのcredential helper(gh)で
 flake inputは参照されたときだけ取得されるので、`dotfiles.r1hn.enable`が偽のhost(CI)は認証なしで評価とbuildができる。
 privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
 dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
+Linuxでは`r1hnd-service.nix`がhomelabに入れる。
 
 homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
 r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。

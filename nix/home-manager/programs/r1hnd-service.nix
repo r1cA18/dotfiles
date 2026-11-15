@@ -246,7 +246,9 @@ in
       home.packages = [
         t3Build
         t3Cli
-      ];
+      ]
+      # dsh for the sessions r1hnd runs on dsh; macOS gets it from packages.nix.
+      ++ lib.optionals isLinux [ pkgs.deepseek-harness ];
 
       # Before the units restart, so r1hnd starts with the merged file. A new
       # file is made owner-only first (the merge keeps an existing mode).
