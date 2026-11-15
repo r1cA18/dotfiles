@@ -47,6 +47,7 @@ in
     ../home.nix
     ../programs/r1hnd-service.nix
     ./olympus-legacy.nix
+    ../programs/vault-commit.nix
   ];
 
   # The secretary's home and the only writer of the vault: r1hnd keeps the
@@ -54,6 +55,9 @@ in
   # (times-triage, deadline-allocation, weekly-review, the nightly feed).
   # Every other host is a coding worker.
   dotfiles.r1hn.serve.role = "primary";
+
+  # Olympus is retired; this stops and removes its triage and deadline units.
+  dotfiles.olympus.legacyUnits.enable = false;
 
   # Headless Orca runtime for mobile pairing.
   # The binary is not named `orca` because that resolves to GNOME's screen reader.
