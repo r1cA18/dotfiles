@@ -215,6 +215,13 @@ let
       detect = web;
     };
 
+    # The rich reply blocks the r1 app renders. The app repository holds the
+    # one copy (skill text, schema and test vectors), linked in place like
+    # r1-design.
+    r1-rich-reply = baseline [ "r1" "reply" ] "Rich reply blocks for the r1 app (links, images, places, products, actions)" {
+      source = "${homeDir}/Develop/github.com/r1cA18/r1-mobile/skill";
+    };
+
     # MCP servers. Context7 and DeepWiki cost a few tool schemas each.
     context7 = {
       kind = "mcp";
