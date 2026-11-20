@@ -16,6 +16,17 @@
   };
 
   config = lib.mkIf config.dotfiles.r1hn.enable {
-    home.packages = [ inputs.r1hn.packages.${pkgs.stdenv.hostPlatform.system}.r1hn ];
+    home.packages =
+      let
+        harness = inputs.r1hn.packages.${pkgs.stdenv.hostPlatform.system};
+      in
+      [
+        harness.r1hn
+        # Claude's structured sessions run through the official ACP adapter,
+        # which starts the owner's own `claude` (r1hn sets the executable).
+        harness.claude-agent-acp
+        # pi runs metered accounts only (API keys), never a subscription.
+        pkgs.pi-coding-agent
+      ];
   };
 }
