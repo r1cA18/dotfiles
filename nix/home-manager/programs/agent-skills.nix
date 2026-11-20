@@ -88,6 +88,12 @@ in
         subdir = "skills";
       };
 
+      # unslop-ui: discovery finds skills/unslop-ui/SKILL.md.
+      unslop-ui = {
+        path = inputs.unslop-ui;
+        subdir = "skills";
+      };
+
       # Orca skills
       orca = {
         path = inputs.orca-skills;

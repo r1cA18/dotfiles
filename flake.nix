@@ -64,6 +64,10 @@
     unslop.url = "github:heydamir/unslop/97daa3eb365670ea3f87ed85356cbfcee18105a5";
     unslop.flake = false;
 
+    # unslop-ui: cut AI tells from UI copy and charts. Pinned: young repo without tags.
+    unslop-ui.url = "github:felipebasurto/unslop-ui/cd891160453f26aaacc569bad96a8d10d595076d";
+    unslop-ui.flake = false;
+
     # Hugging Face skills (Apache-2.0): catalog entries for Python and ML
     huggingface-skills.url = "github:huggingface/skills";
     huggingface-skills.flake = false;

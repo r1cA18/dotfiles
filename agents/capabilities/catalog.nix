@@ -117,6 +117,9 @@ let
     output-skill = catalog [ "agents" ] "full-output-enforcement: no truncated code output" { };
     image-to-code-skill = catalog [ "web" "design" ] "Image first, then implement it" { };
     unslop = catalog [ "web" "design" ] "Audit and redesign AI-looking UI" { detect = web; };
+    unslop-ui = catalog [ "web" "design" ] "Cut AI tells from UI copy, charts and dashboards" {
+      detect = web;
+    };
     design-capture = catalog [ "design" "vault" ] "Capture a site's design tokens into the vault" { };
     brandkit = catalog [ "design" "media" ] "Brand identity image generation" { };
     imagegen-frontend-web = catalog [ "design" "media" ] "Reference images for web UI" { };

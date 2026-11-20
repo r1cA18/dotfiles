@@ -345,7 +345,8 @@
         "trailofbits-skills": "trailofbits-skills",
         "treefmt-nix": "treefmt-nix",
         "typst-skills": "typst-skills",
-        "unslop": "unslop"
+        "unslop": "unslop",
+        "unslop-ui": "unslop-ui"
       }
     },
     "swiftui-agent-skill": {
@@ -447,6 +448,23 @@
         "owner": "heydamir",
         "repo": "unslop",
         "rev": "97daa3eb365670ea3f87ed85356cbfcee18105a5",
+        "type": "github"
+      }
+    },
+    "unslop-ui": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795003144,
+        "narHash": "sha256-uBQqutqaO0veTlWWAL0ekJFCFtDSJtOngcb4jqwcNnI=",
+        "owner": "felipebasurto",
+        "repo": "unslop-ui",
+        "rev": "cd891160453f26aaacc569bad96a8d10d595076d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "felipebasurto",
+        "repo": "unslop-ui",
+        "rev": "cd891160453f26aaacc569bad96a8d10d595076d",
         "type": "github"
       }
     }
