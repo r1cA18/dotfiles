@@ -16,6 +16,8 @@ dotfilesの操作は実行file`dot`のsubcommandに揃えている。対話shell
 | `dot search <名前>` | `nix search nixpkgs`                                                           | パッケージを検索                     |
 | `dot clean`         | `nh clean all --keep-since 14d --keep 5`                                       | 古い generation と store path を削除 |
 | `dot fmt`           | `nix run ~/dotfiles#fmt`                                                       | repositoryを整形                     |
+| `dot storage`       | `du`と`df`による集計。host名を渡すとSSH先で実行                                | 主な容量消費先と`.stversions`の警告  |
+| `dot worktrees`     | `git worktree list`を集計。`--remove`で1件ずつ確認して削除                     | 削除可能な古いlinked worktreeを表示  |
 | `dot server <動作>` | `nix run ~/dotfiles#server-<動作>` (Linuxのみ)                                 | homelabのserver workflowを実行       |
 
 ### dot update の段階

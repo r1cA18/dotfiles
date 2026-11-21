@@ -12,6 +12,8 @@ let
   dot = pkgs.writeShellApplication {
     name = "dot";
     runtimeInputs = [
+      pkgs.coreutils
+      pkgs.git
       pkgs.jq
       pkgs.nh
       pkgs.nix

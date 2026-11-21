@@ -123,6 +123,19 @@
           extra-trusted-public-keys = {{ homelab_nix_cache_public_key }}
       notify: Restart Nix daemon
 
+    # Garbage collection runs weekly from the user's nh-clean timer (nix/home-manager/programs/nh.nix).
+    - name: Deduplicate new Nix store paths with hard links
+      ansible.builtin.blockinfile:
+        path: /etc/nix/nix.custom.conf
+        create: true
+        owner: root
+        group: root
+        mode: "0644"
+        marker: "# {mark} ANSIBLE MANAGED HOMELAB STORE"
+        block: |
+          auto-optimise-store = true
+      notify: Restart Nix daemon
+
     - name: Set the host name
       ansible.builtin.hostname:
         name: "{{ homelab_hostname }}"

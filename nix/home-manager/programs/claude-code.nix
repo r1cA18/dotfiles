@@ -8,7 +8,6 @@
 let
   homeDir = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
   dotfilesDir = "${homeDir}/dotfiles";
-  python3 = lib.getExe pkgs.python3;
   sharedAgentInstructions = import ../../lib/agent-instructions.nix { inherit lib pkgs; };
   notificationCommand =
     sound:
@@ -43,6 +42,291 @@ let
     ];
     text = builtins.readFile ../../../claude/scripts/statusline.sh;
   };
+  merge = import ../../lib/merge-managed.nix { inherit pkgs lib; };
+
+  # settings.json keys Nix manages. Claude Code rewrites the file (plugin
+  # installs, /config, /model), so it is a writable file: each activation
+  # merges these keys into it, and keys it does not manage (plugins enabled
+  # inside Claude Code, per-machine choices) stay. A key listed here is reset
+  # to this value on every activation, as before. Plugins and their
+  # marketplaces come from the capability catalog (r1hn on macOS,
+  # capabilities.nix elsewhere); the marketplaces below only declare sources.
+  claudeSettings = {
+    "$schema" = "https://json.schemastore.org/claude-code-settings.json";
+    env = {
+      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+      CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
+      # Claude Mods (function hooks) 実験機能を有効化
+      CLAUDE_CODE_ENABLE_FUNCTION_HOOKS = "1";
+      # bg 自動更新を切り、更新経路を dot update (claude-code 段階) に一元化する。
+      DISABLE_AUTOUPDATER = "1";
+    };
+
+    statusLine = {
+      type = "command";
+      command = lib.getExe claudeStatusline;
+      padding = 0;
+    };
+
+    permissions = {
+      allow = [
+        "Bash(ssh *)"
+        "Bash(bun install*)"
+        "Bash(bun run *)"
+        "Bash(bun test*)"
+        "Bash(bun build *)"
+        "Bash(npx prettier *)"
+        "Bash(npx eslint *)"
+        "Bash(git status)"
+        "Bash(git diff *)"
+        "Bash(git log *)"
+        "Bash(git commit *)"
+        "Bash(git push)"
+        "Bash(git push origin *)"
+        "Bash(git push -u origin *)"
+        "Bash(git fetch *)"
+        "Bash(git pull *)"
+        "Bash(git checkout *)"
+        "Bash(git switch *)"
+        "Bash(git branch *)"
+        "Bash(git merge --ff-only *)"
+        "Bash(ls *)"
+      ];
+      deny = [
+        "Read(~/.ssh/**)"
+        "Edit(~/.ssh/**)"
+        "Read(~/.gnupg/**)"
+        "Read(~/.aws/**)"
+        "Read(~/.azure/**)"
+        "Read(~/.kube/**)"
+        "Read(~/.npmrc)"
+        "Read(~/.git-credentials)"
+        "Read(~/.config/gh/**)"
+        "Edit(~/.bashrc)"
+        "Edit(~/.zshrc)"
+        "Bash(curl *)"
+        "Bash(wget *)"
+        "Bash(nc *)"
+        "Bash(git push --force*)"
+        "Bash(git push -f*)"
+        "Bash(git push * --force*)"
+        "Bash(git push * -f*)"
+        "Bash(git reset --hard*)"
+        "Read(*.env)"
+        "Read(.env.*)"
+        "Edit(*.env)"
+        "Edit(.env.*)"
+        "Edit(*.key)"
+        "Edit(*.pem)"
+        "Edit(**/secrets/**)"
+        "Edit(**/credentials/**)"
+      ];
+      defaultMode = "auto";
+    };
+
+    enableAllProjectMcpServers = false;
+
+    hooks = {
+      SessionStart = [
+        {
+          hooks = [
+            {
+              # Catalog entries that match the project, once per project
+              # (agents/hooks/ is shared; Codex runs it from codex/hooks.json).
+              type = "command";
+              command = ''${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/capability-suggest.ts"'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      PreToolUse = [
+        {
+          matcher = "Edit|Write";
+          hooks = [
+            {
+              type = "command";
+              command = ''"${dotfilesDir}/claude/hooks/emoji-guard.sh"'';
+              timeout = 5;
+            }
+          ];
+        }
+        {
+          matcher = "Write";
+          hooks = [
+            {
+              type = "command";
+              command = ''"${dotfilesDir}/claude/hooks/large-file-guard.sh"'';
+              timeout = 5;
+            }
+          ];
+        }
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = ''PATH="${
+                lib.makeBinPath [
+                  pkgs.python3
+                  pkgs.git
+                ]
+              }:$PATH" "${dotfilesDir}/claude/hooks/debug-print-guard.sh"'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      PostToolUse = [
+        {
+          matcher = "Edit|Write";
+          hooks = [
+            {
+              type = "command";
+              command = ''"${dotfilesDir}/claude/hooks/ai-slop-guard.sh"'';
+              timeout = 5;
+            }
+            {
+              # vault 20_Knowledge の index カバレッジ検査 (agents/hooks/ は
+              # Codex と共有。Codex 側は codex/hooks.json の Stop hook で同じ
+              # スクリプトを --stop モードで呼ぶ)
+              type = "command";
+              command = ''${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/check-knowledge-index.ts"'';
+              timeout = 5;
+            }
+            {
+              # 編集したrepoの scripts/check fast を呼び、失敗を知らせるだけ
+              # (block しない)。Codex 側は codex/hooks.json の PostToolUse
+              type = "command";
+              command = ''PATH="${lib.makeBinPath [ pkgs.git ]}:$PATH" ${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/run-repo-check.ts"'';
+              timeout = 15;
+            }
+          ];
+        }
+        {
+          matcher = "*";
+          hooks = [
+            {
+              type = "command";
+              command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      Notification = [
+        {
+          matcher = "idle_prompt";
+          hooks = [
+            {
+              type = "command";
+              command = notificationCommand "Submarine";
+              timeout = 5;
+            }
+          ];
+        }
+        {
+          matcher = "permission_prompt";
+          hooks = [
+            {
+              type = "command";
+              command = notificationCommand "Ping";
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      Stop = [
+        {
+          hooks = [
+            {
+              type = "command";
+              command = notificationCommand "Funk";
+              timeout = 5;
+            }
+          ];
+        }
+        {
+          hooks = [
+            {
+              type = "command";
+              command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      UserPromptSubmit = [
+        {
+          hooks = [
+            {
+              type = "command";
+              command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      PostToolUseFailure = [
+        {
+          matcher = "*";
+          hooks = [
+            {
+              type = "command";
+              command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+      PermissionRequest = [
+        {
+          matcher = "*";
+          hooks = [
+            {
+              type = "command";
+              command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+    };
+
+    language = "日本語, 敬語非使用";
+
+    sandbox.filesystem.denyRead = [
+      "./.env"
+      "./.env.*"
+    ];
+
+    effortLevel = "high";
+    skipDangerousModePermissionPrompt = true;
+    skipAutoPermissionPrompt = true;
+    remoteControlAtStartup = true;
+    theme = "light";
+    editorMode = "vim";
+  };
+
+  # Marketplaces offered without enabling a plugin from them.
+  claudeMarketplaces = {
+    claude-plugins-official.source = {
+      source = "git";
+      url = "https://github.com/anthropics/claude-plugins-official.git";
+    };
+    sentry-plugin-marketplace.source = {
+      source = "git";
+      url = "https://github.com/getsentry/sentry-for-ai.git";
+    };
+    academic-research-skills.source = {
+      source = "github";
+      repo = "Imbad0202/academic-research-skills";
+    };
+    gsap-skills.source = {
+      source = "github";
+      repo = "greensock/gsap-skills";
+    };
+  };
 in
 {
   programs.claude-code = {
@@ -51,289 +335,6 @@ in
     # The Nix-wrapped binary would be shadowed anyway, so don't install it.
     # mcpServers/lspServers/plugins must stay empty when package=null.
     package = null;
-
-    # All settings.json content — Nix is the source of truth.
-    # IMPORTANT: every key listed here is fully managed; on each `dr` the
-    # live ~/.claude/settings.json is regenerated from this attrset, so any
-    # in-app mutations (/model, /theme, /editorMode, plugin toggles via
-    # /config, etc.) are reset to the values declared here. That's the
-    # intended workflow: keep dotfiles diff clean, accept that runtime
-    # changes are session-scoped unless promoted to this file.
-    settings = {
-      "$schema" = "https://json.schemastore.org/claude-code-settings.json";
-      env = {
-        CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
-        CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
-        # Claude Mods (function hooks) 実験機能を有効化
-        CLAUDE_CODE_ENABLE_FUNCTION_HOOKS = "1";
-        # bg 自動更新を切り、更新経路を dot update (claude-code 段階) に一元化する。
-        DISABLE_AUTOUPDATER = "1";
-      };
-
-      statusLine = {
-        type = "command";
-        command = lib.getExe claudeStatusline;
-        padding = 0;
-      };
-
-      permissions = {
-        allow = [
-          "Bash(ssh *)"
-          "Bash(bun install*)"
-          "Bash(bun run *)"
-          "Bash(bun test*)"
-          "Bash(bun build *)"
-          "Bash(npx prettier *)"
-          "Bash(npx eslint *)"
-          "Bash(git status)"
-          "Bash(git diff *)"
-          "Bash(git log *)"
-          "Bash(git commit *)"
-          "Bash(git push)"
-          "Bash(git push origin *)"
-          "Bash(git push -u origin *)"
-          "Bash(git fetch *)"
-          "Bash(git pull *)"
-          "Bash(git checkout *)"
-          "Bash(git switch *)"
-          "Bash(git branch *)"
-          "Bash(git merge --ff-only *)"
-          "Bash(ls *)"
-        ];
-        deny = [
-          "Read(~/.ssh/**)"
-          "Edit(~/.ssh/**)"
-          "Read(~/.gnupg/**)"
-          "Read(~/.aws/**)"
-          "Read(~/.azure/**)"
-          "Read(~/.kube/**)"
-          "Read(~/.npmrc)"
-          "Read(~/.git-credentials)"
-          "Read(~/.config/gh/**)"
-          "Edit(~/.bashrc)"
-          "Edit(~/.zshrc)"
-          "Bash(curl *)"
-          "Bash(wget *)"
-          "Bash(nc *)"
-          "Bash(git push --force*)"
-          "Bash(git push -f*)"
-          "Bash(git push * --force*)"
-          "Bash(git push * -f*)"
-          "Bash(git reset --hard*)"
-          "Read(*.env)"
-          "Read(.env.*)"
-          "Edit(*.env)"
-          "Edit(.env.*)"
-          "Edit(*.key)"
-          "Edit(*.pem)"
-          "Edit(**/secrets/**)"
-          "Edit(**/credentials/**)"
-        ];
-        defaultMode = "auto";
-      };
-
-      enableAllProjectMcpServers = false;
-
-      hooks = {
-        PreToolUse = [
-          {
-            matcher = "Edit|Write";
-            hooks = [
-              {
-                type = "command";
-                command = ''"${dotfilesDir}/claude/hooks/emoji-guard.sh"'';
-                timeout = 5;
-              }
-            ];
-          }
-          {
-            matcher = "Write";
-            hooks = [
-              {
-                type = "command";
-                command = ''"${dotfilesDir}/claude/hooks/large-file-guard.sh"'';
-                timeout = 5;
-              }
-            ];
-          }
-          {
-            matcher = "Bash";
-            hooks = [
-              {
-                type = "command";
-                command = ''PATH="${
-                  lib.makeBinPath [
-                    pkgs.python3
-                    pkgs.git
-                  ]
-                }:$PATH" "${dotfilesDir}/claude/hooks/debug-print-guard.sh"'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        PostToolUse = [
-          {
-            matcher = "Edit|Write";
-            hooks = [
-              {
-                type = "command";
-                command = ''"${dotfilesDir}/claude/hooks/ai-slop-guard.sh"'';
-                timeout = 5;
-              }
-              {
-                # vault 20_Knowledge の index カバレッジ検査 (agents/hooks/ は
-                # Codex と共有。Codex 側は codex/hooks.json の Stop hook で同じ
-                # スクリプトを --stop モードで呼ぶ)
-                type = "command";
-                command = ''${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/check-knowledge-index.ts"'';
-                timeout = 5;
-              }
-              {
-                # 編集したrepoの scripts/check fast を呼び、失敗を知らせるだけ
-                # (block しない)。Codex 側は codex/hooks.json の PostToolUse
-                type = "command";
-                command = ''PATH="${lib.makeBinPath [ pkgs.git ]}:$PATH" ${lib.getExe pkgs.bun} "${dotfilesDir}/agents/hooks/run-repo-check.ts"'';
-                timeout = 15;
-              }
-            ];
-          }
-          {
-            matcher = "*";
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        Notification = [
-          {
-            matcher = "idle_prompt";
-            hooks = [
-              {
-                type = "command";
-                command = notificationCommand "Submarine";
-                timeout = 5;
-              }
-            ];
-          }
-          {
-            matcher = "permission_prompt";
-            hooks = [
-              {
-                type = "command";
-                command = notificationCommand "Ping";
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        Stop = [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = notificationCommand "Funk";
-                timeout = 5;
-              }
-            ];
-          }
-          {
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        UserPromptSubmit = [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        PostToolUseFailure = [
-          {
-            matcher = "*";
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-        PermissionRequest = [
-          {
-            matcher = "*";
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -n "$SUPERSET_HOME_DIR" ] && [ -x "$SUPERSET_HOME_DIR/hooks/notify.sh" ] && "$SUPERSET_HOME_DIR/hooks/notify.sh" || true'';
-                timeout = 5;
-              }
-            ];
-          }
-        ];
-      };
-
-      enabledPlugins = {
-        "antigravity@antigravity-for-claude-code" = true;
-        "codex@openai-codex" = true;
-      };
-
-      extraKnownMarketplaces = {
-        claude-plugins-official.source = {
-          source = "git";
-          url = "https://github.com/anthropics/claude-plugins-official.git";
-        };
-        sentry-plugin-marketplace.source = {
-          source = "git";
-          url = "https://github.com/getsentry/sentry-for-ai.git";
-        };
-        openai-codex.source = {
-          source = "github";
-          repo = "openai/codex-plugin-cc";
-        };
-        academic-research-skills.source = {
-          source = "github";
-          repo = "Imbad0202/academic-research-skills";
-        };
-        gsap-skills.source = {
-          source = "github";
-          repo = "greensock/gsap-skills";
-        };
-        antigravity-for-claude-code.source = {
-          source = "github";
-          repo = "yuting0624/antigravity-for-claude-code";
-        };
-      };
-
-      language = "日本語, 敬語非使用";
-
-      sandbox.filesystem.denyRead = [
-        "./.env"
-        "./.env.*"
-      ];
-
-      effortLevel = "high";
-      skipDangerousModePermissionPrompt = true;
-      skipAutoPermissionPrompt = true;
-      remoteControlAtStartup = true;
-      theme = "light";
-      editorMode = "vim";
-    };
   };
 
   # Shared instructions are generated from agents/INSTRUCTIONS.md and
@@ -345,7 +346,6 @@ in
 
     file = {
       ".claude/CLAUDE.md".source = sharedAgentInstructions;
-      ".claude/mcp-servers.json" = mkClaudeSymlink "claude/mcp-servers.json";
       ".claude/rules" = mkClaudeSymlink "claude/rules";
       ".claude/hooks" = mkClaudeSymlink "claude/hooks";
       ".claude/commands" = mkClaudeSymlink "claude/commands";
@@ -362,25 +362,21 @@ in
         fi
       '';
 
-      # settings.json is a Nix-managed symlink, but Claude Code occasionally rewrites
-      # it as a regular file (plugin installs, in-app /config edits). The next `dr`
-      # then tries to back it up to settings.json.hm-backup and fails if a previous
-      # backup already exists. Since Nix is the source of truth here, the backup has
-      # no value — drop it before checkLinkTargets runs.
+      # settings.json used to be a link into the store; Claude Code rewrote
+      # it on plugin installs and the next activation failed on the backup.
+      # It is now a writable file with the managed keys merged in.
       cleanClaudeSettingsBackup = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
         rm -f "$HOME/.claude/settings.json.hm-backup"
       '';
-
-      # MCP servers cannot use programs.claude-code.mcpServers (requires package!=null
-      # and our claude is self-installed). Keep the python merge script that syncs
-      # claude/mcp-servers.json into ~/.claude.json on every dr.
-      syncClaudeMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        echo "Syncing Claude MCP servers..."
-        ${python3} \
-          "${dotfilesDir}/claude/scripts/sync-mcp-servers.py" \
-          "$HOME/.claude.json" \
-          "${dotfilesDir}/claude/mcp-servers.json" || true
-      '';
+      claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] (merge {
+        format = "json";
+        target = "$HOME/.claude/settings.json";
+        name = "claude-settings";
+        fragment = {
+          set = claudeSettings;
+          entries.extraKnownMarketplaces = claudeMarketplaces;
+        };
+      });
 
       # Claude Code native 版の導入/固定。更新 (latest 追従) は dot update の
       # claude-code 段階が担うので、ここは初回導入と固定版の適用のみ。

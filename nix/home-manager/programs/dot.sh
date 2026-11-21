@@ -16,6 +16,8 @@ Usage: dot <command> [args]
   update [stage]... Update flake inputs, native tools and Homebrew
   search <query>    Search nixpkgs
   clean             Delete old generations and unused store paths
+  storage [host]    Show disk usage of the main storage consumers
+  worktrees         List stale linked Git worktrees (--days N, --remove)
   fmt               Format the dotfiles repository
   server <action>   Run a homelab server workflow (Linux only)
   help              Show this list
@@ -103,6 +105,100 @@ cmd_update() {
   return "$status"
 }
 
+develop_root() {
+  local root
+  root=$(git config --global ghq.root 2>/dev/null || true)
+  root=${root:-$HOME/Develop}
+  echo "${root/#\~/$HOME}"
+}
+
+# Disk usage of the main storage consumers on this host. With a host name the
+# same report runs there over SSH.
+cmd_storage() {
+  if [ "$#" -gt 0 ]; then
+    # shellcheck disable=SC2029 # dot is resolved on the remote host
+    ssh "$1" 'PATH="$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:$PATH" dot storage'
+    return
+  fi
+  local root stversions_kib limit_gib=10 path
+  root=$(develop_root)
+  df -h "$HOME"
+  echo
+  for path in "$root" "$root/.stversions" "$HOME/Workspaces" \
+    "$HOME/Library/Developer/Xcode/DerivedData" "$HOME/Library/Developer/Xcode/iOS DeviceSupport" \
+    "$HOME/Library/Developer/CoreSimulator" "$HOME/Library/Caches" "$HOME/Library/pnpm" \
+    "$HOME/.local/share/pnpm" "$HOME/.cache" "$HOME/.cargo" "$HOME/.rustup" "$HOME/.bun" "$HOME/.npm"; do
+    [ -d "$path" ] && du -xsh "$path" 2>/dev/null
+  done
+  if [ -d "$root/.stversions" ]; then
+    stversions_kib=$(du -xsk "$root/.stversions" | cut -f1)
+    if [ "$stversions_kib" -gt $((limit_gib * 1024 * 1024)) ]; then
+      echo
+      echo "warning: $root/.stversions is over ${limit_gib}GiB; Syncthing keeps replaced files there (see docs/guides/developer-cleanup.md)" >&2
+    fi
+  fi
+  if [ -f "$HOME/.local/state/developer-cleanup/daily-summary.json" ]; then
+    echo
+    echo "developer-cleanup (last daily run):"
+    jq -r '"  started \(.started_at | todate)  candidates \(.candidates)  cleaned \(.cleaned)  failures \(.failures)"' \
+      "$HOME/.local/state/developer-cleanup/daily-summary.json"
+  fi
+}
+
+# Linked worktrees that are safe to remove: clean, no ignored files other than
+# build output, every commit on a remote, and untouched for N days. Removal
+# asks for each one and never deletes branches.
+cmd_worktrees() {
+  local remove=0 days=14 root repo common path locked branch index age size extra answer
+  local -a mains=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+    --remove) remove=1 ;;
+    --days)
+      days=$2
+      shift
+      ;;
+    *)
+      echo "usage: dot worktrees [--days N] [--remove]" >&2
+      return 64
+      ;;
+    esac
+    shift
+  done
+  root=$(develop_root)
+  export GIT_OPTIONAL_LOCKS=0
+  while IFS= read -r repo; do
+    mains+=("${repo%/.git}")
+  done < <(find "$root" -mindepth 2 -maxdepth 6 \( -name node_modules -o -name .stversions -o -name target \) -prune -o -type d -name .git -print 2>/dev/null)
+  for repo in "${mains[@]}"; do
+    common=$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || continue
+    [ "$common" = "$repo/.git" ] || continue
+    while IFS=$'\t' read -r path locked; do
+      [ "$path" != "$repo" ] && [ "$locked" = 0 ] && [ -d "$path" ] || continue
+      [ -z "$(git -C "$path" status --porcelain --untracked-files=normal 2>/dev/null)" ] || continue
+      [ "$(git -C "$path" rev-list --count HEAD --not --remotes 2>/dev/null)" = 0 ] || continue
+      extra=$(git -C "$path" ls-files --others --ignored --exclude-standard --directory 2>/dev/null |
+        grep -Ev '^(target|node_modules|\.venv|\.next|\.build|DerivedData|\.direnv|result)/?$' || true)
+      [ -z "$extra" ] || continue
+      # The HEAD reflog changes on commit and checkout; scanners rewrite the index.
+      index=$(git -C "$path" rev-parse --path-format=absolute --git-path logs/HEAD)
+      [ -e "$index" ] || index=$(git -C "$path" rev-parse --path-format=absolute --git-path index)
+      age=$((($(date +%s) - $(stat -c %Y "$index")) / 86400))
+      [ "$age" -ge "$days" ] || continue
+      branch=$(git -C "$path" branch --show-current)
+      size=$(du -xsh "$path" | cut -f1)
+      printf '%s\t%s\t%sd\t%s\n' "$size" "$path" "$age" "${branch:-detached}"
+      if [ "$remove" = 1 ]; then
+        read -r -p "Remove worktree $path (branch kept)? [y/N] " answer </dev/tty
+        if [ "$answer" = y ]; then
+          git -C "$repo" worktree remove "$path"
+        fi
+      fi
+    done < <(git -C "$repo" worktree list --porcelain |
+      awk '/^worktree /{p=substr($0,10); l=0} /^locked/{l=1} /^$/{print p"\t"l; p=""} END{if(p!="")print p"\t"l}')
+  done
+}
+
 cmd_server() {
   local action="${1-}"
   case "$action" in
@@ -154,6 +250,8 @@ generations)
 update) cmd_update "$@" ;;
 search) nix search nixpkgs "$@" ;;
 clean) nh clean all --keep-since 14d --keep 5 "$@" ;;
+storage) cmd_storage "$@" ;;
+worktrees) cmd_worktrees "$@" ;;
 fmt) nix run "$flake#fmt" -- "$@" ;;
 server) cmd_server "$@" ;;
 help | -h | --help) usage ;;

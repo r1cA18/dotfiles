@@ -9,15 +9,14 @@ Claude Code本体はnative installer版を使う。Home Managerは未導入時�
 ```text
 ~/.claude/
 ├── CLAUDE.md            ← agents/{INSTRUCTIONS.md,rules/*}をNixで結合
-├── settings.json        ← nix/home-manager/programs/claude-code.nixからNix生成
-├── mcp-servers.json     ← claude/mcp-servers.jsonへのsymlink
+├── settings.json        ← writable。claude-code.nixの管理keyをmerge
 ├── settings.local.json  ← runtime生成（管理対象外）
 ├── managed-channel      ← Claude Code更新channelをNix生成
 ├── rules/               ← claude/rules/へのsymlink
 ├── hooks/               ← claude/hooks/へのsymlink
 ├── commands/            ← claude/commands/へのsymlink
 ├── agents/              ← claude/agents/へのfile単位symlink
-└── skills/              ← agent-skills-nixから配布
+└── skills/              ← r1hnがcatalogのentryごとにsymlink
 
 ~/.claude.json           ← user-level runtime state（管理対象外）
 ```
@@ -29,20 +28,19 @@ Claude Code本体はnative installer版を使う。Home Managerは未導入時�
 | `CLAUDE.md`        | `agents/INSTRUCTIONS.md`と`agents/rules/`   | `dr`     |
 | `settings.json`    | `nix/home-manager/programs/claude-code.nix` | `dr`     |
 | `managed-channel`  | 同上                                        | `dr`     |
-| `mcp-servers.json` | `claude/mcp-servers.json`                   | 即時     |
 | `rules/`           | `claude/rules/`                             | 即時     |
 | `hooks/`           | `claude/hooks/`                             | 即時     |
 | `commands/`        | `claude/commands/`                          | 即時     |
 | `agents/`          | `claude/agents/`                            | 即時     |
-| `skills/`          | `agents/skills/`と宣言済み外部source        | `dr`     |
+| `skills/`          | `agents/capabilities/catalog.nix`           | `dr`     |
 
 共有instructionはClaudeとCodexの両方へ配布する。Claude固有のrule・hook・command・agentだけを`claude/`へ置く。
 
 ## settings.json
 
-`settings.json`はrepository内のJSON fileではない。Home Manager moduleが生成し、Nix storeへのsymlinkとして配置する。現行値は`nix/home-manager/programs/claude-code.nix`を参照する。
-
-Claude Codeが`settings.json`を書き換えてregular fileにした場合も、次回の`dr`でNix宣言へ戻す。恒久変更は同moduleへ入れる。
+`settings.json`はwritableなregular fileにする。Claude Codeはplugin導入や`/config`で書き換えるため、Home Managerはfileを所有しない。
+毎回の`dr`が`nix/home-manager/programs/claude-code.nix`の`claudeSettings`のkeyをmergeする(`agents/scripts/merge-managed.py`)。
+宣言したkeyは宣言値へ戻り、宣言していないkey(Claude Codeの中で有効にしたpluginなど)は残る。宣言から外したkeyは次の`dr`で消える。
 
 ## Binary更新
 
@@ -50,22 +48,15 @@ Claude Codeが`settings.json`を書き換えてregular fileにした場合も、
 
 ## MCP管理
 
-ClaudeのMCP実設定は`~/.claude.json`にあり、OAuth状態などのruntime情報も含む。そのためfile全体をNix管理せず、`claude/mcp-servers.json`をdeclarative seedにする。
-
-```bash
-python3 ~/dotfiles/claude/scripts/sync-mcp-servers.py \
-  ~/.claude.json \
-  ~/dotfiles/claude/mcp-servers.json
-```
-
-このscriptはprimary profileの`mcpServers`だけをupsertし、他のruntime stateは残す。追加profileへの同期と宣言から削除したserverの除去には未対応。
+MCP serverは`agents/capabilities/catalog.nix`に宣言する。`r1hn`が既定dirと各account dirの`.claude.json`の`mcpServers`へmergeし、自分が書いたkeyだけを消す。
+Claude Codeの中で追加したserverは残る。`r1hn capability doctor`がcatalog外のserverを一覧し、`adopt NAME`がcatalogへ貼るattrsetを出す。
 
 ## Pluginとskill
 
-`enabledPlugins`は`claude-code.nix`で宣言する。plugin本体と認証状態はClaude Codeがruntime展開する。
+有効にするpluginは`agents/capabilities/catalog.nix`の`kind = "plugin"`で宣言し、`r1hn`が`enabledPlugins`と`extraKnownMarketplaces`へmergeする。plugin本体と認証状態はClaude Codeがruntime展開する。
 
 - Claude/Codexで共有するskill: `agents/skills/`
-- Claude専用plugin: `nix/home-manager/programs/claude-code.nix`
+- Claude専用plugin: `agents/capabilities/catalog.nix`(marketplaceの宣言だけは`claude-code.nix`)
 - 外部skill source: `flake.nix`と`nix/home-manager/programs/agent-skills.nix`
 
 ## Commandとagentの追加

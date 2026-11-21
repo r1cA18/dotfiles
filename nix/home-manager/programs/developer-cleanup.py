@@ -25,8 +25,18 @@ PRESSURE_RETENTION = 3 * 86400
 LOW_FREE = 100 * GIB
 TARGET_FREE = 150 * GIB
 REPO_RETENTION = 30 * 86400
+# Dependency and framework output is reinstalled in minutes, so it waits longer than Rust output.
+BUILD_RETENTION = 14 * 86400
+PRESSURE_BUILD_RETENTION = 7 * 86400
+DERIVED_RETENTION = 14 * 86400
+# A project (or any parent directory) holding this file is never cleaned.
+KEEP_MARKER = ".developer-cleanup-keep"
+# Edits to these files count as project activity for dependency output.
+MANIFESTS = ("package.json", "pnpm-lock.yaml", "bun.lock", "bun.lockb", "package-lock.json",
+             "yarn.lock", "pyproject.toml", "uv.lock", "requirements.txt", "next.config.js",
+             "next.config.mjs", "next.config.ts")
 PRUNE = {".git", "node_modules", ".venv", ".direnv", "target", ".build",
-         "DerivedData", "Pods", ".next", "__pycache__", ".local", ".device-lab"}
+         "DerivedData", "Pods", ".next", "__pycache__", ".local", ".device-lab", ".stversions"}
 BUILDERS = {"cargo", ".cargo-wrapped", "rustc", ".rustc-wrapped", "rustdoc", ".rustdoc-wrapped"}
 
 
@@ -51,6 +61,10 @@ def run(command, cwd=None):
 
 def inside(path, root):
     return path == root or root in path.parents
+
+
+def kept(path):
+    return any((parent / KEEP_MARKER).exists() for parent in (path, *path.parents))
 
 
 def protected(path):
@@ -101,7 +115,8 @@ class Usage:
         for line in ps.stdout.splitlines():
             pid, name = line.strip().split(None, 1)
             commands[pid] = Path(name).name
-        opened = subprocess.run(["/usr/sbin/lsof", "-nP", "-a", "-u", str(os.getuid()),
+        lsof = "/usr/sbin/lsof" if sys.platform == "darwin" else "lsof"
+        opened = subprocess.run([lsof, "-nP", "-a", "-u", str(os.getuid()),
                                  "-Fpcfn0"], capture_output=True, check=True, timeout=30)
         paths, cwds = set(), {}
         pid, descriptor = None, None
@@ -188,13 +203,118 @@ def artifacts(roots, include_repos=False):
                         yield "rust", path
                 except OSError as error:
                     LOG.warning("SCAN %s", error)
+            yield from build_outputs(parent, dirs)
             dirs[:] = [name for name in dirs
                        if name not in PRUNE and not (parent / name).is_symlink()
                        and not protected(parent / name)]
 
 
+def build_outputs(parent, dirs):
+    """Dependency and framework output next to the manifest that recreates it."""
+    package = parent / "package.json"
+    has_package = package.is_file() and not package.is_symlink()
+    for name, kind, recognized in (("node_modules", "node", has_package),
+                                   (".next", "next", has_package),
+                                   (".venv", "venv", (parent / ".venv/pyvenv.cfg").is_file())):
+        path = parent / name
+        if name in dirs and recognized and not path.is_symlink():
+            yield kind, path
+
+
+def shallow_old(paths, cutoff):
+    """True when every given path and its direct children were last modified before cutoff."""
+    for path in paths:
+        if path.lstat().st_mtime >= cutoff:
+            return False
+        if path.is_dir() and not path.is_symlink():
+            if any(child.lstat().st_mtime >= cutoff for child in path.iterdir()):
+                return False
+    return True
+
+
+def idle_project(project, path, cutoff):
+    """Recent installs, manifest edits, commits or checkouts in the worktree keep the output.
+    The Git index is not used: any `git status` from scanners or prompts rewrites it."""
+    activity = [project / name for name in MANIFESTS]
+    result = git(project, "rev-parse", "--path-format=absolute", "--git-path", "logs/HEAD")
+    if result.returncode:
+        raise RuntimeError("Cannot verify repository activity")
+    activity.append(Path(result.stdout.strip()))
+    present = [entry for entry in activity if entry.exists() or entry.is_symlink()]
+    return shallow_old([path], cutoff) and all(entry.lstat().st_mtime < cutoff for entry in present)
+
+
+def remove_detached(path, holding_parent, stats, still_safe):
+    """Move output aside, recheck that nothing started using it, then delete it."""
+    holding = Path(tempfile.mkdtemp(prefix=".developer-cleanup-", dir=holding_parent))
+    detached = holding / path.name
+    deleting = False
+    try:
+        path.rename(detached)
+        if not still_safe():
+            raise Busy("Output became active after detaching it: " + str(path))
+        deleting = True
+        shutil.rmtree(detached)
+    finally:
+        # Partly deleted output is never put back where a build would trust it.
+        if detached.exists():
+            if not path.exists() and not deleting:
+                detached.rename(path)
+            else:
+                LOG.warning("PRESERVED detached output: %s", detached)
+        if holding.exists() and not any(holding.iterdir()):
+            holding.rmdir()
+    stats["cleaned"] += 1
+
+
+def clean_build_output(kind, path, apply, cutoff, stats):
+    project = path.parent
+    if protected(path) or kept(project) or protected_project(project):
+        skip(stats, "protected_or_kept")
+        return
+    if tracked(path):
+        skip(stats, "git_tracked_or_unknown")
+        return
+    if not idle_project(project, path, cutoff):
+        skip(stats, "recent_project")
+        return
+    if Usage.read().busy(project):
+        skip(stats, "active_project")
+        LOG.info("SKIP active project %s", project)
+        return
+    stats["candidates"] += 1
+    LOG.info("CANDIDATE %s %s", kind, path)
+    if apply:
+        remove_detached(path, project, stats, lambda: not Usage.read().busy(project))
+
+
+def derived_data(home):
+    root = home / "Library/Developer/Xcode/DerivedData"
+    if not root.is_dir() or root.is_symlink():
+        return []
+    return sorted(path for path in root.iterdir()
+                  if path.is_dir() and not path.is_symlink() and not path.name.startswith(".developer-cleanup-"))
+
+
+def clean_derived_data(path, apply, cutoff, stats):
+    """Xcode recreates per-project DerivedData; recent or open entries stay."""
+    if protected(path) or kept(path):
+        skip(stats, "protected_or_kept")
+        return
+    if not shallow_old([path, *(child for child in path.iterdir() if child.is_dir() and not child.is_symlink())], cutoff):
+        skip(stats, "recent_derived_data")
+        return
+    if Usage.read().busy(path):
+        skip(stats, "active_derived_data")
+        return
+    stats["candidates"] += 1
+    LOG.info("CANDIDATE xcode %s", path)
+    if apply:
+        remove_detached(path, path.parent, stats, lambda: not Usage.read().busy(path))
+
+
 def clean_artifact(kind, path, apply, cutoff, stats):
-    if kind != "rust" or protected(path) or protected_project(path.parent):
+    if kind != "rust" or protected(path) or kept(path.parent) or protected_project(path.parent):
         skip(stats, "protected_project")
         return
     if not old_tree(path, cutoff):
@@ -519,6 +639,7 @@ def cleanup(home, apply, monitor=False, state=None):
         LOG.info("SKIP monitor: free space >=100GiB")
         return stats
     cutoff = time.time() - retention
+    build_cutoff = time.time() - (PRESSURE_BUILD_RETENTION if pressure else BUILD_RETENTION)
 
     def attempt(action):
         try:
@@ -544,18 +665,32 @@ def cleanup(home, apply, monitor=False, state=None):
             repos.append(path)
         elif pressure and apply and shutil.disk_usage(home).free >= TARGET_FREE:
             skip(stats, "free_space_target_reached")
-        else:
+        elif kind == "rust":
             attempt(lambda: clean_artifact(kind, path, apply, cutoff, stats))
+        elif not monitor:
+            attempt(lambda: clean_build_output(kind, path, apply, build_cutoff, stats))
 
     if not monitor:
-        def prune_uv():
-            if Usage.read().running("uv"):
-                skip(stats, "uv_running")
-            elif apply:
-                run(["uv", "cache", "prune"])
-            else:
-                LOG.info("PLAN uv cache prune (unused cache only)")
-        attempt(prune_uv)
+        derived_cutoff = time.time() - DERIVED_RETENTION
+        for path in derived_data(home):
+            attempt(lambda: clean_derived_data(path, apply, derived_cutoff, stats))
+
+        # Each tool removes only cache entries that no project or install references.
+        def prune(name, command, busy_names):
+            def action():
+                usage = Usage.read()
+                if any(usage.running(busy) for busy in busy_names):
+                    skip(stats, name + "_running")
+                elif apply:
+                    with tempfile.TemporaryDirectory(prefix="developer-cleanup-" + name + "-") as cwd:
+                        run(command, cwd=cwd)
+                else:
+                    LOG.info("PLAN %s (unused cache only)", shlex.join(command))
+            attempt(action)
+        prune("uv", ["uv", "cache", "prune"], {"uv"})
+        prune("pnpm", ["pnpm", "store", "prune"], {"pnpm"})
+        # Extracted crate sources and Git checkouts; Cargo recreates them from the kept archives.
+        prune("cargo", ["cargo-cache", "--autoclean"], BUILDERS)
         report = attempt(lambda: repository_report(repos, home))
         if report is not None and state is not None:
             attempt(lambda: update_inventory(report, home))
@@ -577,7 +712,7 @@ def cleanup(home, apply, monitor=False, state=None):
     elif not monitor:
         LOG.info("SKIP Docker: local OrbStack socket unavailable")
     stats["free_after"] = shutil.disk_usage(home).free
-    if apply and state is not None and stats["free_after"] < LOW_FREE:
+    if apply and state is not None and stats["free_after"] < LOW_FREE and sys.platform == "darwin":
         stamp = state / "last-notification"
         if not stamp.exists() or time.time() - stamp.stat().st_mtime >= 86400:
             message = f'空き容量は{stats["free_after"] / GIB:.1f}GiBです。developer-cleanupのログを確認してください。'

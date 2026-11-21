@@ -17,8 +17,10 @@
     ./programs/packages.nix
     ./programs/syncthing.nix
     ./programs/agent-skills.nix
+    ./programs/capabilities.nix
     ./programs/model-profiles.nix
     ./programs/antigravity.nix
+    ./programs/aside.nix
     ./programs/r1hn.nix
     ./programs/devin.nix
     ./programs/claude-code.nix

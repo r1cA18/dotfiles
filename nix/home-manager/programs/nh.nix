@@ -14,8 +14,12 @@ in
   programs.nh = {
     enable = true;
     # Darwin user profiles are cleaned by developer-cleanup; system GC runs separately.
-    clean.enable = !pkgs.stdenv.hostPlatform.isDarwin;
-    clean.dates = "weekly";
+    clean = {
+      enable = !pkgs.stdenv.hostPlatform.isDarwin;
+      dates = "weekly";
+      # Same retention as `dot clean`.
+      extraArgs = "--keep 5 --keep-since 14d";
+    };
 
     darwinFlake = if pkgs.stdenv.hostPlatform.isDarwin then flakePath else null;
 

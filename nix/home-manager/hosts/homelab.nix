@@ -43,7 +43,36 @@ let
   };
 in
 {
-  imports = [ ../home.nix ];
+  imports = [
+    ../home.nix
+    ../programs/r1hnd-service.nix
+    ./olympus-legacy.nix
+    ../programs/vault-commit.nix
+    ../programs/r1-discord.nix
+  ];
+
+  dotfiles = {
+    # The secretary's home and the only writer of the vault: r1hnd keeps the
+    # Times and tasks, the assistant, and runs the jobs in ~/vault/40_AI/r1/jobs
+    # (times-triage, deadline-allocation, weekly-review, the nightly feed).
+    # Every other host is a coding worker.
+    r1hn.serve.role = "primary";
+
+    # GitHub signing uses the host file key ~/.ssh/github-signing, not 1Password.
+    git.signing.backend = "file";
+
+    # Olympus is retired; this stops and removes its triage and deadline units.
+    olympus.legacyUnits.enable = false;
+  };
+
+  # GitHub auth uses ~/.ssh/github-auth, not the 1Password agent (see
+  # docs/guides/github-auth.md). This block must precede `Host *`, whose
+  # IdentityAgent would otherwise apply to GitHub.
+  programs.ssh.settings."github.com" = {
+    IdentityFile = "~/.ssh/github-auth";
+    IdentitiesOnly = "yes";
+    IdentityAgent = "none";
+  };
 
   # Headless Orca runtime for mobile pairing.
   # The binary is not named `orca` because that resolves to GNOME's screen reader.
@@ -100,76 +129,6 @@ in
         };
         Install.WantedBy = [ "default.target" ];
       };
-
-      olympus-times-triage = {
-        Unit = {
-          Description = "Debounced Olympus triage for new Times entries";
-          After = [
-            "network-online.target"
-            "codex-app-server.service"
-          ];
-          Wants = [ "network-online.target" ];
-        };
-        Service = {
-          Type = "oneshot";
-          Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-times-triage.sh";
-          TimeoutStartSec = "4h";
-          Nice = 10;
-          IOSchedulingClass = "idle";
-        };
-      };
-
-      olympus-deadline-scheduler = {
-        Unit = {
-          Description = "Allocate unscheduled Olympus inbox/todo deadline tasks";
-          After = [
-            "network-online.target"
-            "codex-app-server.service"
-          ];
-          Wants = [ "network-online.target" ];
-        };
-        Service = {
-          Type = "oneshot";
-          Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-deadline-scheduler.sh";
-          TimeoutStartSec = "10min";
-          Nice = 10;
-          IOSchedulingClass = "idle";
-        };
-      };
-    };
-
-    timers = {
-      olympus-times-triage = {
-        Unit = {
-          Description = "Check for new Times entries every 15 minutes";
-          ConditionPathExists = "%h/.local/state/olympus-times-triage/enabled";
-        };
-        Timer = {
-          OnBootSec = "15min";
-          OnUnitActiveSec = "15min";
-          AccuracySec = "1min";
-          Persistent = false;
-          Unit = "olympus-times-triage.service";
-        };
-        Install.WantedBy = [ "timers.target" ];
-      };
-
-      olympus-deadline-scheduler = {
-        Unit = {
-          Description = "Check hourly for unscheduled Olympus deadline tasks";
-          ConditionPathExists = "%h/.local/state/olympus-deadline-scheduler/enabled";
-        };
-        Timer = {
-          OnBootSec = "20min";
-          OnUnitActiveSec = "1h";
-          AccuracySec = "5min";
-          Persistent = false;
-          Unit = "olympus-deadline-scheduler.service";
-        };
-        Install.WantedBy = [ "timers.target" ];
-      };
     };
   };
 
@@ -194,24 +153,6 @@ in
           id = "ecvg9-qifz9";
           label = "vault";
           path = "${config.home.homeDirectory}/vault";
-          type = "sendreceive";
-          devices = [ "RMB" ];
-          ignorePerms = true;
-          fsWatcherEnabled = true;
-          rescanIntervalS = 3600;
-          maxConflicts = 20;
-          versioning = {
-            type = "staggered";
-            params = {
-              cleanInterval = "3600";
-              maxAge = "2592000";
-            };
-          };
-        };
-        Develop = {
-          id = "tj9sr-r4ieg";
-          label = "Develop";
-          path = "${config.home.homeDirectory}/Develop";
           type = "sendreceive";
           devices = [ "RMB" ];
           ignorePerms = true;
