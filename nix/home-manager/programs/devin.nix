@@ -7,7 +7,9 @@ let
   managedSettings = {
     agent.model = "adaptive";
     attribution = true;
-    auto_update = true;
+    # The binary comes from the r1hn flake input (r1hn.nix) and lives in the
+    # read-only store; a new release is a new pin there.
+    auto_update = false;
     notify = "smart";
     show_hints = false;
     show_path = true;
@@ -20,36 +22,16 @@ in
     sessionVariables.DEVIN_PERMISSION_MODE = "bypass";
 
     activation.setupDevin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      export PATH="${
-        lib.makeBinPath (
-          with pkgs;
-          [
-            curl
-            jq
-            coreutils
-            gnutar
-            gzip
-            bash
-          ]
-        )
-      }:$PATH:/usr/bin:/bin"
-      bin="$HOME/.local/bin/devin"
       config_dir="$HOME/.config/devin"
       config_file="$config_dir/config.json"
-      log="$HOME/.local/state/devin/install.log"
 
-      if [ ! -x "$bin" ]; then
-        mkdir -p "$(dirname "$log")"
-        installer=$(${pkgs.coreutils}/bin/mktemp)
-        if ! ${pkgs.curl}/bin/curl -fsSL https://cli.devin.ai/install.sh -o "$installer" \
-          || ! ${pkgs.bash}/bin/bash "$installer" </dev/null >>"$log" 2>&1; then
-          if [ -x "$bin" ]; then
-            echo "[devin] installed; interactive login remains" >&2
-          else
-            echo "[devin] install failed, see $log" >&2
-          fi
-        fi
-        rm -f "$installer"
+      # The vendor installer's link shadows the Nix package on PATH. Remove
+      # the link only; ~/.local/share/devin is left to the owner.
+      old_bin="$HOME/.local/bin/devin"
+      if [ -L "$old_bin" ]; then
+        case "$(${pkgs.coreutils}/bin/readlink "$old_bin")" in
+          "$HOME/.local/share/devin/cli/"*) rm -f "$old_bin" ;;
+        esac
       fi
 
       mkdir -p "$config_dir"

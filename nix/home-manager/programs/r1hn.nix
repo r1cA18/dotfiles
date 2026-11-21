@@ -25,6 +25,8 @@
         # Claude's structured sessions run through the official ACP adapter,
         # which starts the owner's own `claude` (r1hn sets the executable).
         harness.claude-agent-acp
+        # Devin's runtime (`devin acp`), the vendor binary pinned by the harness.
+        harness.devin
         # pi runs metered accounts only (API keys), never a subscription.
         pkgs.pi-coding-agent
       ];

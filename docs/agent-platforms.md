@@ -25,7 +25,7 @@
 | Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                                 |
 | Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
 | Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
-| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | native installをbootstrapして既存user configへ管理項目をmergeする                  |
+| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | 既存user configへ管理項目をmergeする。binaryはr1hn inputの`devin` package          |
 
 ## 共有できるもの
 
