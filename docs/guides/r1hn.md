@@ -155,6 +155,7 @@ env = "production"                    # Xcodeから入れたbuildだけなら "s
 - homelabのr1hndが`~/vault/40_AI/r1/jobs/`のjobを実行する。夜のfeedは組み込みjob `feed-nightly`である
 - 以前の`r1hn-feed.timer`はdotfilesにもhomelabにも無い。feedが二重に走ることはない
 - 秘書のskillは`secretary` bundleにまとめた。vaultで有効にする: `r1hn capability enable bundle:secretary --project ~/vault`
+- bundleの`r1-life-mcp`はr1-lifeのstdio shim(`mcp-stdio`)である。homelabのr1-life checkoutで`bun install`を済ませ、MCP tokenを`~/.config/r1-life/mcp-token`(mode 0600)に置く。他のhostからはsshの`homelab`経由で同じshimを起動する
 - `olympus-times-triage`と`olympus-deadline-scheduler`は`nix/home-manager/hosts/olympus-legacy.nix`に残す
 - jobの`times-triage`と`deadline-allocation`が1週間動いたら、`homelab.nix`に`dotfiles.olympus.legacyUnits.enable = false;`を書いてapplyする
 - 並行期間に片方だけ止めるときは`systemctl --user stop olympus-times-triage.timer`を実行し`~/.local/state/olympus-times-triage/enabled`を消す。flag fileが無いtimerは再起動後も起動しない。deadlineも同じ手順である

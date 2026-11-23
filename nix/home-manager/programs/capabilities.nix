@@ -141,6 +141,8 @@ in
             "weekly-review"
             "knowledge-extract"
             "codex-google-calendar"
+            "r1-life"
+            "r1-life-mcp"
           ];
         };
       };

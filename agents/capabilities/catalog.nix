@@ -208,6 +208,7 @@ let
     weekly-review = catalog [ "secretary" ] "Read-only review of the week from notes, Times and tasks" {
       detect.files = [ "11_Times" ];
     };
+    r1-life = catalog [ "secretary" ] "How to use the r1-life connectors safely (calendar now; mail and more later)" { };
 
     # The owner's design system lives in a private checkout. The entry links
     # to it in place, so nothing is copied here and evaluation never reads
@@ -285,6 +286,46 @@ let
           "/home/r1ca18/.nix-profile/bin/bun"
           "run"
           "/home/r1ca18/Develop/github.com/r1cA18/olympus/apps/mcp/src/index.ts"
+        ];
+      };
+    };
+    # r1-life holds the owner's Google tokens on the Linux server (private
+    # repository checkout, bun install done there); agents get only its MCP
+    # bearer. Its stdio shim forwards to r1-life's HTTP endpoint and reads the
+    # bearer from the file --token names: a path, never the value. Put the
+    # token there (mode 0600) by hand. Other hosts reach it over ssh like
+    # olympus; the remote shell expands $HOME.
+    r1-life-mcp = {
+      kind = "mcp";
+      tier = "catalog";
+      tags = [
+        "personal"
+        "secretary"
+      ];
+      description = "The owner's calendar through r1-life (policy-checked; Google tokens stay in r1-life)";
+      source = "r1-life mcp-stdio (private repository checkout)";
+      hosts = [ "linux" ];
+      mcp.local = {
+        command = lib.getExe pkgs.bun;
+        args = [
+          "run"
+          "${homeDir}/Develop/github.com/r1cA18/r1-life/src/main.ts"
+          "mcp-stdio"
+          "--token"
+          "file:${homeDir}/.config/r1-life/mcp-token"
+        ];
+      };
+      mcp.remote = {
+        command = "/usr/bin/ssh";
+        args = [
+          "-T"
+          "homelab"
+          "$HOME/.nix-profile/bin/bun"
+          "run"
+          "$HOME/Develop/github.com/r1cA18/r1-life/src/main.ts"
+          "mcp-stdio"
+          "--token"
+          "file:$HOME/.config/r1-life/mcp-token"
         ];
       };
     };
