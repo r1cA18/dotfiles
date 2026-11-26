@@ -143,21 +143,9 @@ let
       cmd = "claude --resume";
       desc = "Resume Claude session from picker";
     };
-    clgc = {
-      cmd = "clgpt --continue";
-      desc = "Continue last GPT-backed Claude session";
-    };
-    clgr = {
-      cmd = "clgpt --resume";
-      desc = "Resume GPT-backed Claude session from picker";
-    };
     cld = {
       cmd = "claude --dangerously-skip-permissions";
       desc = "Start Claude without prompts";
-    };
-    clgd = {
-      cmd = "clgpt --dangerously-skip-permissions";
-      desc = "Start GPT-backed Claude without prompts";
     };
     clu = {
       cmd = "claude update";
@@ -320,16 +308,6 @@ let
           cl / cx は r1hn run --runtime claude / codex の短縮形です。
           詳細: docs/guides/r1hn.md
         '';
-      };
-    }
-    // {
-      clgpt = {
-        cmd = "clgpt [args]";
-        desc = "Run Claude Code through the GPT proxy";
-      };
-      clproxy = {
-        cmd = "clproxy <command>";
-        desc = "Manage the Claude Code proxy";
       };
     };
 

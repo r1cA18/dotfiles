@@ -24,7 +24,6 @@
     ./programs/r1hn.nix
     ./programs/devin.nix
     ./programs/claude-code.nix
-    ./programs/claude-code-proxy.nix
     ./programs/codex.nix
     ./programs/nix-index.nix
     ./programs/ghostty.nix

@@ -24,7 +24,6 @@ macOS systemはnix-darwinで管理し、Ubuntu systemはAnsibleで管理する�
 - [agent-session-handoff.md](guides/agent-session-handoff.md) - account・製品をまたぐ作業の引き継ぎ
 - [multi-repo-workspaces.md](guides/multi-repo-workspaces.md) - 複数repoの作成・追加・一括cloneと共有
 - [japanese-writing.md](guides/japanese-writing.md) - 会話・文書・UIの日本語表記
-- [claude-code-gpt.md](guides/claude-code-gpt.md) - GPT backend版Claude CodeとProxy管理
 - [alias-auto-help.md](guides/alias-auto-help.md) - 選択式ヘルプとrepo・workspace移動（h/hp/hv/devg/wsg）
 - [testing.md](guides/testing.md) - ローカル回帰テストとNix統合テスト・CI
 - [guide-macos.md](../nix/docs/guide-macos.md) - macOS初回構築と運用

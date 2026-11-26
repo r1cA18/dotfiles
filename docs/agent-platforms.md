@@ -20,7 +20,6 @@
 | Codex agents                 | `.codex/agents/`                                  | TOML 形式                                                                          |
 | Codex user config            | `nix/home-manager/programs/codex.nix`             | 管理keyだけを`~/.codex/config.toml`へmergeし他のkeyは残す                          |
 | Claude settings              | `nix/home-manager/programs/claude-code.nix`       | 管理keyだけを`~/.claude/settings.json`へmergeし他のkeyは残す                       |
-| GPT backend wrapper          | `nix/home-manager/programs/claude-code-proxy.nix` | `clgpt`・`clproxy`・user serviceを生成                                             |
 | Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                                        |
 | Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                                 |
 | Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
@@ -117,19 +116,18 @@ GitHub 等から入れる個人用 Codex plugin は、できるだけ flake inpu
 そのため、Codex plugin は project ごとに切り替えず global 管理する。
 runtime cache 自体は生成物なので dotfiles には入れない。
 
-## GPT backend版Claude Code
+## Subscriptionの中継をしない
 
-純正`claude`はAnthropic接続のまま維持する。`clgpt`だけがprocess-local環境変数で
-`claude-code-proxy`へ接続する。Proxyのuser serviceはon-demandで起動しlogin時には
-常駐させない。
+純正`claude`はAnthropic接続のまま維持する。ChatGPTやClaudeのsubscription loginを
+第三者のproxyやharnessで中継しない。`clgpt`と`claude-code-proxy`は2026-11-26に廃止した。
+dshはDeepSeekとMistralの自前のloginとAPI keyだけで使い、ClaudeやCodexを使う第三者pluginを入れない。
+
+## Antigravity plugin
 
 `antigravity-for-claude-code`はClaude Code pluginとしてofficial `agy`へdelegateする。
-`clgpt`から使う場合はGPTがmain conductorになりAntigravity/Geminiがsub-agentになる。
 
 Antigravityは既存Google account sessionを使う。Gemini API keyとVertex credentialは
 dotfilesへ追加しない。`~/.gemini/antigravity-cli/settings.json`も変更しない。
-
-詳細は[GPT backend版Claude Code](guides/claude-code-gpt.md)を参照。
 
 ## Capability catalog
 

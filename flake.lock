@@ -52,27 +52,6 @@
         "type": "github"
       }
     },
-    "claude-code-proxy": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1787168145,
-        "narHash": "sha256-Q114fiJHXT5Equct9Z7Ayb1GMzcj1vUY/WYujUi5yOg=",
-        "owner": "raine",
-        "repo": "claude-code-proxy",
-        "rev": "dc61029dfdea54fda7367d064885aaceb8d1ac80",
-        "type": "github"
-      },
-      "original": {
-        "owner": "raine",
-        "ref": "v0.1.35",
-        "repo": "claude-code-proxy",
-        "type": "github"
-      }
-    },
     "claude-plugin-codex": {
       "flake": false,
       "locked": {
@@ -326,7 +305,6 @@
         "agent-skills-nix": "agent-skills-nix",
         "anthropic-skills": "anthropic-skills",
         "app-store-screenshots": "app-store-screenshots",
-        "claude-code-proxy": "claude-code-proxy",
         "claude-plugin-codex": "claude-plugin-codex",
         "git-hooks-nix": "git-hooks-nix",
         "home-manager": "home-manager",

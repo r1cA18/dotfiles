@@ -34,7 +34,7 @@ ws = {
 };
 ```
 
-`help`がない項目も説明と展開先をpreviewする。`r1hn`・`clgpt`・`clproxy`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
+`help`がない項目も説明と展開先をpreviewする。`r1hn`などの実コマンドと`h`・`hp`・`hv`・`devg`・`wsg`のshell functionはhelpへ掲載し、同名aliasを追加しない。
 
 ## 背景・課題
 
@@ -149,7 +149,7 @@ $ hv
 | Claude Code    | Claude Code関連（clc, clr, cld, cls）      |
 | Codex          | Codex関連（cx, cxc, cxr, cxrev）           |
 | Workspace      | `ws`から`workspace`への短縮入口            |
-| Agent Commands | `r1hn`・`clgpt`・`clproxy`                 |
+| Agent Commands | `r1hn`                                     |
 | Help           | `h`・`hp`・`hv`                            |
 
 `Agent Commands`はPATH上のcanonical binaryを表示する専用sectionになる。

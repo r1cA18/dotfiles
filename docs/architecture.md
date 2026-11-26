@@ -48,7 +48,6 @@ dotfiles/
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
-│   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
@@ -149,9 +148,6 @@ MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして�
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
 
 詳細: [docs/agent-platforms.md](./agent-platforms.md)
-
-GPT backend版Claude Codeの起動・Proxy管理・profile管理は
-[docs/guides/claude-code-gpt.md](guides/claude-code-gpt.md)を参照。
 
 ## Agent指示と自動検査の役割
 
