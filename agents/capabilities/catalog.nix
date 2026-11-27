@@ -92,6 +92,10 @@ let
       "meta"
       "tool"
     ] "List, suggest and enable capabilities; ask the owner first" { };
+    r1hn-workers = baseline [
+      "meta"
+      "tool"
+    ] "Dispatch work to another r1hn worker, follow it and bring it back; never company work" { };
 
     # Swift and Apple platforms.
     swift-dev-toolkit = catalog [ "swift" ] "Swift and SwiftUI development workflow" { detect = swift; };
