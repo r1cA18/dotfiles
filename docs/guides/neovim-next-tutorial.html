@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>nvim-next tutorial</title>
+    <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f5f1;
+      --surface: #ffffff;
+      --surface-2: #efede7;
+      --text: #24262b;
+      --muted: #62666f;
+      --line: #dcd9d0;
+      --accent: #2f5d8a;
+      --accent-soft: #e3ecf5;
+      --keep: #2f6f4f;
+      --drop: #a2463c;
+      --hold: #8a6a1f;
+      --kbd-bg: #f1efe9;
+      --kbd-line: #c9c5ba;
+      --radius: 10px;
+      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #17191d;
+        --surface: #1f2227;
+        --surface-2: #272b31;
+        --text: #dfe2e7;
+        --muted: #9aa0aa;
+        --line: #343941;
+        --accent: #8fb6dc;
+        --accent-soft: #263544;
+        --keep: #7fc29b;
+        --drop: #e0958b;
+        --hold: #d6b566;
+        --kbd-bg: #2a2e35;
+        --kbd-line: #474d57;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.8;
+      -webkit-text-size-adjust: 100%;
+    }
+    a { color: var(--accent); text-underline-offset: 0.2em; }
+    a:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code, kbd, pre, textarea { font-family: var(--mono); font-size: 0.875em; }
+    code { background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+    kbd {
+      display: inline-block;
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-line);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 0 0.4em;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+    pre {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+    pre code { background: none; padding: 0; font-size: 1em; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 1180px; margin: 0 auto; padding: 0 16px 4rem; gap: 2rem; }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 230px minmax(0, 1fr); padding: 0 24px 5rem; }
+      nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 1.5rem 0; }
+    }
+    .page-head { max-width: 1180px; margin: 0 auto; padding: 2.5rem 16px 1rem; }
+    @media (min-width: 980px) { .page-head { padding: 3rem 24px 1rem; } }
+    .page-head h1 { font-size: 1.9rem; line-height: 1.35; margin: 0 0 0.5rem; letter-spacing: 0.01em; text-wrap: balance; }
+    .page-head p { margin: 0; color: var(--muted); max-width: 46em; }
+    nav.toc { font-size: 0.875rem; line-height: 1.6; }
+    nav.toc h2 { font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 0.5rem; font-weight: 600; }
+    nav.toc ul { list-style: none; margin: 0; padding: 0; }
+    nav.toc > ul > li { margin-bottom: 0.35rem; }
+    nav.toc ul ul { margin: 0.15rem 0 0.6rem; padding-left: 0.75rem; border-left: 1px solid var(--line); }
+    nav.toc a { text-decoration: none; color: var(--text); display: block; padding: 0.1rem 0; }
+    nav.toc a:hover { color: var(--accent); }
+    nav.toc .toc-group { color: var(--muted); font-size: 0.8rem; }
+    nav.toc .mark { display: inline-block; width: 0.55em; height: 0.55em; border-radius: 50%; margin-right: 0.45em; border: 1px solid var(--kbd-line); vertical-align: 0.05em; }
+    nav.toc .mark[data-v="keep"] { background: var(--keep); border-color: var(--keep); }
+    nav.toc .mark[data-v="drop"] { background: var(--drop); border-color: var(--drop); }
+    nav.toc .mark[data-v="hold"] { background: var(--hold); border-color: var(--hold); }
+    main > section { margin-bottom: 3.5rem; }
+    h2 { font-size: 1.45rem; line-height: 1.4; margin: 0 0 1rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--line); }
+    h3 { font-size: 1.15rem; margin: 2.4rem 0 0.9rem; color: var(--muted); font-weight: 600; }
+    h4 { font-size: 1.1rem; margin: 1.6rem 0 0.5rem; line-height: 1.5; }
+    h5 { font-size: 0.875rem; margin: 1.1rem 0 0.3rem; color: var(--muted); font-weight: 600; }
+    p { margin: 0.6rem 0; }
+    main p, main li { max-width: 48em; }
+    ol, ul { padding-left: 1.4rem; margin: 0.4rem 0; }
+    li { margin: 0.25rem 0; }
+    .note { background: var(--accent-soft); border-radius: var(--radius); padding: 0.8rem 1rem; margin: 1rem 0; }
+    .note p { margin: 0.2rem 0; }
+    .role { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.2rem 1.25rem 1rem; margin: 1rem 0 1.4rem; }
+    .role[data-verdict="keep"] { border-left: 4px solid var(--keep); }
+    .role[data-verdict="drop"] { border-left: 4px solid var(--drop); }
+    .role[data-verdict="hold"] { border-left: 4px solid var(--hold); }
+    .role header h4 { margin: 0; font-size: 1.2rem; }
+    .role .meta { margin: 0.1rem 0 0.6rem; font-size: 0.875rem; color: var(--muted); }
+    .role .meta .sep { margin: 0 0.5em; }
+    .tries li { margin: 0.4rem 0; }
+    .facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.1rem 1rem; margin: 1rem 0 0.4rem; font-size: 0.94rem; }
+    .facts dt { color: var(--muted); font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
+    .facts dd { margin: 0; }
+    .facts ul { margin: 0; }
+    @media (min-width: 640px) {
+      .facts { grid-template-columns: 6.5em minmax(0, 1fr); }
+      .facts dt { margin-top: 0.2rem; }
+      .facts dd { margin-bottom: 0.35rem; }
+    }
+    .verdict { border: 0; border-top: 1px solid var(--line); margin: 1rem 0 0; padding: 0.8rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem 0.6rem; align-items: center; }
+    .verdict legend { float: left; padding: 0; margin-right: 0.6rem; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .verdict label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+    .verdict label > span { font-size: 0.9rem; }
+    .verdict input[type="radio"] { accent-color: var(--accent); width: 1rem; height: 1rem; margin: 0; }
+    .verdict label:not(.memo) { border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.8rem 0.15rem 0.6rem; min-height: 2.2rem; }
+    .verdict label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); }
+    .verdict .memo { flex: 1 1 14rem; }
+    .verdict .memo input { width: 100%; min-height: 2.2rem; font: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.2rem 0.6rem; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); margin: 0.6rem 0 1.2rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 0.78rem; color: var(--muted); font-weight: 600; background: var(--surface-2); white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td:first-child { white-space: nowrap; }
+    .filter { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 0.6rem 0; }
+    .filter input { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 0.3rem 0.7rem; min-height: 2.3rem; width: min(100%, 22rem); }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .summary-grid > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.8rem 1rem; }
+    .summary-grid h4 { margin: 0 0 0.3rem; font-size: 0.9rem; }
+    .summary-grid .count { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 400; margin-left: 0.4em; }
+    .summary-grid ul { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
+    .summary-grid .empty { color: var(--muted); }
+    [data-list="keep"] h4 { color: var(--keep); }
+    [data-list="drop"] h4 { color: var(--drop); }
+    [data-list="hold"] h4 { color: var(--hold); }
+    textarea { width: 100%; min-height: 11rem; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.7rem 0.9rem; line-height: 1.6; resize: vertical; }
+    button { font: inherit; font-size: 0.9rem; color: var(--text); background: var(--surface); border: 1px solid var(--kbd-line); border-radius: 6px; padding: 0.3rem 0.9rem; min-height: 2.3rem; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 0.6rem 0; }
+    #save-status { font-size: 0.85rem; color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>nvim-next tutorial</h1>
+      <p>LazyVimを使わない試用版のNeovim設定を、役割ごとに触って確かめるための手引きです。各pluginを実際に使い、残すか消すかをこのpageに記録してください。</p>
+    </header>
+    <div class="layout">
+      <nav class="toc" aria-label="目次">
+        <h2>目次</h2>
+        <ul>
+          <li><a href="#start">起動方法</a></li>
+          <li><a href="#rules">設定の読み方と消し方</a></li>
+          <li><a href="#roles">役割ごとの章</a></li>
+          <li><span class="toc-group">探す・開く</span><ul><li><a href="#role-picker"><span class="mark" data-v=""></span>fuzzy picker</a></li><li><a href="#role-files"><span class="mark" data-v=""></span>file操作</a></li></ul></li>
+          <li><span class="toc-group">書く</span><ul><li><a href="#role-completion"><span class="mark" data-v=""></span>補完</a></li><li><a href="#role-pairs"><span class="mark" data-v=""></span>括弧の自動閉じ</a></li><li><a href="#role-autotag"><span class="mark" data-v=""></span>HTML / JSX tagの自動閉じ</a></li><li><a href="#role-surround"><span class="mark" data-v=""></span>囲み文字の操作</a></li><li><a href="#role-motion"><span class="mark" data-v=""></span>画面内jump</a></li><li><a href="#role-format"><span class="mark" data-v=""></span>format</a></li></ul></li>
+          <li><span class="toc-group">読む・理解する</span><ul><li><a href="#role-lsp"><span class="mark" data-v=""></span>LSP</a></li><li><a href="#role-syntax"><span class="mark" data-v=""></span>treesitter highlightとfold</a></li><li><a href="#role-diagnostics"><span class="mark" data-v=""></span>diagnosticsの表示</a></li><li><a href="#role-git"><span class="mark" data-v=""></span>git差分signとhunk操作</a></li><li><a href="#role-highlight"><span class="mark" data-v=""></span>TODO類と色codeの強調</a></li><li><a href="#role-rainbow"><span class="mark" data-v=""></span>括弧の深さ別の色分け</a></li></ul></li>
+          <li><span class="toc-group">見た目と案内</span><ul><li><a href="#role-colorscheme"><span class="mark" data-v=""></span>配色</a></li><li><a href="#role-icons"><span class="mark" data-v=""></span>icon</a></li><li><a href="#role-statusline"><span class="mark" data-v=""></span>statusline</a></li><li><a href="#role-breadcrumbs"><span class="mark" data-v=""></span>winbarのbreadcrumbs</a></li><li><a href="#role-keyhint"><span class="mark" data-v=""></span>次に押せるkeyの表示</a></li><li><a href="#role-messages"><span class="mark" data-v=""></span>messageとcmdlineの表示</a></li><li><a href="#role-notify"><span class="mark" data-v=""></span>通知popup</a></li><li><a href="#role-dashboard"><span class="mark" data-v=""></span>起動画面</a></li><li><a href="#role-indent"><span class="mark" data-v=""></span>indent guide</a></li><li><a href="#role-cursor"><span class="mark" data-v=""></span>cursor animation</a></li></ul></li>
+          <li><span class="toc-group">Markdownとnote</span><ul><li><a href="#role-markdown"><span class="mark" data-v=""></span>Markdownのbuffer内描画</a></li><li><a href="#role-notes"><span class="mark" data-v=""></span>Obsidian vault連携</a></li></ul></li>
+          <li><a href="#builtin">builtinだけでできること</a></li>
+          <li><a href="#keymaps">全keymap一覧</a></li>
+          <li><a href="#verdicts">判定のまとめ</a></li>
+        </ul>
+      </nav>
+      <main>
+        <section id="start">
+          <h2>起動方法</h2>
+          <p>試用版は <code>NVIM_APPNAME</code> で既存の設定と分けてあります。次のcommandで起動します。</p>
+          <pre><code>NVIM_APPNAME=nvim-next nvim</code></pre>
+          <p>いつもの <code>nvim</code> は、これまでどおり既存の設定で起動します。2つは設定・plugin・履歴のすべてが別々なので、片方を壊してももう片方に影響しません。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">対象</th><th scope="col">既存</th><th scope="col">試用版</th></tr></thead>
+              <tbody>
+                <tr><td>設定</td><td><code>~/.config/nvim</code></td><td><code>~/.config/nvim-next</code> (<code>~/dotfiles/nvim-next</code> へのsymlink)</td></tr>
+                <tr><td>pluginとparser</td><td><code>~/.local/share/nvim</code></td><td><code>~/.local/share/nvim-next</code></td></tr>
+                <tr><td>履歴とlog</td><td><code>~/.local/state/nvim</code></td><td><code>~/.local/state/nvim-next</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>毎回打つのが手間な場合は、shellで一時的にaliasを定義してください。</p>
+          <pre><code>alias nv='NVIM_APPNAME=nvim-next nvim'</code></pre>
+          <div class="note">
+            <p><kbd>&lt;leader&gt;</kbd> はSpace keyです。このpageの <kbd>&lt;leader&gt;ff</kbd> は「Space、f、f の順に押す」という意味です。<kbd>&lt;C-n&gt;</kbd> はCtrlを押しながらn、<kbd>&lt;CR&gt;</kbd> はEnter、<kbd>&lt;BS&gt;</kbd> はBackspace、<kbd>&lt;M-q&gt;</kbd> はOption (Alt) を押しながらqです。</p>
+          </div>
+          <h4>最初の5分で試すこと</h4>
+          <ol>
+            <li>引数なしで起動し、起動画面で <kbd>f</kbd> を押してfileを開きます</li>
+            <li><kbd>&lt;leader&gt;</kbd> を押して少し待ち、出てくるkeyの一覧を眺めます</li>
+            <li><kbd>-</kbd> でdirectoryを開き、<kbd>&lt;CR&gt;</kbd> で別のfileへ移ります</li>
+            <li>関数名の上で <kbd>K</kbd> を押し、LSPの説明を見ます</li>
+            <li><kbd>s</kbd> の後に画面内の文字を2字打ち、labelを押してjumpします</li>
+          </ol>
+        </section>
+
+        <section id="rules">
+          <h2>設定の読み方と消し方</h2>
+          <p>設定は <code>~/dotfiles/nvim-next/</code> にあります。1つのfileが1つの役割を受け持ち、そのpluginのkeymapと設定も同じfileに書いてあります。</p>
+          <pre><code>nvim-next/
+  init.lua               leaderを決めて config/ を読み込むだけです
+  lazy-lock.json         pluginの版 (commit) の固定です
+  lua/config/
+    options.lua          Neovimの既定から変える値だけです
+    keymaps.lua          pluginに依存しないkeymapだけです
+    autocmds.lua
+    lazy.lua             lazy.nvimの準備と lua/plugins/ の読み込みです
+  lua/plugins/
+    &lt;役割&gt;.lua           役割ごとのpluginと、そのkeymapと設定です</code></pre>
+          <h4>pluginを消す手順</h4>
+          <ol>
+            <li><code>lua/plugins/&lt;役割&gt;.lua</code> を削除します。迷っている間は、<code>lua/plugins/</code> の外へ移動するだけでも同じ効果があります</li>
+            <li>Neovimを起動し直し、<code>:Lazy clean</code> を実行します。pluginの実体と <code>lazy-lock.json</code> の該当行が消えます</li>
+          </ol>
+          <p>役割fileは互いに依存していないので、どのfileを消しても他の機能は動き続けます。26個すべてについて、1つずつ外した状態でerrorなく起動することを確認してあります。</p>
+          <h4>pluginを足す手順</h4>
+          <ol>
+            <li><code>lua/plugins/&lt;役割&gt;.lua</code> を作り、pluginのspecを返します。keymapは <code>keys</code> に書きます</li>
+            <li>Neovimを起動し、<code>:Lazy install</code> を実行します</li>
+          </ol>
+          <p><code>:Lazy</code> で、入っているpluginと読み込み状況の一覧を見られます。更新は <code>:Lazy update</code> です。自動では更新されません。</p>
+        </section>
+
+        <section id="roles">
+          <h2>役割ごとの章</h2>
+          <p>26の役割を5つのまとまりに分けてあります。各章の「まず試す操作」を実際に行い、最後の欄に判定を記録してください。判定はこのbrowserに保存され、<a href="#verdicts">判定のまとめ</a>に集計されます。</p>
+          <p>最終commitの日付は2026-11-10に確認したものです。</p>
+
+      <section class="group" id="group-find">
+        <h3>探す・開く</h3>
+        <article class="role" id="role-picker" data-role="picker" data-title="fuzzy picker" data-plugin="fzf-lua">
+          <header>
+            <h4>fuzzy picker</h4>
+            <p class="meta"><a href="https://github.com/ibhagwan/fzf-lua" rel="noreferrer">fzf-lua</a><span class="sep">/</span>最終commit 2026-11-08</p>
+          </header>
+          <p>fileやgrep結果やbufferなどを絞り込んで選ぶ窓を開きます。Nixで入っている <code>fzf</code> <code>rg</code> <code>fd</code> をそのまま使います。code actionなどの選択肢 (<code>vim.ui.select</code>) もこの窓に出ます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>&lt;leader&gt;&lt;space&gt;</kbd> または <kbd>&lt;leader&gt;ff</kbd> でfileを探します。文字を打つと絞り込まれます</li>
+            <li><kbd>&lt;leader&gt;/</kbd> でproject全体をgrepします</li>
+            <li><kbd>&lt;leader&gt;,</kbd> で開いているbufferを切り替えます</li>
+            <li>窓の中では <kbd>&lt;C-n&gt;</kbd> <kbd>&lt;C-p&gt;</kbd> で移動し、<kbd>&lt;CR&gt;</kbd> で開きます。<kbd>&lt;C-v&gt;</kbd> は縦分割、<kbd>&lt;C-s&gt;</kbd> は横分割、<kbd>&lt;Esc&gt;</kbd> で閉じます</li>
+            <li><kbd>&lt;leader&gt;sk</kbd> でkeymapを、<kbd>&lt;leader&gt;sh</kbd> でhelpを検索します。<kbd>&lt;leader&gt;sr</kbd> は直前の窓を開き直します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/picker.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/picker.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd><code>&lt;leader&gt;f*</code> <code>&lt;leader&gt;s*</code> などの検索keymapが無くなります。起動画面のfile検索も動かなくなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>snacks.picker (snacks.nvimに同梱)</li>
+              <li>mini.pick (最小構成)</li>
+              <li>telescope.nvim (plenary依存)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-picker" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-picker" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-picker" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">fuzzy pickerのmemo</span><input type="text" name="memo-picker" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-files" data-role="files" data-title="file操作" data-plugin="oil.nvim">
+          <header>
+            <h4>file操作</h4>
+            <p class="meta"><a href="https://github.com/stevearc/oil.nvim" rel="noreferrer">oil.nvim</a><span class="sep">/</span>最終commit 2026-10-11</p>
+          </header>
+          <p>directoryを普通のbufferとして開きます。行を編集して <code>:w</code> すると、その編集がrename・移動・削除・作成として実行されます。削除したfileはゴミ箱へ移動します。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>-</kbd> で今のfileがあるdirectoryを開きます。もう一度 <kbd>-</kbd> で親へ上がり、<kbd>&lt;CR&gt;</kbd> で開きます</li>
+            <li>file名の行を書き換えて <code>:w</code> するとrenameされます。確認窓が出るので <kbd>y</kbd> で実行します</li>
+            <li><kbd>o</kbd> で新しい行にfile名を書き <code>:w</code> すると作成されます。末尾を <code>/</code> にするとdirectoryになります</li>
+            <li><kbd>dd</kbd> で行を消して <code>:w</code> すると削除されます。別のdirectoryへ <kbd>p</kbd> で貼ると移動になります</li>
+            <li><kbd>&lt;leader&gt;e</kbd> で浮いた窓として開きます。<kbd>g?</kbd> でkey一覧、<kbd>g.</kbd> で隠しfileの表示切替、<kbd>&lt;C-p&gt;</kbd> でpreviewです</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/files.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/files.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd><kbd>-</kbd> と <kbd>&lt;leader&gt;e</kbd> が無くなり、<code>nvim &lt;directory&gt;</code> はbuiltinのnetrwで開くようになります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>mini.files (列表示で編集)</li>
+              <li>neo-tree.nvim (tree表示)</li>
+              <li>yazi.nvim (外部filerを呼ぶ)</li>
+              <li>builtinのnetrw</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-files" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-files" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-files" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">file操作のmemo</span><input type="text" name="memo-files" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+      </section>
+      <section class="group" id="group-write">
+        <h3>書く</h3>
+        <article class="role" id="role-completion" data-role="completion" data-title="補完" data-plugin="blink.cmp">
+          <header>
+            <h4>補完</h4>
+            <p class="meta"><a href="https://github.com/saghen/blink.cmp" rel="noreferrer">blink.cmp</a><span class="sep">/</span>最終commit 2026-04-04 (v1.10.2)</p>
+          </header>
+          <p>入力中に候補のpopupを出します。候補はLSP・path・buffer内の単語・snippetです。<code>version = &quot;1.*&quot;</code> に固定しています (mainのv2は互換性のない書き直しです)。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>Lua fileで <code>vim.api.</code> と打つと候補が出ます</li>
+            <li><kbd>&lt;C-n&gt;</kbd> <kbd>&lt;C-p&gt;</kbd> または矢印で選び、<kbd>&lt;CR&gt;</kbd> で確定します</li>
+            <li><kbd>&lt;C-space&gt;</kbd> で候補を手動で開きます。もう一度押すと説明窓を切り替えます。<kbd>&lt;C-e&gt;</kbd> で閉じます</li>
+            <li>関数の括弧の中では引数のhintが出ます。snippetを展開した後は <kbd>&lt;Tab&gt;</kbd> <kbd>&lt;S-Tab&gt;</kbd> で入力位置を移動します</li>
+            <li>command lineでは <code>:FzfL</code> まで打って <kbd>&lt;Tab&gt;</kbd> を押すと候補が出ます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/completion.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/completion.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>自動のpopupが無くなります。builtinの <kbd>&lt;C-x&gt;&lt;C-o&gt;</kbd> (LSP補完) と <kbd>&lt;C-n&gt;</kbd> (単語補完) は使えます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>builtinの <code>&#x27;autocomplete&#x27;</code> と <code>vim.lsp.completion.enable()</code> (0.12)</li>
+              <li>nvim-cmp</li>
+              <li>mini.completion</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-completion" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-completion" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-completion" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">補完のmemo</span><input type="text" name="memo-completion" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-pairs" data-role="pairs" data-title="括弧の自動閉じ" data-plugin="mini.pairs">
+          <header>
+            <h4>括弧の自動閉じ</h4>
+            <p class="meta"><a href="https://github.com/nvim-mini/mini.pairs" rel="noreferrer">mini.pairs</a><span class="sep">/</span>最終commit 2026-10-13</p>
+          </header>
+          <p>開き括弧や引用符を打つと閉じ側を自動で入れます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>insert modeで <kbd>(</kbd> を打つと <code>()</code> になり、cursorは中に入ります</li>
+            <li>そのまま <kbd>)</kbd> を打つと、新しく入力せず閉じ括弧を通り抜けます</li>
+            <li><code>()</code> の間で <kbd>&lt;BS&gt;</kbd> を押すと両方が消えます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/pairs.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/pairs.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>括弧は打ったとおりにだけ入力されます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>nvim-autopairs (規則を細かく書ける)</li>
+              <li>blink.pairs</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-pairs" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-pairs" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-pairs" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">括弧の自動閉じのmemo</span><input type="text" name="memo-pairs" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-autotag" data-role="autotag" data-title="HTML / JSX tagの自動閉じ" data-plugin="nvim-ts-autotag">
+          <header>
+            <h4>HTML / JSX tagの自動閉じ</h4>
+            <p class="meta"><a href="https://github.com/windwp/nvim-ts-autotag" rel="noreferrer">nvim-ts-autotag</a><span class="sep">/</span>最終commit 2026-10-03</p>
+          </header>
+          <p>treesitterの構文情報を使い、開きtagを打つと閉じtagを入れ、片方の名前を変えるともう片方も変えます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>.tsx</code> か <code>.html</code> で <code>&lt;div&gt;</code> と打つと <code>&lt;/div&gt;</code> が入ります</li>
+            <li>開きtagの名前の上で <kbd>ciw</kbd> して <code>section</code> と打つと、閉じtagも変わります</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/autotag.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/autotag.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>閉じtagは手で書きます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>無し (LSPのlinked editingを使う方法はあります)</li>
+              <li>emmet系のLSP</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-autotag" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-autotag" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-autotag" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">HTML / JSX tagの自動閉じのmemo</span><input type="text" name="memo-autotag" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-surround" data-role="surround" data-title="囲み文字の操作" data-plugin="mini.surround">
+          <header>
+            <h4>囲み文字の操作</h4>
+            <p class="meta"><a href="https://github.com/nvim-mini/mini.surround" rel="noreferrer">mini.surround</a><span class="sep">/</span>最終commit 2026-10-27</p>
+          </header>
+          <p>引用符や括弧で囲む・外す・替える操作を追加します。<kbd>s</kbd> はjump (motion) が使うので、こちらは <kbd>gs</kbd> で始まります。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>単語の上で <kbd>gsaiw&quot;</kbd> を押すと <code>&quot;word&quot;</code> になります (add + 範囲 + 囲む文字)</li>
+            <li><kbd>gsd&quot;</kbd> で囲みの引用符を外します</li>
+            <li><kbd>gsr&quot;&#x27;</kbd> で <code>&quot;</code> を <code>&#x27;</code> に替えます</li>
+            <li>visual modeで選択して <kbd>gsa)</kbd> を押すと <code>(...)</code> で囲みます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/surround.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/surround.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd><code>gs*</code> のkeymapが無くなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>nvim-surround (<code>ys</code> <code>ds</code> <code>cs</code> のvim-surround流)</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-surround" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-surround" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-surround" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">囲み文字の操作のmemo</span><input type="text" name="memo-surround" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-motion" data-role="motion" data-title="画面内jump" data-plugin="flash.nvim">
+          <header>
+            <h4>画面内jump</h4>
+            <p class="meta"><a href="https://github.com/folke/flash.nvim" rel="noreferrer">flash.nvim</a><span class="sep">/</span>最終commit 2026-08-22</p>
+          </header>
+          <p>飛びたい場所の文字を2〜3字打つと各候補にlabelが付き、そのlabelを押すとcursorが移動します。<kbd>f</kbd> <kbd>t</kbd> も強化され、行をまたいで繰り返せます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>s</kbd> を押し、飛びたい場所の文字を2字ほど打ち、表示されたlabelの字を押します</li>
+            <li><kbd>S</kbd> を押すと構文の塊ごとにlabelが付き、選ぶとその範囲がvisual選択されます</li>
+            <li><kbd>f</kbd> と1字で移動した後、もう一度 <kbd>f</kbd> を押すと次の候補へ進みます</li>
+            <li><kbd>yr</kbd> の後にjumpして <kbd>iw</kbd> などを打つと、cursorを動かさずに離れた場所をyankします</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/motion.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/motion.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd><kbd>s</kbd> と <kbd>S</kbd> と <kbd>f</kbd> <kbd>t</kbd> がNeovim本来の動作に戻ります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>leap.nvim</li>
+              <li>mini.jump2d</li>
+              <li>builtinの <kbd>/</kbd> 検索</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-motion" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-motion" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-motion" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">画面内jumpのmemo</span><input type="text" name="memo-motion" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-format" data-role="format" data-title="format" data-plugin="conform.nvim">
+          <header>
+            <h4>format</h4>
+            <p class="meta"><a href="https://github.com/stevearc/conform.nvim" rel="noreferrer">conform.nvim</a><span class="sep">/</span>最終commit 2026-08-11</p>
+          </header>
+          <p>保存時にformatterを実行します。Luaは <code>stylua</code>、Nixは <code>nixfmt</code>、shellは <code>shfmt</code> を使い、それ以外はLSPのformat機能に任せます。formatterのbinaryはNixが供給します。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>Lua fileのindentをわざと崩して <code>:w</code> すると整形されます</li>
+            <li><kbd>&lt;leader&gt;cf</kbd> で保存せずに整形します。visual modeでは選択範囲だけを整形します</li>
+            <li><kbd>&lt;leader&gt;uf</kbd> で保存時formatのon / offを切り替えます</li>
+            <li><code>:ConformInfo</code> で今のbufferに使われるformatterと状態を確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/format.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/format.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>保存時の自動formatが無くなります。LSPのformatは <code>:lua vim.lsp.buf.format()</code> で呼べます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>LSPのformatだけを使う</li>
+              <li>conformからtreefmtを呼んでNix側の定義に一本化する</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-format" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-format" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-format" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">formatのmemo</span><input type="text" name="memo-format" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+      </section>
+      <section class="group" id="group-read">
+        <h3>読む・理解する</h3>
+        <article class="role" id="role-lsp" data-role="lsp" data-title="LSP" data-plugin="nvim-lspconfig">
+          <header>
+            <h4>LSP</h4>
+            <p class="meta"><a href="https://github.com/neovim/nvim-lspconfig" rel="noreferrer">nvim-lspconfig</a><span class="sep">/</span>最終commit 2026-11-10</p>
+          </header>
+          <p>LSP client自体はNeovimのbuiltinです。nvim-lspconfigはserverごとの起動定義を提供するだけで、有効にするserverは <code>vim.lsp.enable()</code> の一覧で決めます。serverのbinaryはNixが供給します。有効なserverは bashls / biome / cssls / html / jsonls / lua_ls / marksman / nixd / taplo / vtsls / yamlls です。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>関数名の上で <kbd>K</kbd> を押すと説明が出ます</li>
+            <li><kbd>grn</kbd> でrename、<kbd>gra</kbd> でcode action、<kbd>grr</kbd> で参照一覧です (builtinのkeymapです)</li>
+            <li><kbd>&lt;C-]&gt;</kbd> で定義へjumpし、<kbd>&lt;C-t&gt;</kbd> で戻ります</li>
+            <li><kbd>&lt;leader&gt;uh</kbd> でinlay hintの表示を切り替えます</li>
+            <li><code>:checkhealth vim.lsp</code> で接続中のserverを確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/lsp.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/lsp.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>LSPがすべて止まります。補完のLSP候補・diagnostics・LSP経由のformatも無くなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>nvim-lspconfigを使わず <code>lsp/&lt;server&gt;.lua</code> を自分で書く</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-lsp" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-lsp" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-lsp" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">LSPのmemo</span><input type="text" name="memo-lsp" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-syntax" data-role="syntax" data-title="treesitter highlightとfold" data-plugin="nvim-treesitter (checkoutのみ)">
+          <header>
+            <h4>treesitter highlightとfold</h4>
+            <p class="meta"><a href="https://github.com/nvim-treesitter/nvim-treesitter" rel="noreferrer">nvim-treesitter (checkoutのみ)</a><span class="sep">/</span>最終commit 2026-11-07</p>
+          </header>
+          <p>構文解析に基づく色分けと折りたたみを有効にします。色分け自体はbuiltinの <code>vim.treesitter.start()</code> です。nvim-treesitterはpluginとしては読み込まず、parserの版の一覧とquery集として使います。parserは <code>scripts/build-parsers.lua</code> がcompileします (暫定の方法です。READMEを参照してください)。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>.nix</code> や <code>.ts</code> を開き、色分けされていることを確認します</li>
+            <li><code>:InspectTree</code> で構文木を表示します。<code>:Inspect</code> はcursor位置のhighlight groupを表示します</li>
+            <li><kbd>za</kbd> で折りたたみを開閉します。<kbd>zM</kbd> ですべて閉じ、<kbd>zR</kbd> ですべて開きます</li>
+            <li>visual modeで <kbd>an</kbd> を押すたびに選択が外側の構文へ広がり、<kbd>in</kbd> で内側へ戻ります (0.12のbuiltinです)</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/syntax.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/syntax.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行し、<code>nvim-next/scripts/build-parsers.lua</code> と <code>~/.local/share/nvim-next/site/</code> も削除します。</dd>
+            <dt>消した後</dt>
+            <dd>追加したparserの色分けと折りたたみが無くなり、正規表現ベースの色分けに戻ります。Neovim同梱のparser (lua / markdown / vimなど) は残ります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>Nixでparserとqueryを供給する (本採用時の案)</li>
+              <li>nvim-treesitterのinstallerを使う (<code>tree-sitter</code> CLIが必要)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-syntax" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-syntax" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-syntax" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">treesitter highlightとfoldのmemo</span><input type="text" name="memo-syntax" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-diagnostics" data-role="diagnostics" data-title="diagnosticsの表示" data-plugin="tiny-inline-diagnostic.nvim">
+          <header>
+            <h4>diagnosticsの表示</h4>
+            <p class="meta"><a href="https://github.com/rachartier/tiny-inline-diagnostic.nvim" rel="noreferrer">tiny-inline-diagnostic.nvim</a><span class="sep">/</span>最終commit 2026-10-08</p>
+          </header>
+          <p>cursorがある行のerrorや警告を、行末に吹き出しのような形で表示します。0.11以降のNeovimは既定では行内に文章を出さないので、その表示を担当します。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>Lua fileに <code>local x = </code> のような途中の行を書き、その行にcursorを置きます</li>
+            <li><kbd>]d</kbd> <kbd>[d</kbd> で次と前のdiagnosticへ移動します (builtin)</li>
+            <li><kbd>&lt;C-w&gt;d</kbd> でfloat窓に全文を表示します (builtin)</li>
+            <li><kbd>&lt;leader&gt;sd</kbd> で一覧をpickerに出します (pickerの機能)</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/diagnostics.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/diagnostics.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>表示は行番号横のsignと下線だけになります。<kbd>&lt;C-w&gt;d</kbd> と <kbd>]d</kbd> はそのまま使えます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>builtinの <code>vim.diagnostic.config({ virtual_text = true })</code></li>
+              <li>builtinの <code>virtual_lines = { current_line = true }</code></li>
+              <li>trouble.nvim (一覧窓。最終commit 2025-10)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-diagnostics" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-diagnostics" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-diagnostics" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">diagnosticsの表示のmemo</span><input type="text" name="memo-diagnostics" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-git" data-role="git" data-title="git差分signとhunk操作" data-plugin="gitsigns.nvim">
+          <header>
+            <h4>git差分signとhunk操作</h4>
+            <p class="meta"><a href="https://github.com/lewis6991/gitsigns.nvim" rel="noreferrer">gitsigns.nvim</a><span class="sep">/</span>最終commit 2026-11-05</p>
+          </header>
+          <p>変更した行を行番号の横に示し、変更の塊 (hunk) 単位でpreview・stage・取り消しができます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>gitで管理されたfileを編集し、行番号の横の印を確認します</li>
+            <li><kbd>]h</kbd> <kbd>[h</kbd> で次と前のhunkへ移動します</li>
+            <li><kbd>&lt;leader&gt;ghp</kbd> で変更前の内容をその場に表示します</li>
+            <li><kbd>&lt;leader&gt;ghs</kbd> でhunkをstageします。もう一度押すとstageを取り消します。<kbd>&lt;leader&gt;ghr</kbd> は変更を捨てます</li>
+            <li><kbd>&lt;leader&gt;ghb</kbd> でその行のblameを表示します。<kbd>&lt;leader&gt;ghd</kbd> はindexとのdiffを開きます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/git.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/git.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>行横の印と <code>&lt;leader&gt;gh*</code> <code>]h</code> <code>[h</code> が無くなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>mini.diff</li>
+              <li>lazygitなどの外部toolだけを使う</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-git" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-git" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-git" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">git差分signとhunk操作のmemo</span><input type="text" name="memo-git" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-highlight" data-role="highlight" data-title="TODO類と色codeの強調" data-plugin="mini.hipatterns">
+          <header>
+            <h4>TODO類と色codeの強調</h4>
+            <p class="meta"><a href="https://github.com/nvim-mini/mini.hipatterns" rel="noreferrer">mini.hipatterns</a><span class="sep">/</span>最終commit 2026-11-06</p>
+          </header>
+          <p><code>TODO</code> <code>FIXME</code> <code>HACK</code> <code>NOTE</code> という語と <code>#rrggbb</code> 形式の色codeを強調表示します。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>commentに <code>TODO</code> や <code>FIXME</code> と書きます</li>
+            <li><code>#ff8800</code> と書くと、その色で塗られます</li>
+            <li><kbd>&lt;leader&gt;/</kbd> で <code>TODO</code> を検索するとproject内の一覧になります (pickerの機能)</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/highlight.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/highlight.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>強調が無くなります。LSPが色情報を返す言語 (CSSなど) ではbuiltinの色表示が残ります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>todo-comments.nvim (専用の検索commandつき。最終commit 2025-11)</li>
+              <li>nvim-highlight-colors (CSSの色名やTailwindに対応)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-highlight" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-highlight" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-highlight" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">TODO類と色codeの強調のmemo</span><input type="text" name="memo-highlight" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-rainbow" data-role="rainbow" data-title="括弧の深さ別の色分け" data-plugin="rainbow-delimiters.nvim">
+          <header>
+            <h4>括弧の深さ別の色分け</h4>
+            <p class="meta"><a href="https://github.com/HiPhish/rainbow-delimiters.nvim" rel="noreferrer">rainbow-delimiters.nvim</a><span class="sep">/</span>最終commit 2026-10-27</p>
+          </header>
+          <p>入れ子になった括弧を深さごとに違う色で表示します。treesitter parserがある言語で働きます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>括弧が深く入れ子になったLuaやTypeScriptのfileを開きます</li>
+            <li>対応する括弧どうしが同じ色になっていることを確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/rainbow.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/rainbow.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>括弧はcolorschemeの通常の色になります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>無し</li>
+              <li>blink.pairs (括弧の色分けを含む)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-rainbow" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-rainbow" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-rainbow" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">括弧の深さ別の色分けのmemo</span><input type="text" name="memo-rainbow" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+      </section>
+      <section class="group" id="group-look">
+        <h3>見た目と案内</h3>
+        <article class="role" id="role-colorscheme" data-role="colorscheme" data-title="配色" data-plugin="tokyonight.nvim / catppuccin">
+          <header>
+            <h4>配色</h4>
+            <p class="meta"><a href="https://github.com/folke/tokyonight.nvim" rel="noreferrer">tokyonight.nvim / catppuccin</a><span class="sep">/</span>最終commit 2026-03-24 / 2026-08-09</p>
+          </header>
+          <p>既定は既存設定と同じ tokyonight (moon) です。試す候補として catppuccin を入れてあります。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>&lt;leader&gt;uC</kbd> で配色の一覧を開きます。移動するとその場で切り替わります</li>
+            <li><code>:colorscheme catppuccin-mocha</code> と <code>:colorscheme catppuccin-latte</code> (明るい配色) を試します</li>
+            <li><code>:colorscheme tokyonight-night</code> <code>tokyonight-storm</code> <code>tokyonight-day</code> を試します</li>
+            <li>気に入ったものは <code>colorscheme.lua</code> の <code>vim.cmd.colorscheme(...)</code> の名前を書き換えると既定になります</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/colorscheme.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/colorscheme.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>Neovimの既定の配色になります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>kanagawa.nvim</li>
+              <li>rose-pine</li>
+              <li>Neovim既定の配色</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-colorscheme" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-colorscheme" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-colorscheme" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">配色のmemo</span><input type="text" name="memo-colorscheme" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-icons" data-role="icons" data-title="icon" data-plugin="mini.icons">
+          <header>
+            <h4>icon</h4>
+            <p class="meta"><a href="https://github.com/nvim-mini/mini.icons" rel="noreferrer">mini.icons</a><span class="sep">/</span>最終commit 2026-10-23</p>
+          </header>
+          <p>fileの種類などのiconを他のpluginへ提供します。picker・oil・statusline・breadcrumbsが自動で使います。Nerd Font対応のfontが必要です。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>&lt;leader&gt;ff</kbd> の一覧でfile名の左にiconが出ることを確認します</li>
+            <li><kbd>-</kbd> でoilを開き、directoryとfileのiconを確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/icons.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/icons.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>各pluginはiconなしの表示に切り替わります。errorにはなりません。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>nvim-web-devicons</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-icons" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-icons" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-icons" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">iconのmemo</span><input type="text" name="memo-icons" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-statusline" data-role="statusline" data-title="statusline" data-plugin="lualine.nvim">
+          <header>
+            <h4>statusline</h4>
+            <p class="meta"><a href="https://github.com/nvim-lualine/lualine.nvim" rel="noreferrer">lualine.nvim</a><span class="sep">/</span>最終commit 2026-05-31</p>
+          </header>
+          <p>画面下の1行に、mode・git branch・差分の行数・diagnosticsの数・file名・filetype・位置を表示します。配色に自動で合わせます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>insert modeやvisual modeに入り、左端の色と表示が変わることを確認します</li>
+            <li>gitで管理されたfileを編集し、差分の行数が出ることを確認します</li>
+            <li><code>:colorscheme catppuccin-mocha</code> で色が追従することを確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/statusline.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/statusline.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>Neovim 0.12のbuiltin statuslineになります。diagnosticsの数などは引き続き表示されます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>builtinのstatusline</li>
+              <li>mini.statusline</li>
+              <li>heirline.nvim (自作向け。最終commit 2025-05)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-statusline" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-statusline" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-statusline" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">statuslineのmemo</span><input type="text" name="memo-statusline" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-breadcrumbs" data-role="breadcrumbs" data-title="winbarのbreadcrumbs" data-plugin="dropbar.nvim">
+          <header>
+            <h4>winbarのbreadcrumbs</h4>
+            <p class="meta"><a href="https://github.com/Bekaboo/dropbar.nvim" rel="noreferrer">dropbar.nvim</a><span class="sep">/</span>最終commit 2026-09-25</p>
+          </header>
+          <p>各windowの上端に、file pathと今いる関数やclassの階層を表示します。項目を選ぶと、その階層の一覧からjumpできます。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>codeのfileを開き、cursorを関数の中へ動かすと上端の表示が変わることを確認します</li>
+            <li><kbd>&lt;leader&gt;;</kbd> を押し、各項目に付いたlabelの字を押すと一覧が開きます</li>
+            <li>一覧の中では <kbd>j</kbd> <kbd>k</kbd> で移動し、<kbd>&lt;CR&gt;</kbd> でjumpします。<kbd>q</kbd> で閉じます</li>
+            <li>mouseで項目をclickしても同じ一覧が開きます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/breadcrumbs.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/breadcrumbs.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>windowの上端の行が無くなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>incline.nvim (右上に小さくfile名を出す)</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-breadcrumbs" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-breadcrumbs" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-breadcrumbs" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">winbarのbreadcrumbsのmemo</span><input type="text" name="memo-breadcrumbs" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-keyhint" data-role="keyhint" data-title="次に押せるkeyの表示" data-plugin="mini.clue">
+          <header>
+            <h4>次に押せるkeyの表示</h4>
+            <p class="meta"><a href="https://github.com/nvim-mini/mini.clue" rel="noreferrer">mini.clue</a><span class="sep">/</span>最終commit 2026-11-08</p>
+          </header>
+          <p><kbd>&lt;leader&gt;</kbd> や <kbd>g</kbd> などを押して少し待つと、続けて押せるkeyと説明の一覧を表示します。説明は各keymapの <code>desc</code> から取ります。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>&lt;leader&gt;</kbd> (Space) を押して0.3秒待ちます</li>
+            <li>一覧を見ながら <kbd>f</kbd> を押すと、file関連のkeyに絞られます。<kbd>&lt;BS&gt;</kbd> で1つ戻り、<kbd>&lt;Esc&gt;</kbd> で閉じます</li>
+            <li><kbd>g</kbd> <kbd>z</kbd> <kbd>&lt;C-w&gt;</kbd> <kbd>[</kbd> <kbd>]</kbd> でも同じように一覧が出ます</li>
+            <li><kbd>&quot;</kbd> でregisterの中身、<kbd>&#x27;</kbd> でmarkの一覧が出ます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/keyhint.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/keyhint.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>一覧が出なくなります。keymapそのものは変わりません。<kbd>&lt;leader&gt;sk</kbd> で検索できます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>which-key.nvim (定番。最終commit 2025-10)</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-keyhint" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-keyhint" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-keyhint" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">次に押せるkeyの表示のmemo</span><input type="text" name="memo-keyhint" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-messages" data-role="messages" data-title="messageとcmdlineの表示" data-plugin="なし (builtinのui2)">
+          <header>
+            <h4>messageとcmdlineの表示</h4>
+            <p class="meta">なし (builtinのui2)<span class="sep">/</span>最終commit Neovim 0.12.6同梱</p>
+          </header>
+          <p>Neovim 0.12の実験的機能 <code>ui2</code> を有効にします。長いmessageで「Press ENTER」と止められなくなり、あふれた分は折りたたまれて後からpagerで読めます。command lineは入力中に色分けされます。pluginは使いません。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>:echo &quot;hello&quot;</code> を実行します</li>
+            <li><code>:messages</code> で履歴をpagerに表示します。<kbd>q</kbd> で閉じます</li>
+            <li><kbd>g&lt;</kbd> で直前のmessageをpagerに開き直します</li>
+            <li><code>:lua print(vim.inspect(vim.lsp.get_clients()))</code> のような長い出力でも止められないことを確認します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/messages.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/messages.lua</code> を削除します。pluginが無いので、それだけで完了です。</dd>
+            <dt>消した後</dt>
+            <dd>従来のmessage表示に戻ります。fileを消すだけで済みます (<code>:Lazy clean</code> は不要です)。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>noice.nvim (最終commit 2025-11。既存設定ではcmdlineを無効化していました)</li>
+              <li>従来の表示</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-messages" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-messages" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-messages" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">messageとcmdlineの表示のmemo</span><input type="text" name="memo-messages" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-notify" data-role="notify" data-title="通知popup" data-plugin="snacks.nvim (notifier)">
+          <header>
+            <h4>通知popup</h4>
+            <p class="meta"><a href="https://github.com/folke/snacks.nvim" rel="noreferrer">snacks.nvim (notifier)</a><span class="sep">/</span>最終commit 2026-05-25</p>
+          </header>
+          <p><code>vim.notify</code> の通知を画面右上のpopupとして表示します。snacks.nvimの機能のうちnotifierだけを有効にしています。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>:lua vim.notify(&quot;hello&quot;)</code> を実行します</li>
+            <li><kbd>&lt;leader&gt;uf</kbd> を押すと、切り替えの結果が通知で出ます</li>
+            <li><kbd>&lt;leader&gt;n</kbd> で通知の履歴を開きます。<kbd>q</kbd> で閉じます</li>
+            <li><kbd>&lt;leader&gt;un</kbd> で表示中の通知を消します</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/notify.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/notify.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。snacks.nvimの本体は、<code>notify.lua</code> <code>dashboard.lua</code> <code>indent.lua</code> の3つをすべて消した時に削除されます。</dd>
+            <dt>消した後</dt>
+            <dd>通知は画面下のmessage欄に出るようになります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>mini.notify</li>
+              <li>nvim-notify</li>
+              <li>fidget.nvim (LSPの進捗表示が中心)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-notify" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-notify" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-notify" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">通知popupのmemo</span><input type="text" name="memo-notify" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-dashboard" data-role="dashboard" data-title="起動画面" data-plugin="snacks.nvim (dashboard)">
+          <header>
+            <h4>起動画面</h4>
+            <p class="meta"><a href="https://github.com/folke/snacks.nvim" rel="noreferrer">snacks.nvim (dashboard)</a><span class="sep">/</span>最終commit 2026-05-25</p>
+          </header>
+          <p>引数なしで起動した時に、よく使う操作の一覧を表示します。snacks.nvimの機能のうちdashboardだけを有効にしています。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>NVIM_APPNAME=nvim-next nvim</code> を引数なしで起動します</li>
+            <li><kbd>f</kbd> でfile検索、<kbd>g</kbd> でgrep、<kbd>r</kbd> で最近開いたfileです (入っているpickerを呼びます)</li>
+            <li><kbd>c</kbd> で設定fileの検索、<kbd>L</kbd> でlazy.nvimの画面、<kbd>q</kbd> で終了です</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/dashboard.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/dashboard.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。snacks.nvimの本体は、<code>notify.lua</code> <code>dashboard.lua</code> <code>indent.lua</code> の3つをすべて消した時に削除されます。</dd>
+            <dt>消した後</dt>
+            <dd>引数なしで起動すると空のbufferになります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>mini.starter</li>
+              <li>alpha-nvim</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-dashboard" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-dashboard" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-dashboard" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">起動画面のmemo</span><input type="text" name="memo-dashboard" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-indent" data-role="indent" data-title="indent guide" data-plugin="snacks.nvim (indent)">
+          <header>
+            <h4>indent guide</h4>
+            <p class="meta"><a href="https://github.com/folke/snacks.nvim" rel="noreferrer">snacks.nvim (indent)</a><span class="sep">/</span>最終commit 2026-05-25</p>
+          </header>
+          <p>indentの深さを縦線で示し、cursorがあるblockの線を強調します。snacks.nvimの機能のうちindentだけを有効にしています。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>入れ子の深いcodeを開き、縦線を確認します</li>
+            <li>cursorを別のblockへ動かすと、強調される線が移ることを確認します</li>
+            <li><code>:lua Snacks.indent.disable()</code> と <code>:lua Snacks.indent.enable()</code> で一時的に切り替えます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/indent.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/indent.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。snacks.nvimの本体は、<code>notify.lua</code> <code>dashboard.lua</code> <code>indent.lua</code> の3つをすべて消した時に削除されます。</dd>
+            <dt>消した後</dt>
+            <dd>縦線が無くなります。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>indent-blankline.nvim</li>
+              <li>mini.indentscope</li>
+              <li>builtinの <code>listchars</code> (<code>leadmultispace</code>)</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-indent" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-indent" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-indent" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">indent guideのmemo</span><input type="text" name="memo-indent" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-cursor" data-role="cursor" data-title="cursor animation" data-plugin="smear-cursor.nvim">
+          <header>
+            <h4>cursor animation</h4>
+            <p class="meta"><a href="https://github.com/sphamba/smear-cursor.nvim" rel="noreferrer">smear-cursor.nvim</a><span class="sep">/</span>最終commit 2026-10-04</p>
+          </header>
+          <p>cursorが離れた場所へ動く時に、尾を引くような軌跡を描きます。移動先を目で追いやすくなります。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><kbd>gg</kbd> と <kbd>G</kbd> で先頭と末尾を行き来します</li>
+            <li><kbd>&lt;C-w&gt;w</kbd> などでwindowを移動します</li>
+            <li><code>:SmearCursorToggle</code> でon / offを切り替えます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/cursor.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/cursor.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>cursorは瞬時に移動します。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>mini.animate (scrollやwindowも動かす)</li>
+              <li>terminal側のcursor効果</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-cursor" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-cursor" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-cursor" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">cursor animationのmemo</span><input type="text" name="memo-cursor" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+      </section>
+      <section class="group" id="group-md">
+        <h3>Markdownとnote</h3>
+        <article class="role" id="role-markdown" data-role="markdown" data-title="Markdownのbuffer内描画" data-plugin="render-markdown.nvim">
+          <header>
+            <h4>Markdownのbuffer内描画</h4>
+            <p class="meta"><a href="https://github.com/MeanderingProgrammer/render-markdown.nvim" rel="noreferrer">render-markdown.nvim</a><span class="sep">/</span>最終commit 2026-11-08</p>
+          </header>
+          <p>Markdownの見出し・code block・表・checkboxなどを、buffer上で整形して表示します。既存設定から引き継ぎました。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li><code>.md</code> fileを開きます。見出しやcode blockが装飾されます</li>
+            <li>装飾された行へcursorを移すと、その行だけ元の記法に戻ります</li>
+            <li>insert modeでは元の記法が表示されます</li>
+            <li><code>:RenderMarkdown toggle</code> で描画を切り替えます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/markdown.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/markdown.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd>Markdownは記法のまま表示されます。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>markview.nvim</li>
+              <li>browserでpreviewするplugin</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-markdown" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-markdown" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-markdown" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">Markdownのbuffer内描画のmemo</span><input type="text" name="memo-markdown" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+        <article class="role" id="role-notes" data-role="notes" data-title="Obsidian vault連携" data-plugin="obsidian.nvim">
+          <header>
+            <h4>Obsidian vault連携</h4>
+            <p class="meta"><a href="https://github.com/obsidian-nvim/obsidian.nvim" rel="noreferrer">obsidian.nvim</a><span class="sep">/</span>最終commit 2026-10-28 (v3.16.10)</p>
+          </header>
+          <p><code>~/vault</code> の中のMarkdownで、noteの検索・link補完・daily noteの作成などを使えるようにします。<code>~/vault</code> が無いmachineでは何も読み込みません。既存設定から引き継ぎました。</p>
+          <h5>まず試す操作</h5>
+          <ol class="tries">
+            <li>vault内の <code>.md</code> を開き、<code>:Obsidian </code> まで打って <kbd>&lt;Tab&gt;</kbd> でsubcommandの一覧を見ます</li>
+            <li><code>:Obsidian quick_switch</code> でnoteを名前で開きます。<code>:Obsidian search</code> は本文を検索します</li>
+            <li><code>:Obsidian today</code> で今日のdaily noteを開きます</li>
+            <li><code>[</code> を2回続けて打つとnoteへのlinkが補完されます。linkの上で <kbd>&lt;CR&gt;</kbd> を押すと開きます</li>
+          </ol>
+          <dl class="facts">
+            <dt>設定file</dt>
+            <dd><code>nvim-next/lua/plugins/notes.lua</code></dd>
+            <dt>消す方法</dt>
+            <dd><code>nvim-next/lua/plugins/notes.lua</code> を削除します。その後 <code>:Lazy clean</code> を実行します。</dd>
+            <dt>消した後</dt>
+            <dd><code>:Obsidian</code> commandとlink補完が無くなります。Markdownとしての編集はそのままです。</dd>
+            <dt>代替候補</dt>
+            <dd>
+              <ul>
+              <li>marksman (LSP) だけを使う</li>
+              <li>無し</li>
+              </ul>
+            </dd>
+          </dl>
+          <fieldset class="verdict">
+            <legend>判定</legend>
+            <label><input type="radio" name="verdict-notes" value="keep"><span>残す</span></label>
+            <label><input type="radio" name="verdict-notes" value="drop"><span>消す</span></label>
+            <label><input type="radio" name="verdict-notes" value="hold"><span>保留</span></label>
+            <label class="memo"><span class="visually-hidden">Obsidian vault連携のmemo</span><input type="text" name="memo-notes" placeholder="memo (任意)" autocomplete="off"></label>
+          </fieldset>
+        </article>
+      </section>
+        </section>
+
+        <section id="builtin">
+          <h2>builtinだけでできること</h2>
+          <p>Neovim 0.12は、以前はpluginが必要だった機能の多くを標準で持っています。次の操作は、この設定のどの役割fileを消しても使えます (LSPの操作にはLSPが接続されている必要があります)。この設定はbuiltinのLSP keymapを上書きしていません。</p>
+
+        <h4>LSP</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>K</kbd></td><td>cursor下の説明 (hover)</td></tr>
+            <tr><td><kbd>grn</kbd></td><td>rename</td></tr>
+            <tr><td><kbd>gra</kbd></td><td>code action (visual modeでも可)</td></tr>
+            <tr><td><kbd>grr</kbd></td><td>参照一覧をquickfixへ</td></tr>
+            <tr><td><kbd>gri</kbd></td><td>実装へ</td></tr>
+            <tr><td><kbd>grt</kbd></td><td>型定義へ</td></tr>
+            <tr><td><kbd>grx</kbd></td><td>code lensを実行</td></tr>
+            <tr><td><kbd>gO</kbd></td><td>symbol一覧 (目次)</td></tr>
+            <tr><td><kbd>&lt;C-]&gt;</kbd></td><td>定義へjump。&lt;C-t&gt; で戻る</td></tr>
+            <tr><td><kbd>&lt;C-s&gt; (insert)</kbd></td><td>引数のhint (signature help)</td></tr>
+            <tr><td><kbd>&lt;C-x&gt;&lt;C-o&gt; (insert)</kbd></td><td>LSP補完を手動で呼ぶ</td></tr>
+            <tr><td><kbd>:checkhealth vim.lsp</kbd></td><td>接続中のserverを確認</td></tr>
+            <tr><td><kbd>:lsp disable &lt;name&gt;</kbd></td><td>serverを止める (0.12)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>diagnostics</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>]d / [d</kbd></td><td>次 / 前のdiagnosticへ</td></tr>
+            <tr><td><kbd>]D / [D</kbd></td><td>最後 / 最初のdiagnosticへ</td></tr>
+            <tr><td><kbd>&lt;C-w&gt;d</kbd></td><td>float窓で全文を表示</td></tr>
+            <tr><td><kbd>:lua vim.diagnostic.setqflist()</kbd></td><td>全件をquickfixへ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>編集</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>gcc</kbd></td><td>行をcomment / 解除</td></tr>
+            <tr><td><kbd>gc + 移動 / visualで gc</kbd></td><td>範囲をcomment / 解除</td></tr>
+            <tr><td><kbd>]&lt;Space&gt; / [&lt;Space&gt;</kbd></td><td>下 / 上に空行を足す</td></tr>
+            <tr><td><kbd>an / in (visual)</kbd></td><td>選択を構文の外側へ広げる / 内側へ戻す (0.12)</td></tr>
+            <tr><td><kbd>]n / [n (visual)</kbd></td><td>次 / 前の構文nodeを選ぶ (0.12)</td></tr>
+            <tr><td><kbd>gx</kbd></td><td>cursor下のURLやfileを外部appで開く</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>移動と一覧</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>]q / [q</kbd></td><td>quickfixの次 / 前</td></tr>
+            <tr><td><kbd>]b / [b</kbd></td><td>次 / 前のbuffer</td></tr>
+            <tr><td><kbd>&lt;C-w&gt;s / &lt;C-w&gt;v</kbd></td><td>windowを横 / 縦に分割</td></tr>
+            <tr><td><kbd>&lt;C-w&gt;q</kbd></td><td>windowを閉じる</td></tr>
+            <tr><td><kbd>:grep &lt;語&gt;</kbd></td><td>rgで検索しquickfixへ</td></tr>
+            <tr><td><kbd>:copen</kbd></td><td>quickfix窓を開く</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>0.12の同梱plugin (pluginなしで使える)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>:packadd nvim.undotree → :Undotree</kbd></td><td>undoの履歴をtreeで表示</td></tr>
+            <tr><td><kbd>:packadd nvim.difftool → :DiffTool a b</kbd></td><td>2つのfileやdirectoryを比較</td></tr>
+            <tr><td><kbd>:InspectTree</kbd></td><td>treesitterの構文木</td></tr>
+            <tr><td><kbd>:Inspect</kbd></td><td>cursor位置のhighlight情報</td></tr>
+            </tbody>
+          </table>
+        </div>
+        </section>
+
+        <section id="keymaps">
+          <h2>全keymap一覧</h2>
+          <h3>この設定が定義するkeymap</h3>
+          <p>設定fileが定義しているkeymapのすべてです。実際の設定と機械的に照合してあります。Neovimの中では <kbd>&lt;leader&gt;sk</kbd> で同じ内容を検索できます。</p>
+          <div class="filter">
+            <label for="keymap-filter">絞り込み</label>
+            <input type="search" id="keymap-filter" placeholder="例: grep / git / &lt;leader&gt;s" autocomplete="off">
+          </div>
+          <div class="table-wrap">
+            <table id="keymap-table">
+              <thead><tr><th scope="col">key</th><th scope="col">mode</th><th scope="col">動作</th><th scope="col">役割</th><th scope="col">定義場所</th></tr></thead>
+              <tbody>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;fn"><td><kbd>&lt;leader&gt;fn</kbd></td><td>normal</td><td>新しい空のbufferを作る</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;bd"><td><kbd>&lt;leader&gt;bd</kbd></td><td>normal</td><td>bufferを閉じる</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;Esc&gt;"><td><kbd>&lt;Esc&gt;</kbd></td><td>normal</td><td>検索のhighlightを消す</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;C-h&gt;"><td><kbd>&lt;C-h&gt;</kbd></td><td>normal</td><td>左のwindowへ移動</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;C-j&gt;"><td><kbd>&lt;C-j&gt;</kbd></td><td>normal</td><td>下のwindowへ移動</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;C-k&gt;"><td><kbd>&lt;C-k&gt;</kbd></td><td>normal</td><td>上のwindowへ移動</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;C-l&gt;"><td><kbd>&lt;C-l&gt;</kbd></td><td>normal</td><td>右のwindowへ移動</td><td>基本 (config/keymaps.lua)</td><td><code>lua/config/keymaps.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;&lt;space&gt;"><td><kbd>&lt;leader&gt;&lt;space&gt;</kbd></td><td>normal</td><td>fileを探す</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ff"><td><kbd>&lt;leader&gt;ff</kbd></td><td>normal</td><td>fileを探す</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;fr"><td><kbd>&lt;leader&gt;fr</kbd></td><td>normal</td><td>最近開いたfile</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;fb"><td><kbd>&lt;leader&gt;fb</kbd></td><td>normal</td><td>buffer一覧</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;,"><td><kbd>&lt;leader&gt;,</kbd></td><td>normal</td><td>buffer一覧</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;fp"><td><kbd>&lt;leader&gt;fp</kbd></td><td>normal</td><td>Neovimの設定fileを探す</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;/"><td><kbd>&lt;leader&gt;/</kbd></td><td>normal</td><td>project全体をgrep</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sw"><td><kbd>&lt;leader&gt;sw</kbd></td><td>normal</td><td>cursor下の単語をgrep</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="&lt;leader&gt;sw"><td><kbd>&lt;leader&gt;sw</kbd></td><td>visual</td><td>選択範囲をgrep</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sh"><td><kbd>&lt;leader&gt;sh</kbd></td><td>normal</td><td>helpを検索</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sk"><td><kbd>&lt;leader&gt;sk</kbd></td><td>normal</td><td>keymapを検索</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sd"><td><kbd>&lt;leader&gt;sd</kbd></td><td>normal</td><td>diagnostics一覧 (buffer)</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sD"><td><kbd>&lt;leader&gt;sD</kbd></td><td>normal</td><td>diagnostics一覧 (workspace)</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ss"><td><kbd>&lt;leader&gt;ss</kbd></td><td>normal</td><td>symbol一覧 (buffer)</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;sr"><td><kbd>&lt;leader&gt;sr</kbd></td><td>normal</td><td>直前のpickerを開き直す</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;gs"><td><kbd>&lt;leader&gt;gs</kbd></td><td>normal</td><td>git statusの一覧</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;uC"><td><kbd>&lt;leader&gt;uC</kbd></td><td>normal</td><td>配色を選ぶ</td><td><a href="#role-picker">fuzzy picker</a></td><td><code>lua/plugins/picker.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="-"><td><kbd>-</kbd></td><td>normal</td><td>親directoryをoilで開く</td><td><a href="#role-files">file操作</a></td><td><code>lua/plugins/files.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;e"><td><kbd>&lt;leader&gt;e</kbd></td><td>normal</td><td>oilを浮いた窓で開閉する</td><td><a href="#role-files">file操作</a></td><td><code>lua/plugins/files.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;cf"><td><kbd>&lt;leader&gt;cf</kbd></td><td>normal</td><td>bufferをformatする</td><td><a href="#role-format">format</a></td><td><code>lua/plugins/format.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="&lt;leader&gt;cf"><td><kbd>&lt;leader&gt;cf</kbd></td><td>visual</td><td>選択範囲をformatする</td><td><a href="#role-format">format</a></td><td><code>lua/plugins/format.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;uf"><td><kbd>&lt;leader&gt;uf</kbd></td><td>normal</td><td>保存時formatのon / off</td><td><a href="#role-format">format</a></td><td><code>lua/plugins/format.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="]h"><td><kbd>]h</kbd></td><td>normal</td><td>次のhunkへ</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="[h"><td><kbd>[h</kbd></td><td>normal</td><td>前のhunkへ</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ghp"><td><kbd>&lt;leader&gt;ghp</kbd></td><td>normal</td><td>hunkの変更前をその場に表示</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ghs"><td><kbd>&lt;leader&gt;ghs</kbd></td><td>normal</td><td>hunkをstage / stage取り消し</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ghr"><td><kbd>&lt;leader&gt;ghr</kbd></td><td>normal</td><td>hunkの変更を捨てる</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ghb"><td><kbd>&lt;leader&gt;ghb</kbd></td><td>normal</td><td>行のblameを表示</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;ghd"><td><kbd>&lt;leader&gt;ghd</kbd></td><td>normal</td><td>indexとのdiffを開く</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="o" data-lhs="ih"><td><kbd>ih</kbd></td><td>operator</td><td>hunkをtext objectとして選ぶ</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="ih"><td><kbd>ih</kbd></td><td>visual</td><td>hunkを選択する</td><td><a href="#role-git">git差分signとhunk操作</a></td><td><code>lua/plugins/git.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;uh"><td><kbd>&lt;leader&gt;uh</kbd></td><td>normal</td><td>inlay hintのon / off</td><td><a href="#role-lsp">LSP</a></td><td><code>lua/plugins/lsp.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsa"><td><kbd>gsa</kbd></td><td>normal</td><td>囲みを追加 (範囲と文字を続ける)</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="gsa"><td><kbd>gsa</kbd></td><td>visual</td><td>選択範囲を囲む</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsd"><td><kbd>gsd</kbd></td><td>normal</td><td>囲みを削除</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsr"><td><kbd>gsr</kbd></td><td>normal</td><td>囲みを置換</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsf"><td><kbd>gsf</kbd></td><td>normal</td><td>右の囲みへ移動</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsF"><td><kbd>gsF</kbd></td><td>normal</td><td>左の囲みへ移動</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="gsh"><td><kbd>gsh</kbd></td><td>normal</td><td>囲みをhighlight</td><td><a href="#role-surround">囲み文字の操作</a></td><td><code>lua/plugins/surround.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="s"><td><kbd>s</kbd></td><td>normal</td><td>flash jump</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="s"><td><kbd>s</kbd></td><td>visual</td><td>flash jump</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="o" data-lhs="s"><td><kbd>s</kbd></td><td>operator</td><td>flash jump</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="S"><td><kbd>S</kbd></td><td>normal</td><td>構文単位で選択</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="x" data-lhs="S"><td><kbd>S</kbd></td><td>visual</td><td>構文単位で選択</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="o" data-lhs="S"><td><kbd>S</kbd></td><td>operator</td><td>構文単位で選択</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="o" data-lhs="r"><td><kbd>r</kbd></td><td>operator</td><td>離れた場所へoperatorを適用</td><td><a href="#role-motion">画面内jump</a></td><td><code>lua/plugins/motion.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;;"><td><kbd>&lt;leader&gt;;</kbd></td><td>normal</td><td>breadcrumbsの項目を選ぶ</td><td><a href="#role-breadcrumbs">winbarのbreadcrumbs</a></td><td><code>lua/plugins/breadcrumbs.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;n"><td><kbd>&lt;leader&gt;n</kbd></td><td>normal</td><td>通知の履歴</td><td><a href="#role-notify">通知popup</a></td><td><code>lua/plugins/notify.lua</code></td></tr>
+            <tr data-mode="n" data-lhs="&lt;leader&gt;un"><td><kbd>&lt;leader&gt;un</kbd></td><td>normal</td><td>表示中の通知を消す</td><td><a href="#role-notify">通知popup</a></td><td><code>lua/plugins/notify.lua</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><kbd>]h</kbd> <kbd>[h</kbd> <kbd>&lt;leader&gt;gh*</kbd> <kbd>ih</kbd> は、gitで管理されたfileのbufferでだけ有効です。</p>
+          <h3>pluginの窓の中で使うkey</h3>
+          <p>各pluginが自分の窓やbufferの中に用意している既定のkeyです。「この設定で変更」と書いたもの以外はpluginの既定のままです。</p>
+
+        <h4>picker (fzf-luaの窓)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>&lt;C-n&gt; / &lt;C-p&gt;</kbd></td><td>候補を移動</td></tr>
+            <tr><td><kbd>&lt;CR&gt;</kbd></td><td>開く</td></tr>
+            <tr><td><kbd>&lt;C-v&gt;</kbd></td><td>縦分割で開く</td></tr>
+            <tr><td><kbd>&lt;C-s&gt;</kbd></td><td>横分割で開く</td></tr>
+            <tr><td><kbd>&lt;C-t&gt;</kbd></td><td>tabで開く</td></tr>
+            <tr><td><kbd>&lt;M-q&gt;</kbd></td><td>選択をquickfixへ送る</td></tr>
+            <tr><td><kbd>&lt;Esc&gt;</kbd></td><td>閉じる</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>files (oilのbuffer)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>&lt;CR&gt;</kbd></td><td>開く</td></tr>
+            <tr><td><kbd>-</kbd></td><td>親directoryへ</td></tr>
+            <tr><td><kbd>_</kbd></td><td>作業directoryを開く</td></tr>
+            <tr><td><kbd>&lt;C-s&gt;</kbd></td><td>縦分割で開く</td></tr>
+            <tr><td><kbd>&lt;C-x&gt;</kbd></td><td>横分割で開く (この設定で変更)</td></tr>
+            <tr><td><kbd>&lt;C-t&gt;</kbd></td><td>tabで開く</td></tr>
+            <tr><td><kbd>&lt;C-p&gt;</kbd></td><td>preview</td></tr>
+            <tr><td><kbd>&lt;F5&gt;</kbd></td><td>再読み込み (この設定で変更)</td></tr>
+            <tr><td><kbd>g.</kbd></td><td>隠しfileの表示切替</td></tr>
+            <tr><td><kbd>gs</kbd></td><td>並び順の変更</td></tr>
+            <tr><td><kbd>gx</kbd></td><td>外部appで開く</td></tr>
+            <tr><td><kbd>g\</kbd></td><td>ゴミ箱の表示切替</td></tr>
+            <tr><td><kbd>g?</kbd></td><td>key一覧</td></tr>
+            <tr><td><kbd>&lt;C-c&gt;</kbd></td><td>閉じる</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>completion (blink.cmpのpopup)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>&lt;C-n&gt; / &lt;C-p&gt; / 矢印</kbd></td><td>候補を移動</td></tr>
+            <tr><td><kbd>&lt;CR&gt;</kbd></td><td>確定</td></tr>
+            <tr><td><kbd>&lt;C-space&gt;</kbd></td><td>候補を開く / 説明窓の切替</td></tr>
+            <tr><td><kbd>&lt;C-e&gt;</kbd></td><td>閉じる</td></tr>
+            <tr><td><kbd>&lt;C-b&gt; / &lt;C-f&gt;</kbd></td><td>説明窓をscroll</td></tr>
+            <tr><td><kbd>&lt;Tab&gt; / &lt;S-Tab&gt;</kbd></td><td>snippetの入力位置を移動</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>keyhint (mini.clueの窓)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>&lt;C-d&gt; / &lt;C-u&gt;</kbd></td><td>一覧をscroll</td></tr>
+            <tr><td><kbd>&lt;BS&gt;</kbd></td><td>1つ前のkeyへ戻る</td></tr>
+            <tr><td><kbd>&lt;Esc&gt;</kbd></td><td>閉じる</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>breadcrumbs (dropbarの一覧)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>j / k</kbd></td><td>移動</td></tr>
+            <tr><td><kbd>&lt;CR&gt;</kbd></td><td>jump / 下の階層を開く</td></tr>
+            <tr><td><kbd>i</kbd></td><td>絞り込み</td></tr>
+            <tr><td><kbd>q / &lt;Esc&gt;</kbd></td><td>閉じる</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>notes (vault内のMarkdown)</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">key / command</th><th scope="col">動作</th></tr></thead>
+            <tbody>
+            <tr><td><kbd>&lt;CR&gt;</kbd></td><td>link先を開く / checkboxを切り替える</td></tr>
+            </tbody>
+          </table>
+        </div>
+        </section>
+
+        <section id="verdicts">
+          <h2>判定のまとめ</h2>
+          <p id="save-status" role="status"></p>
+          <div class="summary-grid">
+            <div data-list="keep"><h4>残す<span class="count">0</span></h4><ul></ul></div>
+            <div data-list="drop"><h4>消す<span class="count">0</span></h4><ul></ul></div>
+            <div data-list="hold"><h4>保留<span class="count">0</span></h4><ul></ul></div>
+            <div data-list="none"><h4>未定<span class="count">0</span></h4><ul></ul></div>
+          </div>
+          <p>下の欄は判定の一覧です。「消す」にしたfileを削除する時の控えや、依頼文への貼り付けに使ってください。</p>
+          <div class="actions">
+            <button type="button" id="copy-summary">判定をcopy</button>
+            <button type="button" id="reset-verdicts">すべての判定を消す</button>
+          </div>
+          <label class="visually-hidden" for="summary-text">判定の一覧</label>
+          <textarea id="summary-text" readonly spellcheck="false"></textarea>
+        </section>
+
+        <footer>
+          <p>設定の詳細と、本採用する時にNix側で必要な変更は <code>nvim-next/README.md</code> にあります。</p>
+        </footer>
+      </main>
+    </div>
+    <script>
+    (function () {
+      var KEY = "nvim-next-tutorial:v1";
+      var LABEL = { keep: "残す", drop: "消す", hold: "保留" };
+      var statusEl = document.getElementById("save-status");
+      var state = { verdict: {}, memo: {} };
+      var storageOk = true;
+
+      function load() {
+        try {
+          var raw = window.localStorage.getItem(KEY);
+          if (raw) {
+            var data = JSON.parse(raw);
+            if (data && typeof data === "object") {
+              state.verdict = data.verdict || {};
+              state.memo = data.memo || {};
+            }
+          }
+        } catch (e) {
+          storageOk = false;
+        }
+      }
+
+      function save() {
+        try {
+          window.localStorage.setItem(KEY, JSON.stringify(state));
+          storageOk = true;
+        } catch (e) {
+          storageOk = false;
+        }
+        showStatus();
+      }
+
+      function showStatus() {
+        if (!statusEl) return;
+        statusEl.textContent = storageOk
+          ? "判定はこのbrowserに保存されます。"
+          : "このbrowserでは保存できません。判定はpageを閉じると消えます。";
+      }
+
+      var roles = Array.prototype.slice.call(document.querySelectorAll("article.role"));
+
+      function render() {
+        var lists = { keep: [], drop: [], hold: [], none: [] };
+        var lines = [];
+        roles.forEach(function (el) {
+          var id = el.getAttribute("data-role");
+          var v = state.verdict[id] || "";
+          if (v) el.setAttribute("data-verdict", v); else el.removeAttribute("data-verdict");
+          var mark = document.querySelector('nav.toc a[href="#role-' + id + '"] .mark');
+          if (mark) mark.setAttribute("data-v", v);
+          var title = el.getAttribute("data-title");
+          (lists[v] || lists.none).push({ id: id, title: title });
+          var memo = state.memo[id] ? "  # " + state.memo[id] : "";
+          lines.push((LABEL[v] || "未定") + "\t" + id + ".lua\t" + el.getAttribute("data-plugin") + memo);
+        });
+        ["keep", "drop", "hold", "none"].forEach(function (k) {
+          var box = document.querySelector('[data-list="' + k + '"]');
+          if (!box) return;
+          box.querySelector(".count").textContent = String(lists[k].length);
+          var ul = box.querySelector("ul");
+          ul.textContent = "";
+          if (!lists[k].length) {
+            var li = document.createElement("li");
+            li.className = "empty";
+            li.textContent = "なし";
+            ul.appendChild(li);
+          }
+          lists[k].forEach(function (r) {
+            var li = document.createElement("li");
+            var a = document.createElement("a");
+            a.href = "#role-" + r.id;
+            a.textContent = r.title;
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+        });
+        var out = document.getElementById("summary-text");
+        if (out) out.value = lines.join("\n");
+      }
+
+      function restoreInputs() {
+        roles.forEach(function (el) {
+          var id = el.getAttribute("data-role");
+          var v = state.verdict[id];
+          if (v) {
+            var input = el.querySelector('input[type="radio"][value="' + v + '"]');
+            if (input) input.checked = true;
+          }
+          var memo = el.querySelector('input[type="text"]');
+          if (memo && state.memo[id]) memo.value = state.memo[id];
+        });
+      }
+
+      document.addEventListener("change", function (ev) {
+        var t = ev.target;
+        if (!t || !t.name) return;
+        if (t.name.indexOf("verdict-") === 0) {
+          state.verdict[t.name.slice(8)] = t.value;
+          save();
+          render();
+        }
+      });
+      document.addEventListener("input", function (ev) {
+        var t = ev.target;
+        if (!t || !t.name || t.name.indexOf("memo-") !== 0) return;
+        var id = t.name.slice(5);
+        if (t.value) state.memo[id] = t.value; else delete state.memo[id];
+        save();
+        render();
+      });
+
+      var resetBtn = document.getElementById("reset-verdicts");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", function () {
+          if (!window.confirm("すべての判定とmemoを消します。よろしいですか。")) return;
+          state = { verdict: {}, memo: {} };
+          roles.forEach(function (el) {
+            Array.prototype.forEach.call(el.querySelectorAll('input[type="radio"]'), function (i) { i.checked = false; });
+            var memo = el.querySelector('input[type="text"]');
+            if (memo) memo.value = "";
+          });
+          save();
+          render();
+        });
+      }
+
+      var copyBtn = document.getElementById("copy-summary");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", function () {
+          var out = document.getElementById("summary-text");
+          var done = function (ok) {
+            copyBtn.textContent = ok ? "copyしました" : "copyできませんでした。下の欄から選択してください";
+            window.setTimeout(function () { copyBtn.textContent = "判定をcopy"; }, 2500);
+          };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(out.value).then(function () { done(true); }, function () { out.select(); done(false); });
+            } else {
+              out.select();
+              done(false);
+            }
+          } catch (e) {
+            done(false);
+          }
+        });
+      }
+
+      var filter = document.getElementById("keymap-filter");
+      if (filter) {
+        filter.addEventListener("input", function () {
+          var q = filter.value.toLowerCase();
+          Array.prototype.forEach.call(document.querySelectorAll("#keymap-table tbody tr"), function (tr) {
+            tr.hidden = q !== "" && tr.textContent.toLowerCase().indexOf(q) === -1;
+          });
+        });
+      }
+
+      load();
+      restoreInputs();
+      render();
+      showStatus();
+    })();
+    </script>
+  </body>
+</html>

@@ -29,21 +29,24 @@ in
       "TREESITTER_GRAMMARS"
       "${treesitterGrammars}"
     ];
-    extraPackages = with pkgs; [
-      bash-language-server
-      biome
-      lua-language-server
-      marksman
-      nixd
-      nixfmt
-      shellcheck
-      shfmt
-      stylua
-      taplo
-      vscode-langservers-extracted
-      vtsls
-      yaml-language-server
-    ];
+    extraPackages =
+      with pkgs;
+      [
+        bash-language-server
+        lua-language-server
+        marksman
+        nixd
+        nixfmt
+        shellcheck
+        shfmt
+        stylua
+        taplo
+        vscode-langservers-extracted
+        vtsls
+        yaml-language-server
+      ]
+      # The Linux build is uncached and too large for homelab; projects get biome from their dev shells.
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ biome ];
   };
 
   # Out-of-store symlink so config edits apply instantly without a rebuild.

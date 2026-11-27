@@ -7,6 +7,11 @@
             "type": "command",
             "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "if command -v bun >/dev/null 2>&1; then bun \"$HOME/dotfiles/agents/hooks/capability-suggest.ts\"; fi",
+            "timeout": 5
           }
         ]
       }
@@ -18,6 +23,18 @@
             "type": "command",
             "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v bun >/dev/null 2>&1; then bun \"$HOME/dotfiles/agents/hooks/run-repo-check.ts\"; fi",
+            "timeout": 15
           }
         ]
       }

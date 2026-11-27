@@ -16,7 +16,7 @@
 | CLI（Nix）                | `nix/home-manager/programs/packages.nix`の`commonPackages` | ripgrep, fd   |
 | CLI（custom npm package） | `nix/pkgs/<name>/` + `packages.nix`                        | agent-browser |
 | GUI（macOS）              | `nix/darwin/configuration.nix`の`homebrew.casks`           | discord       |
-| macOS専用                 | `packages.nix`の`darwinPackages`                           | texliveFull   |
+| macOS専用                 | `packages.nix`の`darwinCliPackages`                        | mas           |
 | Linux専用                 | `packages.nix`の`linuxPackages`                            | Nerd Font     |
 | Ubuntu system / GUI       | `server/ansible/playbook.yml`                              | Docker        |
 
@@ -58,8 +58,8 @@ runtime installerをactivationへ直接埋め込まない。再現可能なCLI�
 
 ```nix
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
 in {
   # 条件分岐
   something = if isDarwin then "mac" else "linux";

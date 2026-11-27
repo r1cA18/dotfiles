@@ -1,4 +1,25 @@
-{ inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  # Which skills exist and their tier come from the capability catalog
+  # (agents/capabilities/catalog.nix). Where r1hn projects it, the bundle
+  # holds every catalog skill and r1hn links them per entry, so this module
+  # installs nothing itself (its sync would delete skills added inside a
+  # client). Elsewhere it installs the baseline skills as before.
+  caps = config.dotfiles.capabilities;
+  projected = caps.projectedByR1hn;
+  skillEntries = lib.filterAttrs (_: e: e.kind == "skill" && (e.source or null) == null) caps.entries;
+  wanted = builtins.attrNames (
+    if projected then skillEntries else lib.filterAttrs (_: e: e.tier == "baseline") skillEntries
+  );
+  explicitIds = builtins.attrNames config.programs.agent-skills.skills.explicit;
+  installed = id: builtins.elem id wanted;
+in
 {
   programs.agent-skills = {
     enable = true;
@@ -61,83 +82,53 @@
         subdir = "skills";
       };
 
+      # unslop: discovery finds skills/unslop/SKILL.md (same layout as lottie).
+      unslop = {
+        path = inputs.unslop;
+        subdir = "skills";
+      };
+
+      # unslop-ui: discovery finds skills/unslop-ui/SKILL.md.
+      unslop-ui = {
+        path = inputs.unslop-ui;
+        subdir = "skills";
+      };
+
       # Orca skills
       orca = {
         path = inputs.orca-skills;
         subdir = "skills";
       };
 
+      # Hugging Face skills (Apache-2.0): Python and ML catalog entries.
+      huggingface = {
+        path = inputs.huggingface-skills;
+        subdir = "skills";
+      };
+
+      # last30days (MIT): recent discussion research.
+      last30days = {
+        path = inputs.last30days-skill;
+        subdir = "skills";
+      };
+
+      # SwiftUI Pro (MIT): skill directory swiftui-pro at the repository root.
+      swiftui = {
+        path = inputs.swiftui-agent-skill;
+        filter.nameRegex = "swiftui-pro";
+      };
+
     };
 
     skills = {
-      # All skills are global. Keep project flakes focused on ordinary Nix
-      # dev environments, not agent runtime switching.
-      enable = [
-        # custom (global)
-        "agent-browser"
-        "find-skills"
-        "pdf"
-        "xlsx"
-        "post-review"
-        "skill-builder"
-        "skill-auditor"
-        "idea-to-ship"
-        "project-init"
-        "security-best-practices"
-        "swift-dev-toolkit"
-        "ios-device-build"
-        "codex-app-screenshots"
-        # shipswift-* disabled: requires the shipswift MCP server, which is not
-        # configured. Re-add the three IDs here after setting up the server.
-        "vercel-react-best-practices"
-        "remotion-best-practices"
-        "session-documentation"
-        "session-handoff"
-        "indexion-workspace"
-        "design-capture"
-        "forms-archive"
-        "x-article-publisher"
-        "x-research"
-        "masao-research"
-        "youtube-transcript"
-        "i-have-adhd"
-        "op-api-keys"
-        # design (global)
-        "frontend-design"
-        "baseline-ui"
-        "web-design-guidelines"
-        # notebooklm
-        "notebooklm-skill"
-        # vault (global)
-        "knowledge-extract"
-        # app screenshots
-        "app-store-screenshots"
-        # research / publishing helpers
-        "typst-author"
-        "touying-author"
-        # media helpers
-        "text-to-lottie"
-        # taste-skill collection (anti-slop frontend), trimmed to the variants
-        # in active use (2026-07 skill audit). Style variants (taste-skill-v1 /
-        # soft-skill / minimalist-skill / brutalist-skill / gpt-tasteskill /
-        # stitch-skill) remain in the flake input; re-add IDs here to enable.
-        # IDs are directory names; the frontmatter `name` (what triggers) differs.
-        "taste-skill" # name: design-taste-frontend (flagship, contextual anti-slop)
-        "redesign-skill" # name: redesign-existing-projects (audit + upgrade)
-        "output-skill" # name: full-output-enforcement (anti-truncation)
-        "image-to-code-skill" # name: image-to-code (image-first then implement)
-        "brandkit" # name: brandkit (brand identity image generation)
-        "imagegen-frontend-web" # name: imagegen-frontend-web (web reference images)
-        "imagegen-frontend-mobile" # name: imagegen-frontend-mobile (mobile images)
-        # orca
-        "orca-cli"
-        "computer-use"
-        "orchestration"
-      ];
+      # Ids and tiers live in agents/capabilities/catalog.nix. Skills with a
+      # transform are selected through `explicit` below instead.
+      enable = builtins.filter (id: !(builtins.elem id explicitIds)) wanted;
 
       # Transform API: rewrite SKILL.md at build time to inject Nix store paths.
       explicit = {
         gh-fix-ci = {
+          enable = installed "gh-fix-ci";
           from = "openai";
           packages = [ pkgs.gh ];
           # Use current gh JSON commands instead of the legacy Python helper.
@@ -147,6 +138,7 @@
         };
 
         property-based-testing = {
+          enable = installed "property-based-testing";
           from = "trailofbits";
           transform =
             { original, ... }:
@@ -163,7 +155,34 @@
             '';
         };
 
+        unslop = {
+          enable = installed "unslop";
+          from = "unslop";
+          # Upstream tells the agent to hand out an install command when
+          # Playwright or ffmpeg is missing; its scripts suggest npm and brew.
+          transform =
+            { original, ... }:
+            original
+            + ''
+
+              ## Local environment (Nix)
+
+              This note is a local addition; the skill above is unchanged.
+              Original by Damir Sokolovsky, https://github.com/heydamir/unslop, CC BY 4.0.
+
+              - This machine is managed with Nix. Do not run or suggest `npm install -g`,
+                `brew install`, or `npx playwright install`, including when a script's
+                error message recommends them.
+              - ffmpeg and Node.js are already installed through Nix.
+              - Playwright: use the target project's existing devDependency. Otherwise
+                run the tool temporarily with `, <cmd>`, `nix shell`, or `nix run`.
+              - If a dependency is still missing, report it and skip the story video or
+                snapshot step instead of installing anything.
+            '';
+        };
+
         video-editing = {
+          enable = installed "video-editing";
           from = "custom";
           packages = [ pkgs.ffmpeg ];
           transform =
@@ -186,24 +205,31 @@
       };
     };
 
-    # Claude / Codex / Antigravity に同期
+    # Claude / Codex / Antigravity に同期 (r1hn が投影しない host だけ)
     targets = {
       claude = {
         dest = "\${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills";
         structure = "symlink-tree";
-        enable = true;
+        enable = !projected;
         systems = [ ];
       };
       codex = {
         dest = "\${CODEX_HOME:-$HOME/.codex}/skills";
         structure = "symlink-tree";
-        enable = true;
+        enable = !projected;
         systems = [ ];
       };
       antigravity = {
         dest = "$HOME/.gemini/antigravity/skills";
         structure = "symlink-tree";
-        enable = true;
+        enable = !projected;
+        systems = [ ];
+      };
+      # agy (the CLI) reads ~/.gemini/config/skills.
+      agy = {
+        dest = "$HOME/.gemini/config/skills";
+        structure = "symlink-tree";
+        enable = !projected;
         systems = [ ];
       };
       opencode.enable = false;

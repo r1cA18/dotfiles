@@ -1,12 +1,10 @@
 {
   pkgs,
   lib,
-  profile ? "workstation",
   ...
 }:
 let
-  inherit (pkgs.stdenv) isDarwin;
-  isServer = profile == "server";
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   # 1Password SSH agent のソケット (OS別、ホームからの相対パス)。
   # macOS: 1Password.app の Group Container。
   # Linux: 1Password desktop の標準パス (1Password desktop 導入が前提)。
@@ -25,8 +23,12 @@ in
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
+    # config.local は repo に載せない host 設定 (仕事の機体など) 用の未管理ファイル
     # OrbStack は macOS 専用
-    includes = lib.optionals (isDarwin && !isServer) [ "~/.orbstack/ssh/config" ];
+    includes = [
+      "~/.ssh/config.local"
+    ]
+    ++ lib.optionals isDarwin [ "~/.orbstack/ssh/config" ];
     settings = {
       "*".IdentityAgent = "\"~/${agentSockRel}\"";
       homelab.User = "r1ca18";

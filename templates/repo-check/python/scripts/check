@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes (template: Python with uv).
+#
+#   scripts/check fast <file>...   Ruff lint and format check on the given files
+#                                  (seconds; agent hooks)
+#   scripts/check changed [base]   Ruff on the files changed since base (default
+#                                  HEAD, untracked included) and the tests
+#   scripts/check full             everything; CI runs this
+#
+# "Done" means `scripts/check full` ends with status 0.
+#
+# Expects ruff and pytest as dev dependencies in pyproject.toml (uv manages
+# the environment) and the Ruff settings in pyproject.toml.
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+step() { echo "check: $*" >&2; }
+
+ruff() {
+  uv run --frozen ruff check --quiet "$@" && uv run --frozen ruff format --check --quiet "$@"
+}
+
+python_files() {
+  local file
+  for file in "$@"; do
+    case "$file" in
+    *.py | *.pyi) if [ -f "$file" ]; then printf '%s\n' "$file"; fi ;;
+    esac
+  done
+}
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  files=()
+  while IFS= read -r file; do files+=("$file"); done < <(python_files "$@")
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  ruff "${files[@]}"
+  ;;
+changed)
+  base=${1:-HEAD}
+  changed=()
+  while IFS= read -r file; do changed+=("$file"); done < <(
+    {
+      git diff --name-only --diff-filter=ACMR "$base" --
+      git ls-files --others --exclude-standard
+    } | sort -u
+  )
+  files=()
+  if [ ${#changed[@]} -gt 0 ]; then
+    while IFS= read -r file; do files+=("$file"); done < <(python_files "${changed[@]}")
+  fi
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  status=0
+  step ruff
+  ruff "${files[@]}" || status=1
+  step test
+  uv run --frozen pytest -q || status=1
+  exit "$status"
+  ;;
+full)
+  status=0
+  step ruff
+  ruff . || status=1
+  step test
+  uv run --frozen pytest -q || status=1
+  exit "$status"
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

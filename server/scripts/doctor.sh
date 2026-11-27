@@ -29,6 +29,10 @@ check 'Docker daemon' systemctl is-active docker
 check 'Tailscale daemon' systemctl is-active tailscaled
 check 'SSH server' systemctl is-active ssh
 check 'GNOME remote login service' systemctl is-active gnome-remote-desktop
+check 'xrdp service' systemctl is-active xrdp
+check 'xrdp session manager' systemctl is-active xrdp-sesman
+check 'xrdp socket directory access' test -w /run/xrdp/sockdir
+check 'Overshell RDP listener' test -n "$(/usr/bin/ss -H -ltn 'sport = :3390')"
 check 'Bluetooth daemon' systemctl is-active bluetooth
 check 'UFW firewall' systemctl is-enabled ufw
 check 'IPv4 forwarding' test "$(sysctl -n net.ipv4.ip_forward 2>/dev/null)" = 1
@@ -40,7 +44,12 @@ check 'Inotify instance capacity' test \
 check 'Google Chrome desktop app' command -v google-chrome
 check 'ChatGPT desktop app' command -v chatgpt
 check '1Password desktop app' command -v 1password
+check 'Devin CLI' command -v devin
 check 'Syncthing user service' systemctl --user is-active syncthing
+check 'Develop sync excludes live Home Assistant data' grep -qxF \
+  /github.com/r1cA18/home-assistant "$HOME/Develop/.stignore"
+check 'Develop sync excludes live Olympus data' grep -qxF \
+  /github.com/r1cA18/olympus/data "$HOME/Develop/.stignore"
 check 'Homelab Compose service' systemctl is-enabled homelab-compose.service
 check 'Homelab Compose active' systemctl is-active homelab-compose.service
 # shellcheck disable=SC2016
@@ -57,7 +66,7 @@ check 'Home Assistant sync permission timer enabled' \
 check 'Home Assistant sync permission timer active' \
   systemctl is-active home-assistant-sync-permissions.timer
 # shellcheck disable=SC2016
-check 'Home Assistant runtime data readable by Syncthing' bash -c '
+check 'Home Assistant runtime data readable for backups' bash -c '
   unreadable=$(
     find "$HOME/Develop/github.com/r1cA18/home-assistant/config/.storage" \
       -type f ! -readable -print -quit
@@ -99,6 +108,10 @@ check 'Codex app server enabled' systemctl --user is-enabled codex-app-server.se
 check 'Codex app server active' systemctl --user is-active codex-app-server.service
 check 'Olympus MCP registered' env CODEX_HOME="$HOME/.codex" \
   "$HOME/.local/bin/codex" mcp get olympus
+check 'Orca AppArmor profile' test -f /etc/apparmor.d/orca-ide
+check 'Orca server enabled' systemctl --user is-enabled orca-serve.service
+check 'Orca server active' systemctl --user is-active orca-serve.service
+check 'Orca server listener' test -n "$(/usr/bin/ss -H -ltn 'sport = :6768')"
 for timer in olympus-times-triage.timer olympus-deadline-scheduler.timer; do
   check "$timer enabled" systemctl --user is-enabled "$timer"
   check "$timer active" systemctl --user is-active "$timer"

@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes.
+#
+#   scripts/check fast <file>...   lint the given files (seconds; agent hooks)
+#   scripts/check changed [base]   lint the files changed since base (default
+#                                  HEAD), untracked files included, and run the
+#                                  unit tests
+#   scripts/check full             everything; CI runs this
+#
+# "Done" means `scripts/check full` ends with status 0. Nothing here rewrites
+# files: formatting is checked in the Nix sandbox, which sees tracked files only.
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+# Use the linters on PATH when they are all there. Otherwise borrow them from
+# the nixpkgs this flake pins.
+lint() {
+  if command -v statix >/dev/null 2>&1 && command -v deadnix >/dev/null 2>&1 &&
+    command -v shellcheck >/dev/null 2>&1; then
+    "$@"
+  else
+    nix shell --option warn-dirty false --inputs-from . nixpkgs#statix nixpkgs#deadnix nixpkgs#shellcheck -c "$@"
+  fi
+}
+
+# Lint the existing files among the arguments. Status 1 if any finding.
+lint_files() {
+  local nix=() sh=() file
+  for file in "$@"; do
+    [ -f "$file" ] || continue
+    case "$file" in
+    *.nix) nix+=("$file") ;;
+    *.sh | scripts/check | */scripts/check) sh+=("$file") ;;
+    esac
+  done
+  [ ${#nix[@]} -gt 0 ] || [ ${#sh[@]} -gt 0 ] || return 0
+  lint bash -c '
+    status=0
+    nix=("${@:2:$1}")
+    sh=("${@:$(($1 + 2))}")
+    for file in "${nix[@]}"; do statix check -o errfmt "$file" || status=1; done
+    if [ ${#nix[@]} -gt 0 ]; then deadnix --fail "${nix[@]}" || status=1; fi
+    if [ ${#sh[@]} -gt 0 ]; then shellcheck --severity=warning --format=gcc "${sh[@]}" || status=1; fi
+    exit "$status"
+  ' lint "${#nix[@]}" "${nix[@]}" "${sh[@]}"
+}
+
+step() { echo "check: $*" >&2; }
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  lint_files "$@"
+  ;;
+changed)
+  base=${1:-HEAD}
+  files=()
+  while IFS= read -r file; do files+=("$file"); done < <(
+    {
+      git diff --name-only --diff-filter=ACMR "$base" --
+      git ls-files --others --exclude-standard
+    } | sort -u
+  )
+  status=0
+  step "lint changed files"
+  if [ ${#files[@]} -gt 0 ]; then lint_files "${files[@]}" || status=1; fi
+  step "unit tests"
+  bash scripts/test.sh unit || status=1
+  exit "$status"
+  ;;
+full)
+  status=0
+  step "formatting (treefmt in the Nix sandbox)"
+  system=$(nix eval --raw --impure --expr builtins.currentSystem)
+  nix build --no-link ".#checks.$system.formatting" || status=1
+  step "lint tracked files"
+  files=()
+  while IFS= read -r file; do files+=("$file"); done < <(git ls-files)
+  lint_files "${files[@]}" || status=1
+  step "unit tests and documentation paths"
+  bash scripts/test.sh unit || status=1
+  exit "$status"
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

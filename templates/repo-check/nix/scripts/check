@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes (template: Nix flake).
+#
+#   scripts/check fast <file>...   statix, deadnix and nixfmt on the given files
+#                                  (seconds; agent hooks)
+#   scripts/check changed [base]   the same on the files changed since base
+#                                  (default HEAD), untracked included
+#   scripts/check full             `nix flake check`; CI runs this
+#
+# "Done" means `scripts/check full` ends with status 0. Nothing here rewrites
+# files; run the formatter yourself on the files you changed.
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+# Use the linters on PATH when they are all there. Otherwise borrow them from
+# the nixpkgs this flake pins.
+lint() {
+  if command -v statix >/dev/null 2>&1 && command -v deadnix >/dev/null 2>&1 &&
+    command -v nixfmt >/dev/null 2>&1; then
+    "$@"
+  else
+    nix shell --option warn-dirty false --inputs-from . nixpkgs#statix nixpkgs#deadnix nixpkgs#nixfmt -c "$@"
+  fi
+}
+
+lint_nix() {
+  local files=() file
+  for file in "$@"; do
+    case "$file" in
+    *.nix) if [ -f "$file" ]; then files+=("$file"); fi ;;
+    esac
+  done
+  [ ${#files[@]} -gt 0 ] || return 0
+  lint bash -c '
+    status=0
+    for file in "$@"; do statix check -o errfmt "$file" || status=1; done
+    deadnix --fail "$@" || status=1
+    nixfmt --check "$@" || status=1
+    exit "$status"
+  ' lint "${files[@]}"
+}
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  lint_nix "$@"
+  ;;
+changed)
+  base=${1:-HEAD}
+  files=()
+  while IFS= read -r file; do files+=("$file"); done < <(
+    {
+      git diff --name-only --diff-filter=ACMR "$base" --
+      git ls-files --others --exclude-standard
+    } | sort -u
+  )
+  if [ ${#files[@]} -gt 0 ]; then
+    lint_nix "${files[@]}"
+  fi
+  ;;
+full)
+  echo "check: nix flake check" >&2
+  nix flake check
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

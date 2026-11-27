@@ -12,7 +12,7 @@ let
     '';
   };
   updateAntigravity = pkgs.writeShellApplication {
-    name = "update-antigravity";
+    name = "dot-update-antigravity";
     runtimeInputs = with pkgs; [
       curl
       bash
@@ -46,7 +46,7 @@ in
 
     activation = {
       # Antigravity CLI (agy) native 版の自動導入。
-      # 更新は update-all の update-antigravity (または agy update) が担う。
+      # 更新は dot update の antigravity 段階 (または agy update) が担う。
       setupAntigravity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         export PATH="${
           lib.makeBinPath (

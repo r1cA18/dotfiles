@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes (template: TypeScript with Bun).
+#
+#   scripts/check fast <file>...   Biome on the given files (seconds; agent hooks)
+#   scripts/check changed [base]   Biome on the files changed since base (default
+#                                  HEAD, untracked included), typecheck and tests
+#   scripts/check full             everything; CI runs this
+#
+# "Done" means `scripts/check full` ends with status 0.
+#
+# Expects @biomejs/biome and typescript as devDependencies, a biome.json, and a
+# "typecheck" script in package.json (for example `tsc --noEmit`).
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+step() { echo "check: $*" >&2; }
+
+if [ ! -d node_modules ]; then
+  bun install --frozen-lockfile >&2
+fi
+
+biome() {
+  bun x biome check --no-errors-on-unmatched --files-ignore-unknown=true "$@"
+}
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  files=()
+  for file in "$@"; do
+    if [ -f "$file" ]; then files+=("$file"); fi
+  done
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  biome "${files[@]}"
+  ;;
+changed)
+  base=${1:-HEAD}
+  files=()
+  while IFS= read -r file; do
+    if [ -f "$file" ]; then files+=("$file"); fi
+  done < <(
+    {
+      git diff --name-only --diff-filter=ACMR "$base" --
+      git ls-files --others --exclude-standard
+    } | sort -u
+  )
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  status=0
+  step biome
+  biome "${files[@]}" || status=1
+  step typecheck
+  bun run typecheck || status=1
+  step test
+  bun test || status=1
+  exit "$status"
+  ;;
+full)
+  status=0
+  step biome
+  biome . || status=1
+  step typecheck
+  bun run typecheck || status=1
+  step test
+  bun test || status=1
+  exit "$status"
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

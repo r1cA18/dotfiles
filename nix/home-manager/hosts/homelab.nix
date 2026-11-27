@@ -1,6 +1,85 @@
 { config, pkgs, ... }:
+let
+  # Advertise homelab's Tailscale IPv4 to paired phones. UFW only admits
+  # tailscale0. The address is read at start so it is not kept in this repo.
+  orcaServe = pkgs.writeShellApplication {
+    name = "orca-serve";
+    runtimeInputs = [
+      pkgs.tailscale
+      pkgs.coreutils
+    ];
+    text = ''
+      addr=$(tailscale ip -4 | head -n 1)
+      if [ -z "$addr" ]; then
+        echo "orca-serve: no Tailscale IPv4 address" >&2
+        exit 1
+      fi
+      exec ${pkgs.orca-ide}/bin/orca-ide serve --port 6768 --pairing-address "$addr" --mobile-pairing
+    '';
+  };
+
+  # Restart orca-serve and render its mobile pairing offer as a terminal QR.
+  # An unclaimed offer is reused across restarts; a claimed one is replaced.
+  orcaPair = pkgs.writeShellApplication {
+    name = "orca-pair";
+    runtimeInputs = [ pkgs.qrencode ];
+    text = ''
+      since=$(date '+%Y-%m-%d %H:%M:%S')
+      systemctl --user restart orca-serve.service
+      url=""
+      for _ in $(seq 60); do
+        url=$(journalctl --user -t orca-ide --since "$since" -o cat --no-pager \
+          | grep -ao 'orca://pair?code=[A-Za-z0-9_=-]*' | tail -n 1 || true)
+        [ -n "$url" ] && break
+        sleep 1
+      done
+      if [ -z "$url" ]; then
+        echo "orca-serve printed no pairing URL; see: journalctl --user -t orca-ide" >&2
+        exit 1
+      fi
+      qrencode -t ANSIUTF8 "$url"
+      echo "$url"
+    '';
+  };
+in
 {
-  imports = [ ../home.nix ];
+  imports = [
+    ../home.nix
+    ../programs/r1hnd-service.nix
+    ./olympus-legacy.nix
+    ../programs/vault-commit.nix
+    ../programs/r1-discord.nix
+  ];
+
+  dotfiles = {
+    # The secretary's home and the only writer of the vault: r1hnd keeps the
+    # Times and tasks, the assistant, and runs the jobs in ~/vault/40_AI/r1/jobs
+    # (times-triage, deadline-allocation, weekly-review, the nightly feed).
+    # Every other host is a coding worker.
+    r1hn.serve.role = "primary";
+
+    # GitHub signing uses the host file key ~/.ssh/github-signing, not 1Password.
+    git.signing.backend = "file";
+
+    # Olympus is retired; this stops and removes its triage and deadline units.
+    olympus.legacyUnits.enable = false;
+  };
+
+  # GitHub auth uses ~/.ssh/github-auth, not the 1Password agent (see
+  # docs/guides/github-auth.md). This block must precede `Host *`, whose
+  # IdentityAgent would otherwise apply to GitHub.
+  programs.ssh.settings."github.com" = {
+    IdentityFile = "~/.ssh/github-auth";
+    IdentitiesOnly = "yes";
+    IdentityAgent = "none";
+  };
+
+  # Headless Orca runtime for mobile pairing.
+  # The binary is not named `orca` because that resolves to GNOME's screen reader.
+  home.packages = [
+    pkgs.orca-ide
+    orcaPair
+  ];
 
   # Keep Codex available to SSH-driven ChatGPT clients even when no graphical
   # session is logged in. homelab/ansible/playbook.yml enables linger for this
@@ -21,74 +100,34 @@
         Install.WantedBy = [ "default.target" ];
       };
 
-      olympus-times-triage = {
+      # Paired devices live in ~/.config/orca and survive restarts. Orca moves its
+      # main process and terminal daemon into app-orca-*.scope units, so logs are
+      # under `journalctl --user -t orca-ide` and restarts keep live terminals.
+      # Run `orca-pair` to show a QR for pairing another phone.
+      orca-serve = {
         Unit = {
-          Description = "Debounced Olympus triage for new Times entries";
-          After = [
-            "network-online.target"
-            "codex-app-server.service"
-          ];
-          Wants = [ "network-online.target" ];
+          Description = "Orca headless runtime server";
+          StartLimitIntervalSec = 300;
+          StartLimitBurst = 5;
         };
         Service = {
-          Type = "oneshot";
-          Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-times-triage.sh";
-          TimeoutStartSec = "4h";
-          Nice = 10;
-          IOSchedulingClass = "idle";
-        };
-      };
-
-      olympus-deadline-scheduler = {
-        Unit = {
-          Description = "Allocate unscheduled Olympus inbox/todo deadline tasks";
-          After = [
-            "network-online.target"
-            "codex-app-server.service"
+          ExecStart = "${orcaServe}/bin/orca-serve";
+          WorkingDirectory = config.home.homeDirectory;
+          Environment = [ "LIBGL_ALWAYS_SOFTWARE=1" ];
+          # The user manager may carry an xrdp/GNOME display; Orca must start its
+          # own Xvfb instead of depending on a desktop session.
+          UnsetEnvironment = [
+            "DISPLAY"
+            "WAYLAND_DISPLAY"
+            "GNOME_SETUP_DISPLAY"
           ];
-          Wants = [ "network-online.target" ];
+          KillMode = "mixed";
+          Restart = "on-failure";
+          # Exit 3: another Orca instance already owns the profile.
+          RestartPreventExitStatus = 3;
+          RestartSec = 5;
         };
-        Service = {
-          Type = "oneshot";
-          Environment = [ "CODEX_HOME=%h/.codex" ];
-          ExecStart = "${pkgs.bash}/bin/bash ${config.home.homeDirectory}/vault/40_AI/automation/olympus-deadline-scheduler.sh";
-          TimeoutStartSec = "10min";
-          Nice = 10;
-          IOSchedulingClass = "idle";
-        };
-      };
-    };
-
-    timers = {
-      olympus-times-triage = {
-        Unit = {
-          Description = "Check for new Times entries every 15 minutes";
-          ConditionPathExists = "%h/.local/state/olympus-times-triage/enabled";
-        };
-        Timer = {
-          OnBootSec = "15min";
-          OnUnitActiveSec = "15min";
-          AccuracySec = "1min";
-          Persistent = false;
-          Unit = "olympus-times-triage.service";
-        };
-        Install.WantedBy = [ "timers.target" ];
-      };
-
-      olympus-deadline-scheduler = {
-        Unit = {
-          Description = "Check hourly for unscheduled Olympus deadline tasks";
-          ConditionPathExists = "%h/.local/state/olympus-deadline-scheduler/enabled";
-        };
-        Timer = {
-          OnBootSec = "20min";
-          OnUnitActiveSec = "1h";
-          AccuracySec = "5min";
-          Persistent = false;
-          Unit = "olympus-deadline-scheduler.service";
-        };
-        Install.WantedBy = [ "timers.target" ];
+        Install.WantedBy = [ "default.target" ];
       };
     };
   };
@@ -114,24 +153,6 @@
           id = "ecvg9-qifz9";
           label = "vault";
           path = "${config.home.homeDirectory}/vault";
-          type = "sendreceive";
-          devices = [ "RMB" ];
-          ignorePerms = true;
-          fsWatcherEnabled = true;
-          rescanIntervalS = 3600;
-          maxConflicts = 20;
-          versioning = {
-            type = "staggered";
-            params = {
-              cleanInterval = "3600";
-              maxAge = "2592000";
-            };
-          };
-        };
-        Develop = {
-          id = "tj9sr-r4ieg";
-          label = "Develop";
-          path = "${config.home.homeDirectory}/Develop";
           type = "sendreceive";
           devices = [ "RMB" ];
           ignorePerms = true;

@@ -7,4 +7,4 @@
 - `archive/agent-profile-manager/agent-profiles.md` — 旧運用guide
 - `archive/agent-profile-manager/agent-profiles.test.ts` — 旧test
 
-現行のaccount管理は `docs/guides/ccspace.md` を参照。
+現行のaccount管理は `docs/guides/r1hn.md` を参照。

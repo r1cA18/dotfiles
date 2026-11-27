@@ -138,23 +138,17 @@ function profileFixture() {
   const { cmd, env, ws } = context;
   expect(cmd(["git", "init", "-q"]).code).toBe(0);
   expect(ws("sync").code).toBe(0);
-  // ccspace's manifest (~/.local/share/ccspace/spaces.json) is the source of
-  // truth for which launchers exist; ws profile reads it directly instead of
-  // shelling out to a profile manager. Sorted order matters: the fake fzf
-  // below picks rows[0] ("...-default") or rows[1] ("...-work").
-  const ccspaceHome = join(env.HOME!, ".local/share/ccspace");
-  mkdirSync(ccspaceHome, { recursive: true });
-  const launchers = ["cc-default", "cc-work", "cx-default", "cx-work"];
-  writeFileSync(
-    join(ccspaceHome, "spaces.json"),
-    JSON.stringify({ version: 1, launchers: Object.fromEntries(launchers.map(name => [name, { space: name }])), spaces: {} }),
-  );
-  for (const name of launchers) {
-    writeFileSync(join(env.PATH!, name), `#!${process.execPath}
+  // r1hn is the source of truth for which groups exist; ws profile asks it
+  // and launches through `r1hn run --group`. Sorted order matters: the fake
+  // fzf below picks rows[0] ("personal") or rows[1] ("work").
+  writeFileSync(join(env.PATH!, "r1hn"), `#!${process.execPath}
 const args = process.argv.slice(2);
-console.log(JSON.stringify({ launcher: ${JSON.stringify(name)}, args, memory: process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD }));
+if (args.join(" ") === "group list --json") {
+  console.log(JSON.stringify({ groups: [{ id: "work", name: "work", accounts: [] }, { id: "personal", name: "personal", accounts: [] }], unassigned: [] }));
+} else {
+  console.log(JSON.stringify({ args }));
+}
 `, { mode: 0o755 });
-  }
   writeFileSync(join(env.PATH!, "fzf"), `#!${process.execPath}
 if (process.env.PICK_CANCEL) process.exit(130);
 const rows = (await Bun.stdin.text()).trimEnd().split("\\n");
@@ -163,50 +157,64 @@ console.log(rows[process.env.PICK_DEFAULT ? 0 : 1]);
   return context;
 }
 
-test("workspace profiles persist separately and route launches through ccspace launchers", () => {
+test("workspace profiles persist separately and route launches through r1hn groups", () => {
   const { ws, cmd, workspace, env } = profileFixture();
   expect(ws("profile", "codex").code).toBe(0);
+  // Without a saved group the client starts directly and gets the memory flag.
+  writeFileSync(join(env.PATH!, "claude"), `#!${process.execPath}\nconsole.log(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD);\n`, { mode: 0o755 });
+  expect(ws("claude").out.trim()).toBe("1");
   env.PICK_DEFAULT = "1";
   expect(ws("profile", "claude").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: cx-work\nclaude: cc-default");
+  expect(ws("profile").out).toContain("codex: work\nclaude: personal");
   const codex = JSON.parse(ws("codex", "fix this").out);
-  expect(codex.launcher).toBe("cx-work");
-  expect(codex.args.slice(0, 2)).toEqual(["-C", realpathSync(workspace)]);
+  expect(codex.args.slice(0, 8)).toEqual(["run", "--group", "work", "--runtime", "codex", "--", "-C", realpathSync(workspace)]);
   expect(codex.args.at(-1)).toBe("fix this");
   expect(codex.args.filter((arg: string) => arg === "--add-dir")).toHaveLength(2);
   const claude = JSON.parse(ws("claude", "fix this", "--model", "sonnet").out);
-  expect(claude.launcher).toBe("cc-default");
-  expect(claude.args.slice(0, 4)).toEqual(["fix this", "--model", "sonnet", "--add-dir"]);
-  expect(claude.memory).toBe("1");
-  expect(cmd(["git", "config", "--local", "--get", "workspace.codexLauncher"]).out.trim()).toBe("cx-work");
-  expect(cmd(["git", "status", "--porcelain", "--untracked-files=all"]).out).not.toContain("launcher");
-  expect(readFileSync(join(workspace, "workspace.json"), "utf8")).not.toContain("cx-work");
+  expect(claude.args.slice(0, 10)).toEqual(["run", "--group", "personal", "--runtime", "claude", "--", "fix this", "--model", "sonnet", "--add-dir"]);
+  expect(cmd(["git", "config", "--local", "--get", "workspace.codexGroup"]).out.trim()).toBe("work");
+  expect(cmd(["git", "status", "--porcelain", "--untracked-files=all"]).out).not.toContain("Group");
+  expect(readFileSync(join(workspace, "workspace.json"), "utf8")).not.toContain("work");
 });
 
-test("profile cancellation and stale selections preserve settings without launching another account", () => {
+test("profile cancellation and a missing r1hn preserve settings without launching another account", () => {
   const { ws, env } = profileFixture();
   expect(ws("profile", "codex").code).toBe(0);
   env.PICK_CANCEL = "1";
   expect(ws("profile", "codex").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: cx-work");
+  expect(ws("profile").out).toContain("codex: work");
   delete env.PICK_CANCEL;
-  env.PICK_DEFAULT = "1";
-  rmSync(join(env.PATH!, "cx-default"));
+  rmSync(join(env.PATH!, "r1hn"));
   expect(ws("profile", "codex").code).toBe(1);
-  expect(ws("profile").out).toContain("codex: cx-work");
-  rmSync(join(env.PATH!, "cx-work"));
-  expect(ws("codex").err).toContain("cx-work is required");
+  expect(ws("profile").out).toContain("codex: work");
+  expect(ws("codex").err).toContain("r1hn is required");
   expect(ws("profile", "codex", "--clear").code).toBe(0);
   expect(ws("profile", "codex", "--clear").code).toBe(0);
+});
+
+test("a launcher saved by an older version stops the launch until it is replaced or cleared", () => {
+  const { ws, cmd, env } = profileFixture();
+  writeFileSync(join(env.PATH!, "codex"), `#!${process.execPath}\nconsole.log("default account");\n`, { mode: 0o755 });
+  expect(cmd(["git", "config", "--local", "workspace.codexLauncher", "cx-work"]).code).toBe(0);
+  const launch = ws("codex");
+  expect(launch.code).toBe(1);
+  expect(launch.out).not.toContain("default account");
+  expect(launch.err).toContain("ws profile codex --clear");
+  expect(ws("profile", "codex").code).toBe(0);
+  expect(ws("profile").out).toContain("codex: work");
+  expect(cmd(["git", "config", "--local", "--get", "workspace.codexLauncher"]).code).toBe(1);
+  expect(cmd(["git", "config", "--local", "workspace.claudeLauncher", "cc-work"]).code).toBe(0);
+  expect(ws("profile", "claude", "--clear").code).toBe(0);
+  expect(ws("profile").out).toContain("claude: not configured");
 });
 
 test("real fzf selects a registered workspace profile", () => {
   const { ws, env } = profileFixture();
   rmSync(join(env.PATH!, "fzf"));
   symlinkSync(Bun.which("fzf")!, join(env.PATH!, "fzf"));
-  env.FZF_DEFAULT_OPTS = "--filter=cx-work";
+  env.FZF_DEFAULT_OPTS = "--filter=work";
   expect(ws("profile", "codex").code).toBe(0);
-  expect(ws("profile").out).toContain("codex: cx-work");
+  expect(ws("profile").out).toContain("codex: work");
 });
 
 test("clearing a profile restores environment inheritance and ignores ancestor settings", () => {

@@ -28,6 +28,7 @@
 - Reproduce bugs before fixing them when practical
 - Run relevant tests before and after risky changes
 - Verify builds and user-facing behavior before declaring completion
+- When the repository has `scripts/check` treat `scripts/check full` ending with status 0 as the lint and test gate for completion; do not weaken or bypass checks to make it pass
 - Continue until the requested outcome is complete or genuinely blocked
 
 ## Progress Records

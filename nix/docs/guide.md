@@ -22,7 +22,7 @@
 ```
 1. 設定ファイルを編集
 2. macOSまたはLinux user設定は`dr`でリビルド
-3. Linux system設定を含む場合は`nix run ~/dotfiles#server-apply`でリビルド
+3. Linux system設定を含む場合は`dot server apply`でリビルド
 4. 問題なければgit commit & push
 ```
 
@@ -187,10 +187,10 @@ home.sessionPath = [
 ```nix
 { pkgs, lib, ... }: {
   # macOS のみ
-  some.option = lib.mkIf pkgs.stdenv.isDarwin "darwin value";
+  some.option = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin "darwin value";
 
   # Linux のみ
-  some.option = lib.mkIf pkgs.stdenv.isLinux "linux value";
+  some.option = lib.mkIf pkgs.stdenv.hostPlatform.isLinux "linux value";
 }
 ```
 
@@ -200,20 +200,23 @@ home.sessionPath = [
 
 > 詳細は [cheatsheet.md](./cheatsheet.md) を参照
 
-| Alias        | macOS | Linux | 説明                    |
-| ------------ | :---: | :---: | ----------------------- |
-| `dr`         |  ✅   |  ✅   | 設定を適用 (rebuild)    |
-| `db`         |  ✅   |  ✅   | ビルドのみ              |
-| `dp`         |  ✅   |  ✅   | ロールバック / 履歴     |
-| `update-all` |  ✅   |  ✅   | flakeと関連ツールを更新 |
-| `ds`         |  ✅   |  ✅   | パッケージを検索        |
-| `dg`         |  ✅   |  ✅   | 古い世代を削除          |
+dotfilesの操作は`dot <動詞>`に揃えている。2文字のabbrはその短縮形。
+
+| Command           | Alias | macOS | Linux | 説明                              |
+| ----------------- | ----- | :---: | :---: | --------------------------------- |
+| `dot apply`       | `dr`  |  ✅   |  ✅   | 設定を適用 (rebuild)              |
+| `dot build`       | `db`  |  ✅   |  ✅   | ビルドのみ                        |
+| `dot rollback`    | `dp`  |  ✅   |   -   | 前の世代に戻す                    |
+| `dot generations` | `dp`  |  ✅   |  ✅   | 世代一覧 (Linuxの`dp`はこちら)    |
+| `dot update`      | なし  |  ✅   |  ✅   | flake・関連ツール・Homebrewを更新 |
+| `dot search`      | `ds`  |  ✅   |  ✅   | パッケージを検索                  |
+| `dot clean`       | `dg`  |  ✅   |  ✅   | 古い世代を削除                    |
 
 ### 定期的な更新
 
 ```bash
-update-all # flakeと関連ツールを更新
-dr       # リビルド
+dot update # flakeと関連ツールとHomebrewを更新
+dr         # リビルド
 git add flake.lock
 git commit -m "chore: update flake.lock"
 ```

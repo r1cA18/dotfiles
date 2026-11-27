@@ -12,7 +12,7 @@ Ubuntu Desktopをhome server・常駐agent host・持ち出し可能なdemo mach
 | Runtime data     | HA・vault-agi・Olympus SQLite・各種secret        | 各repository内のGit除外file          |
 | Secret           | Interactive secret・将来のservice token          | 1Password                            |
 
-Runtime dataとsecretはGitへ入れず、`Develop`のSyncthing同期で新PCへ移す。Home Assistant側repositoryの`docker-compose.yml`がservice構成のsource of truthになる。初回移行はruntime dataと同じHome Assistant`2026.6.2`と、最後にbuild確認したESPHome`2026.5.3`へ固定済み。回帰確認後に意図的にupgradeする。
+Runtime dataとsecretはGitへ入れない。稼働中のserviceが書き換えるHome Assistantのrepository全体とOlympusの`data/`はSyncthingの同期から除外しており、新PCへは旧homelabかbackupから手で写す。それ以外は`Develop`のSyncthing同期で移る。Home Assistant側repositoryの`docker-compose.yml`がservice構成のsource of truthになる。初回移行はruntime dataと同じHome Assistant`2026.6.2`と、最後にbuild確認したESPHome`2026.5.3`へ固定済み。回帰確認後に意図的にupgradeする。
 
 Ubuntu install時のdisk encryptionは意図的に無効。端末を紛失した場合は`vault`・source code・Home Assistant credentialを物理的に読まれる前提で扱う。
 
@@ -91,6 +91,19 @@ systemctl status gnome-remote-desktop.service --no-pager
 
 初回検証はSyncthingが`Up to Date`になってから行う。UbuntuのGUI sessionをlogoutするか再起動し、MacからRDP接続できることを確認する。
 
+### Overshellから接続する場合
+
+OvershellのRDP clientはGNOME Remote Loginが要求するCredSSP/NLAに対応していない。`server-apply`は別のxrdp listenerを`3390/tcp`に設定し、xrdp sessionではXFCEを起動する。GNOME Remote Loginの`3389/tcp`はそのまま利用できる。
+
+Overshellでは接続先を`homelab:3390`にし、Ubuntu user`r1ca18`の通常passwordでloginする。xrdpは新しいXFCE sessionを作るため、GNOMEのlogin画面や既存sessionの共有にはならない。どちらもTailscale経由で接続する。UFWは`tailscale0`からの通信を許可し、LANやInternetへ`3390/tcp`を追加公開しない。
+
+2026-09-29にOvershellから`homelab:3390`への接続成功を確認した。xrdpのsocket directory権限とXFCE session環境の修正後の結果である。
+
+```bash
+systemctl status xrdp.service --no-pager
+ss -ltn | grep -E ':3389|:3390'
+```
+
 ## 4. Syncthing
 
 Linux側はRMBのdevice IDと次のfolder IDを宣言済み。
@@ -107,7 +120,7 @@ syncthing device-id
 
 Mac側のSyncthing UIで新しいhomelab deviceを承認する。既存の旧homelab device IDは新PCと異なるため削除する。
 
-続いて`vault`と`Develop`のfolder shareを承認する。両方が`Up to Date`になるまでHome Assistantを起動しない。
+続いて`vault`と`Develop`のfolder shareを承認する。両方が`Up to Date`になるまでHome Assistantを起動しない。Home Assistantのruntime dataは同期では届かないので5章の手順で写す。
 
 `server-apply`は大規模な`Develop` treeを監視できるようLinuxのinotify上限を設定する。Syncthingに`failed to set up inotify handler`が表示された場合は、最新のdotfilesで`server-apply`を再実行してからuser serviceを再起動する。
 
@@ -116,15 +129,22 @@ nix run .#server-apply
 systemctl --user restart syncthing
 ```
 
-`vault`と`Develop`は除外なしの双方向同期にする。`Develop`は`.git`と生成物も含む。同期中に両端で同じrepositoryを操作しない。branch切替・rebase・大量生成の前は反対側の操作が止まっていることを確認する。
+`vault`は除外なしの双方向同期にする。`Develop`は`.git`と生成物も含めて双方向同期するが、次の2つだけは`~/Develop/.stignore`で除外する。稼働中のdatabaseと`.storage`を双方向同期すると衝突fileができ、古い内容が正として残ることがあるためである。
+
+- `github.com/r1cA18/home-assistant`(repository全体)
+- `github.com/r1cA18/olympus/data`
+
+`.stignore`はSyncthingが同期しないfileなので機器ごとに必要になる。内容は`nix/home-manager/programs/syncthing.nix`で宣言し、MacとhomelabのHome Manager適用時に同じ内容を書き出す。除外を変えるときはこのfileを編集して両機器へ適用する。除外したdirectoryの正はhomelabで、Mac側の複製は更新されない。
+
+同期中に両端で同じrepositoryを操作しない。branch切替・rebase・大量生成の前は反対側の操作が止まっていることを確認する。
 
 30日分のstaggered versioningは新homelab側で有効になる。これはbackupの代替ではない。
 
 ## 5. Home AssistantとESPHomeの再デプロイ
 
-Mac側の`~/Develop/github.com/r1cA18/home-assistant`には旧homelabから同期した完全なruntime dataがある。Git管理外の`.storage`・database・secretもSyncthingで新PCへ渡るため、別の空configやarchiveを作らない。
+Home Assistantのrepositoryは同期から除外しているため、新PCへは自動では届かない。Git管理外の`.storage`・database・secretを含むdirectory全体を旧homelabかbackupから`~/Develop/github.com/r1cA18/home-assistant`へ写す。Olympusの`data/`も同じ扱いにする。写す間は写し元のserviceを止める。別の空configは作らない。
 
-新PCで同期完了後に必須fileを確認する。
+写し終えたら必須fileを確認する。
 
 ```bash
 cd ~/Develop/github.com/r1cA18/home-assistant
@@ -147,7 +167,7 @@ typecheck・test・buildを完了してからsystemd serviceを順番に有効�
 ESPHomeは既存構成の`host` network・BlueZ D-Bus・capability・device設定をそのまま保つ。
 Home Assistant Containerはsupported構成どおりrootで動かす。owner-onlyで再作成される
 `.storage` fileは`home-assistant-sync-permissions.timer`が`r1ca18`だけにread ACLを付け、
-Syncthingのhash errorを防ぐ。
+sudoなしでbackupを取れるようにする。
 
 ```bash
 cd ~/Develop/github.com/r1cA18/home-assistant
@@ -220,7 +240,7 @@ chatgpt
 
 1PasswordのSSH Agentを有効にする。常駐serviceにsecretが必要になった時点で1Password Service Accountを追加する。現在はsecretを必要とするCompose serviceがないためtokenを配置しない。
 
-Claude CodeとCodexの対話CLIはnative installerで導入する。Home Manager適用時に未導入ならbootstrapされ、以後は`update-all`が明示的に更新する。Codex app serverだけはAppArmor profileとの結合があるためNix版を使う。
+Claude CodeとCodexの対話CLIはnative installerで導入する。Home Manager適用時に未導入ならbootstrapされ、以後は`dot update`が明示的に更新する。Codex app serverだけはAppArmor profileとの結合があるためNix版を使う。
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -228,6 +248,20 @@ curl -fsSL https://chatgpt.com/codex/install.sh | bash
 claude --version
 codex --version
 ```
+
+### Orca
+
+Orca IDEはLinux AppImageをNix package`orca-ide`としてラップし、user service`orca-serve`で常駐させる。GNOMEのscreen readerと衝突するため素の`orca`ではなく`orca-ide`を使う。Ubuntuのuser namespace制限に対しては、Orca専用bwrapだけを許可するAppArmor profile`/etc/apparmor.d/orca-ide`を`server-apply`が配置する。
+
+serviceはTailscaleのIPv4(起動時に`tailscale ip -4`で取得)と`6768`番portをmobile clientへ広告する。paired deviceは`~/.config/orca`に保存されるのでrestartやupgrade後も再ペアリングは不要である。terminal daemonは`app-orca-*.scope`に分離されるので、restartしても実行中のterminalは残る。
+
+```bash
+orca-pair                                   # 新しいphone用のQRを表示する（serviceをrestartする）
+systemctl --user status orca-serve --no-pager
+journalctl --user -t orca-ide -f            # Orca本体のlogはscope側に出る
+```
+
+Orcaを更新するときは`nix/pkgs/orca-ide/default.nix`の`version`と`hash`を変更してHome Managerを適用する。
 
 ## 7. Firewall
 

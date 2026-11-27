@@ -1,0 +1,49 @@
+[
+  {
+    "id": "credentials",
+    "disabled": false
+  },
+  {
+    "id": "llm-pi-ai",
+    "disabled": false,
+    "config": {
+      "providers": {
+        "mistral": {
+          "displayName": "Mistral (personal Vibe)",
+          "apiKeyEnv": "HARNESS_MISTRAL_PERSONAL_VIBE_KEY",
+          "models": [
+            {
+              "id": "mistral-large-4",
+              "reasoningEfforts": { "low": "low", "medium": "medium", "high": "high" }
+            },
+            {
+              "id": "zai-glm-5-3"
+            },
+            {
+              "id": "zai-glm-5-3-flash",
+              "name": "GLM 5.3 Flash",
+              "contextWindow": 1048576,
+              "maxTokens": 131072,
+              "input": ["text", "image"],
+              "reasoningEfforts": { "high": "high" }
+            },
+            {
+              "id": "deepseek-v4-1-flash-1017",
+              "name": "DeepSeek V4.1 Flash 1017",
+              "contextWindow": 1048576,
+              "maxTokens": 131072,
+              "input": ["text", "image"],
+              "reasoningEfforts": { "high": "high" }
+            },
+            {
+              "id": "mistral-small-2603"
+            }
+          ],
+          "reasoning": "high",
+          "retryPolicy": { "mode": "normal", "maxRetries": 0 },
+          "streamIdleTimeoutMs": 60000
+        }
+      }
+    }
+  }
+]

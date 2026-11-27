@@ -69,20 +69,22 @@ fc-cache -fv
 
 ### よく使うエイリアス
 
-| Alias        | 説明                                                     |
-| ------------ | -------------------------------------------------------- |
-| `dr`         | `nh darwin switch ~/dotfiles -H <hostname>` - 設定を適用 |
-| `db`         | `nh darwin build ~/dotfiles -H <hostname>` - ビルドのみ  |
-| `dp`         | `darwin-rebuild --rollback` - 戻す                       |
-| `update-all` | flakeと関連ツールを更新                                  |
-| `ds`         | パッケージ検索                                           |
-| `dg`         | 古い世代と store path を削除                             |
+| Alias / Command | 説明                                                                   |
+| --------------- | ---------------------------------------------------------------------- |
+| `dr`            | `dot apply` (`nh darwin switch ~/dotfiles -H <hostname>`) - 設定を適用 |
+| `db`            | `dot build` (`nh darwin build ~/dotfiles -H <hostname>`) - ビルドのみ  |
+| `dp`            | `dot rollback` (`sudo darwin-rebuild switch --rollback`) - 戻す        |
+| `dot update`    | flake・関連ツール・Homebrewを更新                                      |
+| `ds`            | `dot search` - パッケージ検索                                          |
+| `dg`            | `dot clean` - 古い世代と store path を削除                             |
+
+Homebrewの更新(`brew update`と`brew upgrade`)は`dot update`だけが行う。`dr`はcaskの不足分を入れるだけで更新確認をしない。
 
 ### 定期メンテナンス
 
 ```bash
 # 週1回: 依存を最新化
-update-all && dr
+dot update && dr
 git add flake.lock && git commit -m "chore: update flake.lock"
 
 # 月1回: ディスク容量を確保

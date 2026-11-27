@@ -7,13 +7,13 @@ configuration.
 
 | Product | Primary | Additional accounts |
 | --- | --- | --- |
-| Codex | `~/.codex/sessions` | ccspace space home, e.g. `~/.codex-<name>/sessions` |
-| Claude Code | `~/.claude/projects` | ccspace space home, e.g. `~/.claude-<name>/projects` |
+| Codex | `~/.codex/sessions` | `<config_dir>/sessions` of each r1hn account |
+| Claude Code | `~/.claude/projects` | `<config_dir>/projects` of each r1hn account |
 
 An explicit `CODEX_HOME` or `CLAUDE_CONFIG_DIR` can identify another current home.
-In this repository, ccspace launchers (`cx-<name>` for Codex, `cc-<name>` for
-Claude Code) set these; `ccspace list` shows registered launchers and `ccspace
-doctor` checks their homes.
+In this repository, `r1hn run` sets these from the chosen account; `r1hn account
+list --json` shows each account's config dir and `r1hn account list --check`
+checks their logins.
 Use paths only; reading `auth.json`, `.claude.json`, or keychains is unnecessary.
 
 ## Find A Candidate
@@ -57,10 +57,12 @@ tool records or repeat the missing narrow check instead.
 
 ## Account Boundaries
 
-`cx-<name> resume <id>` searches the selected launcher's account home; `--all`
-broadens the directory filter, not the set of account homes. Likewise
-`cc-<name> --resume <id>` uses that Claude launcher's history.
-Passing another account's ID does not import its session.
+`r1hn run --group <group> --runtime codex -- resume <id>` searches the chosen
+account's home; `--all` broadens the directory filter, not the set of account
+homes. Likewise `r1hn run --group <group> --runtime claude -- --resume <id>`
+uses that account's history. When the chosen account lacks the session, r1hn
+links the transcript from another account of the same group and provider.
+A session of another group or provider is not imported.
 
 For a handoff to a different account/provider, read the relevant source history
 into the current task or use a portable summary. Native conversion is a separate

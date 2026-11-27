@@ -1,19 +1,12 @@
 # nix-darwin configuration
 {
   inputs,
-  lib,
   pkgs,
   username,
   hostname,
   system,
-  profile ? "workstation",
-  # Set to false when using Determinate Nix installer
-  nixEnable ? true,
   ...
 }:
-let
-  isServer = profile == "server";
-in
 {
   nixpkgs = {
     overlays = [
@@ -22,18 +15,16 @@ in
     config.allowUnfree = true;
   };
 
-  # nix.enable = false when using Determinate Nix installer (manages its own daemon)
   nix = {
-    enable = nixEnable;
-    settings = lib.mkIf nixEnable {
+    settings = {
       experimental-features = "nix-command flakes";
       extra-substituters = [ "https://r1ca18.cachix.org" ];
       extra-trusted-public-keys = [
         "r1ca18.cachix.org-1:1QuS/Gqqw3o1atOCkrgl+5hQoLlEvTiRN8OwQT6e6lc="
       ];
     };
-    optimise.automatic = lib.mkIf nixEnable true;
-    gc = lib.mkIf nixEnable {
+    optimise.automatic = true;
+    gc = {
       automatic = true;
       interval = {
         Weekday = 0;
@@ -56,59 +47,66 @@ in
 
   homebrew = {
     enable = true;
-    onActivation.autoUpdate = true;
-    casks =
-      lib.optionals (!isServer) [
-        "1password"
-        "affinity"
-        "alt-tab"
-        "amical"
-        "arc"
-        "nikitabobko/tap/aerospace"
-        "audacity"
-        "autodesk-fusion"
-        "balenaetcher"
-        "bambu-studio"
-        "beeper"
-        "chatgpt"
-        "claude"
-        "discord"
-        "figma"
-        "ghostty"
-        "google-chrome"
-        "google-drive"
-        "google-japanese-ime"
-        "karabiner-elements"
-        "keyboardcleantool"
-        "microsoft-excel"
-        "microsoft-outlook"
-        "microsoft-powerpoint"
-        "microsoft-word"
-        "notunes"
-        "ollama-app"
-        "orbstack"
-        "stablyai/orca/orca"
-        "raycast"
-        "steam"
-        "stirling-pdf"
-        "tailscale-app"
-        "utm"
-        "zed"
-      ]
-      ++ lib.optionals isServer [
-        "1password"
-        "tailscale-app"
-      ];
-    masApps = lib.mkIf (!isServer) {
+    # Homebrew is updated by `dot update`, not on activation.
+    onActivation.autoUpdate = false;
+    # cleanup stays "none": removing an entry only stops managing the app,
+    # so apps removed by hand are dropped here without uninstalling anything.
+    taps = [
+      {
+        name = "r1cA18/orca";
+        clone_target = "https://github.com/r1cA18/orca.git";
+        trusted = true;
+      }
+    ];
+    casks = [
+      "1password"
+      "affinity"
+      "alt-tab"
+      "amical"
+      "aqua-voice"
+      "aside"
+      "nikitabobko/tap/aerospace"
+      "autodesk-fusion"
+      "balenaetcher"
+      "bambu-studio"
+      "beeper"
+      "figma"
+      "ghostty"
+      "google-chrome"
+      "google-drive"
+      "google-japanese-ime"
+      "karabiner-elements"
+      "keyboardcleantool"
+      "microsoft-powerpoint"
+      "microsoft-word"
+      "notion"
+      "notunes"
+      "ollama-app"
+      "orbstack"
+      # Personal Orca build; kept until Orca is retired.
+      "r1cA18/orca/orca-personal"
+      "raycast"
+      "stirling-pdf"
+      "switchbar"
+      # T3 Code desktop as a client only: r1hnd-service.nix turns off its
+      # bundled server, so agents run on the t3-r1hn servers through r1hn.
+      "t3-code"
+      "tailscale-app"
+      "zed"
+    ];
+    # Installed by hand and not declared here:
+    # - casks exist but the apps were not installed by Homebrew; declaring one
+    #   needs `brew install --cask --adopt <cask>` first: AWS VPN Client
+    #   (aws-vpn-client)
+    # - no cask: AutoRaise, Blackmagic Proxy Generator Lite, Blackmagic RAW,
+    #   DaVinci Resolve, Overshell, CCSpace (~/Applications)
+    masApps = {
       "Developer" = 640199958;
-      "Keynote" = 361285480;
-      "Kindle" = 302584613;
       "Numbers" = 361304891;
       "Pages" = 361309726;
       "RunCat Neo" = 6757801838;
-      "Swift Playgrounds" = 1496833156;
       "TestFlight" = 899247664;
-      "Windows App" = 1295203466;
+      "WeChat" = 836500024;
       "Xcode" = 497799835;
     };
   };
@@ -155,8 +153,6 @@ in
   };
 
   security.pam.services.sudo_local.touchIdAuth = true;
-
-  services.openssh.enable = isServer;
 
   networking.hostName = hostname;
 

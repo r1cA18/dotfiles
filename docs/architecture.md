@@ -21,28 +21,39 @@ dotfiles/
 │   └── skills/               # Agent Skillsのsource of truth
 │
 ├── templates/workspace/     # 個人dotfilesに依存しないworkspace生成元
+├── templates/repo-check/    # 各repoの scripts/check・CI・main保護の雛形
+├── scripts/check            # このrepoの検査の入口 (fast / changed / full)
 ├── tests/                   # workspaceとaccount profileの回帰test
 │
 ├── nix/                      # Nix設定（メイン）
+│   ├── flake/                # flake outputの責務別定義
+│   │   ├── configurations.nix # host構成とHome Managerの組み立て
+│   │   ├── development.nix   # formatter・checks・devShell共通定義
+│   │   └── apps.nix          # formatterとLinux server workflow
 │   ├── darwin/               # macOS専用 (nix-darwin)
 │   │   └── configuration.nix # システム設定、Homebrew管理
 │   │
 │   ├── home-manager/         # ユーザー設定
 │   │   ├── home.nix          # home-managerエントリポイント
 │   │   ├── hosts/            # host固有profile
-│   │   │   └── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   ├── homelab.nix   # Ubuntu homelabとSyncthing folder
+│   │   │   └── olympus-legacy.nix # r1hn jobsへ移行中のOlympus unit
 │   │   └── programs/         # 各プログラムの設定
 │   │       ├── packages.nix  # パッケージ、PATH、環境変数
 │   │       ├── zsh.nix       # Zsh、abbr、help
 │   │       ├── nh.nix        # nh 設定
+│   │       ├── dot.nix       # dotfiles操作CLI (dot.sh)
 │   │       ├── git.nix       # Git設定
 │   │       ├── neovim.nix    # Neovim本体と開発ツール供給
 │   │       ├── ghostty.nix   # Ghostty設定（programs.ghostty）
 │   │       ├── karabiner.nix # Karabiner（karabiner/へのシンボリックリンク）
 │   │       ├── claude-code.nix # Claude config symlink + MCP sync
-│   │       ├── claude-code-proxy.nix # GPT backend wrapper + user service
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
-│   │       ├── devin.nix      # Devin CLI bootstrap + user config defaults
+│   │       ├── aside.nix     # Aside CLI installer (macOS)
+│   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
+│   │       ├── r1hnd-service.nix # homelabとMacのr1hndとT3 Code service
+│   │       ├── syncthing.nix # Syncthingとvaultの.stignoreの配布
+│   │       ├── devin.nix      # Devin CLI user config defaults (binary: r1hn.nix)
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
 │   │       └── p10k.zsh      # Powerlevel10kテーマ設定
 │   │
@@ -72,7 +83,6 @@ dotfiles/
 │   └── README.md            # bootstrap・data同期・検証
 │
 ├── claude/                  # Claude Code設定（~/.claude/へリンク）
-│   ├── mcp-servers.json     # Claude用MCP seed定義
 │   ├── rules/               # ドメイン別ルール（常時ロード）
 │   ├── hooks/               # 自動実行フック
 │   ├── commands/            # スラッシュコマンド
@@ -109,10 +119,22 @@ home-managerが以下のシンボリックリンクを自動管理：
 | `codex/hooks.json`                               | `~/.codex/hooks.json`                    | `codex.nix` (mkOutOfStoreSymlink)                  |
 | `codex/prompts/`                                 | `~/.codex/prompts/`                      | `codex.nix` (mkOutOfStoreSymlink)                  |
 
-Claude・Codexのaccount切り替えは外部tool `ccspace`で管理する。
-`nix/home-manager/programs/ccspace.nix`のactivationが導入と更新経路を管理し、
-launcher(`cc-<name>`・`cx-<name>`)ごとにconfig homeを分離する。
-詳細は[ccspaceガイド](guides/ccspace.md)を参照。
+Claude・Codex・dshのaccountは自作の基盤CLI `r1hn`で管理する。
+`nix/home-manager/programs/r1hn.nix`がprivateなflake inputから`r1hn`を導入し、
+`cl`と`cx`は`r1hn run`へ展開される。台帳は`~/.config/r1hn/`にありdotfilesでは管理しない。
+詳細は[r1hnガイド](guides/r1hn.md)を参照。
+
+flake input `r1hn`はprivate repositoryをHTTPSとgitのcredential helper(gh)で取得する。
+flake inputは参照されたときだけ取得されるので、`dotfiles.r1hn.enable`が偽のhost(CI)は認証なしで評価とbuildができる。
+privateなinputを読むmoduleを増やす場合も同じswitchの内側に置く。
+dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
+Linuxでは`r1hnd-service.nix`がhomelabに入れる。
+
+homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
+r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
+各serviceは台帳とbuildが揃うまで起動しない。
+同期されるvaultを書くのは`dotfiles.r1hn.serve.role = "primary"`のhomelabだけで、Macは既定の`coding`である。
+MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして使う。
 
 ## Agent 運用の基本方針
 
@@ -122,13 +144,10 @@ launcher(`cc-<name>`・`cx-<name>`)ごとにconfig homeを分離する。
 - Codex 固有の custom agent は `.codex/agents/` に置く
 - Codex custom prompt は deprecated なので、`codex/prompts/` には skill wrapper だけを置く
 - Claude / Codex plugin 本体や runtime cache は source of truth にしない
-- Claude の user-level MCP は `claude/mcp-servers.json` を seed とし、`~/.claude.json` へ同期する
+- skill・MCP・plugin・toolの分類は `agents/capabilities/catalog.nix` に置き、`r1hn` が全client・全account dirへ投影する (r1hnのないhostは `programs/capabilities.nix` と `agent-skills.nix`)
 - plugin 棚卸し結果は `docs/claude-plugin-audit.md` に残す
 
 詳細: [docs/agent-platforms.md](./agent-platforms.md)
-
-GPT backend版Claude Codeの起動・Proxy管理・profile管理は
-[docs/guides/claude-code-gpt.md](guides/claude-code-gpt.md)を参照。
 
 ## Agent指示と自動検査の役割
 
@@ -259,27 +278,24 @@ agents/skills/my-new-skill/
 └── SKILL.md
 ```
 
-追加したスキル名を `nix/home-manager/programs/agent-skills.nix` の `skills.enable` に追加する。
+追加したスキルのentryを `agents/capabilities/catalog.nix` に足してtierを決める。未記載のskillは`off`として一覧に出る。
 
 Claude / Codex の両方で使いたいものは、plugin や command に閉じずまず `agents/skills/` を検討する。
 
-### 公式スキルを有効化
+### 外部スキルを追加
 
-**編集:** `nix/home-manager/programs/agent-skills.nix`
+**編集:** `flake.nix`(input)、`nix/home-manager/programs/agent-skills.nix`(source)、`agents/capabilities/catalog.nix`(tier)
 
 ```nix
-skills.enable = [
-  "pdf"
-  "xlsx"
-];
+pdf = baseline [ "docs" ] "Read, fill and create PDF files" { };
 ```
 
-### Claude の MCP seed を更新
+### MCP server・plugin・skillのtierを変更
 
-**編集:** `claude/mcp-servers.json`
+**編集:** `agents/capabilities/catalog.nix`
 
-Claude の実ランタイム設定は `~/.claude.json` にあり、そのままでは dotfiles 管理されない。
-`claude/mcp-servers.json` を source of truth にして、必要に応じて `claude/scripts/sync-mcp-servers.py` で同期する。
+1 entry 1 attrsetで宣言する。`r1hn`が既定dirと各account dirの`.claude.json`・`settings.json`・`config.toml`・`mcp_config.json`へ管理keyだけをmergeする。
+rebuildせずにtierを変えるときは`r1hn capability enable|disable ID`を使う。
 
 ### Karabiner設定を変更
 
@@ -355,8 +371,8 @@ Codex では Claude の Markdown agent 定義はそのまま使えない。role 
 ```nix
 { pkgs, lib, ... }:
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
 in {
   # 条件付き設定
   some.option = lib.mkIf isDarwin "darwin value";
@@ -368,15 +384,19 @@ in {
 
 ## ビルドコマンド
 
-| OS                      | コマンド                                      | エイリアス |
-| ----------------------- | --------------------------------------------- | ---------- |
-| macOS                   | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
-| Linux user設定          | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
-| Linux system + user設定 | `nix run ~/dotfiles#server-apply`             | なし       |
+dotfilesの操作は実行file`dot`(`nix/home-manager/programs/dot.nix`と`dot.sh`)のsubcommandに揃える。一覧は`dot help`と`nix/docs/cheatsheet.md`を参照。
+
+| OS                      | `dot`              | 実行内容                                      | エイリアス |
+| ----------------------- | ------------------ | --------------------------------------------- | ---------- |
+| macOS                   | `dot apply`        | `nh darwin switch ~/dotfiles -H <hostname>`   | `dr`       |
+| Linux user設定          | `dot apply`        | `nh home switch ~/dotfiles -c r1ca18@homelab` | `dr`       |
+| Linux system + user設定 | `dot server apply` | `nix run ~/dotfiles#server-apply`             | なし       |
+
+更新は`dot update`が行う。各module所有の`dot-update-<段階>`を順に呼び、macOSでは最後に`brew update`と`brew upgrade`を実行する。Homebrewの更新はactivationでは行わない(`homebrew.onActivation.autoUpdate = false`)。
 
 ## 重要な注意事項
 
-1. 変更後は対象に応じて`dr`または`server-apply`でリビルド
+1. 変更後は対象に応じて`dr`または`dot server apply`でリビルド
 2. **Nix設定のフォーマット**: `nix fmt` で整形可能
 3. **パッケージ検索**: `nix search nixpkgs <name>` または https://search.nixos.org/packages
 4. **home-managerオプション検索**: https://home-manager-options.extranix.com/
@@ -385,9 +405,13 @@ in {
 ## flake.nixの構造
 
 - `inputs`: 依存関係（nixpkgs, home-manager, nix-darwin, nix-index-database, agent-skills-nix等）
-- `outputs`:
+- `outputs`: `nix/flake/`の定義を各systemへ配布する
+- hostの追加・削除とprofile選択: `nix/flake/configurations.nix`
+- formatter・check・開発shell: `nix/flake/development.nix`
+- app entrypoint: `nix/flake/apps.nix`
+- custom package一覧: `nix/pkgs/default.nix`。実装は`nix/pkgs/<name>/default.nix`
+- host output:
   - `darwinConfigurations.RMB`: macOS workstation設定
-  - `darwinConfigurations."MBP187-Z"`: SSH中心のmacOS minimal server設定
   - `homeConfigurations."r1ca18@homelab"`: Ubuntu homelab設定
 
 ### プロジェクトごとの開発環境を作る

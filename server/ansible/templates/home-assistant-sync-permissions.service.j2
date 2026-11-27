@@ -1,5 +1,5 @@
 [Unit]
-Description=Keep Home Assistant runtime data readable by Syncthing
+Description=Keep Home Assistant runtime data readable by {{ homelab_user }} for backups
 After=homelab-compose.service
 ConditionPathIsDirectory={{ home_assistant_root }}/config/.storage
 

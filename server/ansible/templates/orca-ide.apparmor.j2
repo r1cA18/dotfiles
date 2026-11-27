@@ -1,0 +1,10 @@
+# Managed by Ansible. The attachment is limited to the dedicated bubblewrap
+# copy used by the Nix orca-ide package; the generic Nix bwrap and unrelated
+# executables remain under their normal AppArmor policy.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile orca-ide "/nix/store/*-orca-ide-bubblewrap/bin/bwrap" flags=(unconfined) {
+  userns,
+  include if exists <local/orca-ide>
+}

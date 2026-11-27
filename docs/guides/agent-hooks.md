@@ -32,13 +32,15 @@ hookは短く決定的な検査と任意の通知を担当する。文体や作�
 | Claude | PreToolUse / Bash                                                          | debug-print-guard            | 単純なgit commitのstaged内容にあるprint/logのadvisory |
 | Claude | PostToolUse / Edit・Write                                                  | ai-slop-guard                | 今回追加したprint/logの装飾候補のadvisory             |
 | Claude | PostToolUse / Edit・Write                                                  | check-knowledge-index        | vaultのKnowledge Markdownを編集した場合のindex検査    |
+| Claude | PostToolUse / Edit・Write                                                  | run-repo-check               | 信頼したrepoの`scripts/check fast`の失敗をadvisory    |
 | Claude | Notification / idle・permission                                            | OS音声通知                   | 利用可能な場合のみ再生                                |
 | Claude | Stop                                                                       | OS音声通知                   | 利用可能な場合のみ再生                                |
 | Claude | PostToolUse・PostToolUseFailure・PermissionRequest・Stop・UserPromptSubmit | Superset通知                 | `SUPERSET_HOME_DIR`が設定された場合のみ実行           |
 | Codex  | SessionStart・UserPromptSubmit・Stop                                       | Superset通知                 | `SUPERSET_HOME_DIR`が設定された場合のみ実行           |
 | Codex  | Stop                                                                       | check-knowledge-index --stop | vault内の最初のStopでindex検査                        |
+| Codex  | PostToolUse / apply_patch                                                  | run-repo-check               | 信頼したrepoの`scripts/check fast`の失敗をadvisory    |
 
-すべての登録に5秒のtimeoutを設定した。Claude側のscript参照はprimary profileの`~/.claude/hooks`を経由せず、Nixが解決したdotfiles内の絶対パスを使う。Superset通知は両agentで同じ環境変数を使い、通常のterminalから既定の`~/.superset`を暗黙に実行しない。
+run-repo-check以外の登録に5秒のtimeoutを設定した。run-repo-checkは15秒で、検査自体は12秒で打ち切る。仕組みは[repoの検査](repo-checks.md)を参照する。Claude側のscript参照はprimary profileの`~/.claude/hooks`を経由せず、Nixが解決したdotfiles内の絶対パスを使う。Superset通知は両agentで同じ環境変数を使い、通常のterminalから既定の`~/.superset`を暗黙に実行しない。
 
 `check-knowledge-index`は検出時にstderrとexit 2を返す。ClaudeのPostToolUseでは実行済み編集へのfeedbackになる。CodexのStopでは追加の修正turnを発生させるため、`stop_hook_active=true`の再実行では検査を行わない。未掲載が解消しない場合も同じStop hookが繰り返し作業を続行させることはない。
 

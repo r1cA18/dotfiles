@@ -1,6 +1,6 @@
 { pkgs, lib, ... }:
 let
-  inherit (pkgs.stdenv) isLinux;
+  inherit (pkgs.stdenv.hostPlatform) isLinux;
 in
 lib.mkIf isLinux {
   # 非NixOS (Ubuntu) で home-manager を standalone 運用するための定番設定。

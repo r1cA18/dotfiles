@@ -55,7 +55,7 @@ buildNpmPackage rec {
 }
 ```
 
-Claude Code・Codex・Antigravityは更新速度を優先し、公式native installer版を`~/.local/bin`へ導入する。Home Managerのactivationは未導入時だけbootstrapし、更新は`update-all`から実行する。
+Claude Code・Codex・Antigravityは更新速度を優先し、公式native installer版を`~/.local/bin`へ導入する。Home Managerのactivationは未導入時だけbootstrapし、更新は`dot update`から実行する。
 
 ## まとめ
 

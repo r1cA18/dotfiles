@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# The checks of this repository, in three sizes (template: Swift packages).
+#
+#   scripts/check fast <file>...   SwiftLint on the given files (seconds; agent hooks)
+#   scripts/check changed [base]   SwiftLint on the changed Swift files and the
+#                                  tests of the packages they belong to
+#   scripts/check full             everything; CI runs this on a macOS runner
+#
+# "Done" means `scripts/check full` ends with status 0.
+#
+# Expects a .swiftlint.yml. Start with `only_rules: [custom_rules]` and the
+# rules this repository needs; the default rule set reports mostly naming and
+# line length. UI tests and simulator runs stay outside this script.
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+export NO_COLOR=1
+
+# Swift packages tested by `changed` and `full`, relative to the repository root.
+packages=(.)
+
+step() { echo "check: $*" >&2; }
+
+swiftlint() {
+  if command -v swiftlint >/dev/null 2>&1; then
+    command swiftlint lint --quiet --strict "$@"
+  else
+    nix run nixpkgs#swiftlint -- lint --quiet --strict "$@"
+  fi
+}
+
+swift_files() {
+  local file
+  for file in "$@"; do
+    case "$file" in
+    *.swift) if [ -f "$file" ]; then printf '%s\n' "$file"; fi ;;
+    esac
+  done
+}
+
+mode=${1:-}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$mode" in
+fast)
+  files=()
+  while IFS= read -r file; do files+=("$file"); done < <(swift_files "$@")
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  swiftlint "${files[@]}"
+  ;;
+changed)
+  base=${1:-HEAD}
+  changed=()
+  while IFS= read -r file; do changed+=("$file"); done < <(
+    {
+      git diff --name-only --diff-filter=ACMR "$base" --
+      git ls-files --others --exclude-standard
+    } | sort -u
+  )
+  files=()
+  if [ ${#changed[@]} -gt 0 ]; then
+    while IFS= read -r file; do files+=("$file"); done < <(swift_files "${changed[@]}")
+  fi
+  if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+  fi
+  status=0
+  step swiftlint
+  swiftlint "${files[@]}" || status=1
+  for package in "${packages[@]}"; do
+    for file in "${files[@]}"; do
+      if [ "$package" = . ] || [[ $file == "$package"/* ]]; then
+        step "test $package"
+        swift test --package-path "$package" || status=1
+        break
+      fi
+    done
+  done
+  exit "$status"
+  ;;
+full)
+  status=0
+  step swiftlint
+  swiftlint || status=1
+  for package in "${packages[@]}"; do
+    step "test $package"
+    swift test --package-path "$package" || status=1
+  done
+  exit "$status"
+  ;;
+*)
+  echo "usage: scripts/check fast <file>... | changed [base] | full" >&2
+  exit 2
+  ;;
+esac

@@ -1,4 +1,4 @@
-# version / hash は各 1 行を維持すること (update-github-apps の sed が依存)。
+# version / hash は各 1 行を維持すること (dot update の github-apps 段階の sed が依存)。
 {
   lib,
   mkGithubReleaseApp,

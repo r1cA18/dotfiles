@@ -49,7 +49,7 @@ cxp archive user@example.com
 
 `help`・`list`・`complete`・`path`・`doctor`・`archive`はnative CLIが未導入でも使える。
 `add`・`login`・`status`・`run`は`~/.local/bin`のnative CLIを必要とする。
-CLIがない場合は`update-codex`または`update-claude-code`で導入してから再実行する。
+CLIがない場合は`dot update codex`または`dot update claude-code`で導入してから再実行する。
 `login default`は現在の`CODEX_HOME`や`CLAUDE_CONFIG_DIR`を引き継がずprimaryへloginする。
 
 ## 保存場所
