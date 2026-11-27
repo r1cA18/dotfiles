@@ -294,22 +294,21 @@ let
     };
   };
 
-  canonicalCommands =
-    lib.optionalAttrs r1hnEnabled {
-      r1hn = {
-        cmd = "r1hn <command>";
-        desc = "Run agents by account group and show usage";
-        help = ''
-          accountをgroupにまとめ、group内のaccountで公式clientを起動します。
-            r1hn group list
-            r1hn account list
-            r1hn usage
-            r1hn run --group <group> --runtime claude -- --resume
-          cl / cx は r1hn run --runtime claude / codex の短縮形です。
-          詳細: docs/guides/r1hn.md
-        '';
-      };
+  canonicalCommands = lib.optionalAttrs r1hnEnabled {
+    r1hn = {
+      cmd = "r1hn <command>";
+      desc = "Run agents by account group and show usage";
+      help = ''
+        accountをgroupにまとめ、group内のaccountで公式clientを起動します。
+          r1hn group list
+          r1hn account list
+          r1hn usage
+          r1hn run --group <group> --runtime claude -- --resume
+        cl / cx は r1hn run --runtime claude / codex の短縮形です。
+        詳細: docs/guides/r1hn.md
+      '';
     };
+  };
 
   aliasOnlyDefs = {
     ".." = {
