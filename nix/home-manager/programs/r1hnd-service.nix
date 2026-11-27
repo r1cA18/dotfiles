@@ -40,7 +40,7 @@ let
   r1codeEnvFile = "${config.xdg.configHome}/r1code/env";
   # The revision of r1cA18/r1-code that `r1code-build` builds by default.
   r1codeRepo = "git@github.com:r1cA18/r1-code.git";
-  r1codeRev = "e2a5a1e9d5d0cf7ac55624d2bf8cd49b8bf5b977";
+  r1codeRev = "8b536705388b426f0c1f6bf0378deb148df7bba4";
   ledger = "${config.xdg.configHome}/r1hn/accounts.toml";
   logDir = "${home}/Library/Logs/r1hn";
   # Desktop apps keep their settings in their homes: the T3 Code cask in
