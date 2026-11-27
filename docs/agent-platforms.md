@@ -5,26 +5,26 @@
 
 ## Source Of Truth
 
-| 項目                         | Source of truth                                   | 補足                                                                               |
-| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`        | Nixで結合してClaude・Codex・Geminiへ配布する                                       |
-| Codex追加instruction         | `codex/rules/`                                    | 共通instructionの後へCodexの単独実行ルールを結合する                               |
-| project-specific instruction | `AGENTS.md`とこのドキュメント                     | `CLAUDE.md`は`AGENTS.md`をimport                                                   |
-| capability catalog           | `agents/capabilities/catalog.nix`                 | skill・MCP・plugin・toolを1 entry 1 attrsetで宣言し`r1hn`が全account dirへ投影する |
-| reusable skills              | `agents/skills/`                                  | 本体。tierとdetectは`agents/capabilities/catalog.nix`で決める                      |
-| shared hook implementations  | `agents/hooks/`                                   | 製品ごとのhook登録から呼び出す                                                     |
-| Claude hooks                 | `claude/hooks/`                                   | Claude 専用                                                                        |
-| Claude commands              | `claude/commands/`                                | 可能なら `agents/skills/` へ昇格                                                   |
-| Codex prompt wrappers        | `codex/prompts/`                                  | deprecated なので reusable workflow は skill が正本                                |
-| Claude agents                | `claude/agents/`                                  | Markdown frontmatter 形式                                                          |
-| Codex agents                 | `.codex/agents/`                                  | TOML 形式                                                                          |
-| Codex user config            | `nix/home-manager/programs/codex.nix`             | 管理keyだけを`~/.codex/config.toml`へmergeし他のkeyは残す                          |
-| Claude settings              | `nix/home-manager/programs/claude-code.nix`       | 管理keyだけを`~/.claude/settings.json`へmergeし他のkeyは残す                       |
-| Gemini global instruction    | `nix/home-manager/programs/antigravity.nix`       | `~/.gemini/GEMINI.md`を生成                                                        |
-| Claude Code binary           | native install                                    | Home Managerが未導入時にbootstrapしてchannelを管理                                 |
-| Codex CLI binary             | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
-| Antigravity CLI binary       | native install                                    | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
-| Devin CLI settings           | `nix/home-manager/programs/devin.nix`             | 既存user configへ管理項目をmergeする。binaryはr1hn inputの`devin` package          |
+| 項目                         | Source of truth                             | 補足                                                                               |
+| ---------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| グローバル instruction       | `agents/INSTRUCTIONS.md` + `agents/rules/`  | Nixで結合してClaude・Codex・Geminiへ配布する                                       |
+| Codex追加instruction         | `codex/rules/`                              | 共通instructionの後へCodexの単独実行ルールを結合する                               |
+| project-specific instruction | `AGENTS.md`とこのドキュメント               | `CLAUDE.md`は`AGENTS.md`をimport                                                   |
+| capability catalog           | `agents/capabilities/catalog.nix`           | skill・MCP・plugin・toolを1 entry 1 attrsetで宣言し`r1hn`が全account dirへ投影する |
+| reusable skills              | `agents/skills/`                            | 本体。tierとdetectは`agents/capabilities/catalog.nix`で決める                      |
+| shared hook implementations  | `agents/hooks/`                             | 製品ごとのhook登録から呼び出す                                                     |
+| Claude hooks                 | `claude/hooks/`                             | Claude 専用                                                                        |
+| Claude commands              | `claude/commands/`                          | 可能なら `agents/skills/` へ昇格                                                   |
+| Codex prompt wrappers        | `codex/prompts/`                            | deprecated なので reusable workflow は skill が正本                                |
+| Claude agents                | `claude/agents/`                            | Markdown frontmatter 形式                                                          |
+| Codex agents                 | `.codex/agents/`                            | TOML 形式                                                                          |
+| Codex user config            | `nix/home-manager/programs/codex.nix`       | 管理keyだけを`~/.codex/config.toml`へmergeし他のkeyは残す                          |
+| Claude settings              | `nix/home-manager/programs/claude-code.nix` | 管理keyだけを`~/.claude/settings.json`へmergeし他のkeyは残す                       |
+| Gemini global instruction    | `nix/home-manager/programs/antigravity.nix` | `~/.gemini/GEMINI.md`を生成                                                        |
+| Claude Code binary           | native install                              | Home Managerが未導入時にbootstrapしてchannelを管理                                 |
+| Codex CLI binary             | native install                              | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
+| Antigravity CLI binary       | native install                              | Home Managerが未導入時にbootstrapして`dot update`で更新                            |
+| Devin CLI settings           | `nix/home-manager/programs/devin.nix`       | 既存user configへ管理項目をmergeする。binaryはr1hn inputの`devin` package          |
 
 ## 共有できるもの
 
