@@ -32,6 +32,7 @@
     ./programs/linux-desktop.nix
     ./programs/karabiner.nix
     ./programs/zed.nix
+    ./programs/r1-chat-backup.nix
   ];
 
   home = {
