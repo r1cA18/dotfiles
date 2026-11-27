@@ -221,7 +221,8 @@ r1 codeは`~/.t3`を読まない。hostごとに一度だけ手で移す。手�
 
 ### rollback
 
-- dotfiles-platformで移行のcommitを`git revert`してapplyする。`r1code`が消えて`t3-r1hn`が戻る。`t3-r1hn`は変更していない`~/.t3`と`~/.config/t3-r1hn/env`で起動する
+- 移行は`729cb2c`でr1hnのpinと一緒にcommitされた。commitごとrevertせず、`git checkout a797fd1 -- nix/home-manager/programs/r1hnd-service.nix`で`r1hnd-service.nix`だけを戻してcommitしapplyする
+- `r1code`が消えて`t3-r1hn`が戻る。`t3-r1hn`は変更していない`~/.t3`と`~/.config/t3-r1hn/env`で起動する
 - `~/.local/share/t3-r1hn/current`のbuildは残っているので再buildは要らない
 - 移行後にr1 codeで作ったthreadは`~/.r1code`にだけ残る。T3側には現れない
 
