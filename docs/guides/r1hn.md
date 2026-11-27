@@ -84,14 +84,14 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - DeepSeekとMistralのaccountは既定で従量課金として扱う。subscriptionとして使うaccountには`billing = "subscription"`を書く
 - dshを優先するgroupでは`r1hn model priority set dsh --group G`を実行する
 - r1hndはdshを`--profile acp`で起動する。providerの設定はそのhomeの`profiles/acp/cordis.patch.yml`にも必要である。`web`と`tui`のpatchだけでは足りない
-- homelabとMacでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`t3-r1hn`を置く。homelabはsystemd user service、Macはlaunchd agent(`org.dotfiles.r1hnd`と`org.dotfiles.t3-r1hn`)である
-- r1hndは`~/.config/r1hn/accounts.toml`が、`t3-r1hn`はそれに加えて`t3-r1hn-build`のbuildがあるときだけ起動する
-- ファイルを用意した後に一度起動する。homelabは`systemctl --user start r1hnd t3-r1hn`、Macは`launchctl kickstart gui/$(id -u)/org.dotfiles.r1hnd`と`.../org.dotfiles.t3-r1hn`
-- logはhomelabが`journalctl --user -u r1hnd`と`-u t3-r1hn`、Macが`~/Library/Logs/r1hn/`
+- homelabとMacでは`nix/home-manager/programs/r1hnd-service.nix`がr1hndと`r1code`を置く。homelabはsystemd user service、Macはlaunchd agent(`org.dotfiles.r1hnd`と`org.dotfiles.r1code`)である
+- r1hndは`~/.config/r1hn/accounts.toml`が、`r1code`はそれに加えて`r1code-build`のbuildがあるときだけ起動する
+- ファイルを用意した後に一度起動する。homelabは`systemctl --user start r1hnd r1code`、Macは`launchctl kickstart gui/$(id -u)/org.dotfiles.r1hnd`と`.../org.dotfiles.r1code`
+- logはhomelabが`journalctl --user -u r1hnd`と`-u r1code`、Macが`~/Library/Logs/r1hn/`
 - Macのlaunchd agentは失敗終了だけを再起動する。入力が無いときのwrapperは0で終わるので再起動を繰り返さない。consoleの再起動(exit 75)は`R1HN_SUPERVISED=1`とKeepAliveで動く
-- T3 Codeに出すgroupは起動時に台帳から読む。accountを持つgroupをすべて出す(`r1hn group list --json`)
-- `~/.config/t3-r1hn/env`の`T3CODE_R1HN_GROUPS`があればそれを優先する。fileは`KEY=value`の行をsystemdのEnvironmentFileと同じく文字通りに読む。`T3CODE_R1HN_COMMAND`・`T3CODE_LAN`・`T3CODE_PORT`も置ける。group名はこのrepositoryに書かない
-- `t3 up`と`t3 service install`は使わない。upstreamのserviceが別に入る
+- r1 codeに出すgroupは起動時に台帳から読む。accountを持つgroupをすべて出す(`r1hn group list --json`)
+- `~/.config/r1code/env`の`R1CODE_R1HN_GROUPS`があればそれを優先する。fileは`KEY=value`の行をsystemdのEnvironmentFileと同じく文字通りに読む。`R1CODE_R1HN_COMMAND`・`R1CODE_LAN`・`R1CODE_PORT`・`R1CODE_SERVER_BROWSER_SANDBOX`も置ける。group名はこのrepositoryに書かない
+- `r1code up`と`r1code service install`は使わない。CLI自身のserviceが別に入る
 
 ## config.tomlの管理するkey
 
@@ -119,7 +119,7 @@ Nixで管理しなくなったkeyは次のactivationで消える。
 vaultはSyncthingで全hostに届く。2台のr1hndが同じTimesにidを付けるとconflict fileと重複postができるので、vaultを書くのは`primary`の1台だけにする。
 
 - homelabは`dotfiles.r1hn.serve.role = "primary"`である。Times・tasksのwatcher・assistant(mainとside chat・memory・feed)・jobsを動かす
-- Macは既定の`coding`である。sessionとT3・ACP・承認だけを扱い、Times・tasks・jobs・threadsなどのrouteは409を返す
+- Macは既定の`coding`である。sessionとr1 code・ACP・承認だけを扱い、Times・tasks・jobs・threadsなどのrouteは409を返す
 - appとDiscord adapterはhomelabを向ける。Macのconsoleからは`/v1/peers/homelab/relay/...`でhomelabへ届く
 - `r1hn peer check`とconsoleのワーカー画面は2台がprimaryのとき警告する
 - roleを変えたらr1hndを再起動する
@@ -127,7 +127,7 @@ vaultはSyncthingで全hostに届く。2台のr1hndが同じTimesにidを付け�
 ## workerとsession
 
 - `config.toml`の`[[dir]]`はhostごとのfileにある。Macとhomelabのfileへ同じ規則を書く
-- 別groupの`[[dir]]`に入るdirectoryではT3(ACP)・`POST /v1/sessions`・agentの`session_start`がsessionを作らない。所有者だけが`POST /v1/sessions`の`allow_other_group: true`で1回だけ上書きできる
+- 別groupの`[[dir]]`に入るdirectoryではr1 code(ACP)・`POST /v1/sessions`・agentの`session_start`がsessionを作らない。所有者だけが`POST /v1/sessions`の`allow_other_group: true`で1回だけ上書きできる
 - `r1hn session move ID --to homelab`はsessionのpermission modeも運ぶ。homelabの方が広いmodeでもsessionは元のmode以下で動く
 - Macが閉じている間はpullできない。Macを閉じる前にsessionをhomelabへ移す
 - `11_Times`と`10_Daily`の削除と書き換えはClaudeならどのmodeでも所有者の承認になる。r1hnが起動時にPreToolUse hook(`r1hn mcp guard`)を渡す。Codexは`full`と`auto`では対象外なので、vaultでは`ask`で使う
@@ -160,33 +160,80 @@ env = "production"                    # Xcodeから入れたbuildだけなら "s
 - jobの`times-triage`と`deadline-allocation`が1週間動いたら、`homelab.nix`に`dotfiles.olympus.legacyUnits.enable = false;`を書いてapplyする
 - 並行期間に片方だけ止めるときは`systemctl --user stop olympus-times-triage.timer`を実行し`~/.local/state/olympus-times-triage/enabled`を消す。flag fileが無いtimerは再起動後も起動しない。deadlineも同じ手順である
 
-## T3 Code
+## r1 code
 
-T3 Codeはr1hn gatewayだけを持つfork(`r1cA18/t3code`の`feature/r1hn-gateway`)のserverを各hostで動かす。
+r1 codeはr1hn gatewayだけを持つcoding host(private repo `r1cA18/r1-code`)で、各hostのserverを`r1code` serviceが動かす。
+2026-11-27に以前の`t3-r1hn`(`r1cA18/t3code`の`feature/r1hn-gateway`)から移った。
 各hostのproviderへのloginはそのhostの`r1hn`の台帳で行い、credentialをhost間で複製しない。
+
+| 項目         | r1code                             | 以前のt3-r1hn                       |
+| ------------ | ---------------------------------- | ----------------------------------- |
+| service      | `r1code` / `org.dotfiles.r1code`   | `t3-r1hn` / `org.dotfiles.t3-r1hn`  |
+| build        | `~/.local/share/r1code/current`    | `~/.local/share/t3-r1hn/current`    |
+| state        | `~/.r1code`                        | `~/.t3`                             |
+| 環境変数file | `~/.config/r1code/env`(`R1CODE_*`) | `~/.config/t3-r1hn/env`(`T3CODE_*`) |
+| CLI          | `r1code`                           | `t3`                                |
 
 ### serverのbuild
 
 ```bash
-git clone -b feature/r1hn-gateway https://github.com/r1cA18/t3code.git ~/.local/share/t3-r1hn/src
-t3-r1hn-build ~/.local/share/t3-r1hn/src
+r1code-build
 ```
 
-checkoutは`~/Develop`の外に置く。
-buildの後は表示された再起動commandを実行する。
+- 引数なしでは`~/.local/share/r1code/src`へ`git@github.com:r1cA18/r1-code.git`をcloneする。`r1hnd-service.nix`の`r1codeRev`をdetachでcheckoutしてbuildする
+- 新しいrevisionを使うときは`r1codeRev`を更新してapplyする。その後に各hostで`r1code-build`を実行する
+- 引数にcheckoutを渡すとそのHEADをbuildする。未commitの変更があると止まる
+- buildの後は表示された再起動commandを実行する
+- 同じport 3773を使うのでTailscale Serveの割り当て(homelabの8447)はそのまま使える
+
+### T3からのdata移行
+
+r1 codeは`~/.t3`を読まない。hostごとに一度だけ手で移す。手順の元はr1-code repoの`import-from-t3.md`である。
+
+1. このmoduleをapplyする。`t3-r1hn`は止まって消える。`r1code`はbuildが無いので起動しない
+2. T3 Code desktopを終了する(Mac)
+3. 古いserverが止まっていることを確かめる。homelabは`systemctl --user is-active t3-r1hn`でMacは`pgrep -fl t3-r1hn/current`
+4. `~/.t3/userdata`の日付付きbackupを作ってから`~/.r1code/userdata`へ移す。`~/.r1code/userdata`には`desktop-settings.json`以外が無い状態から始める
+
+   ```bash
+   cp -a ~/.t3/userdata ~/.t3/userdata.bak-$(date +%Y%m%d)
+   src=~/.t3/userdata dst=~/.r1code/userdata
+   mkdir -p "$dst" && chmod 700 ~/.r1code "$dst"
+   sqlite3 "$src/statev2.sqlite" ".backup '$dst/statev2.sqlite'"
+   for item in settings.json keybindings.json environment-id themes attachments secrets; do
+     [ -e "$src/$item" ] && cp -a "$src/$item" "$dst/"
+   done
+   chmod -R go-rwx "$dst/secrets"
+   ```
+
+5. 環境変数fileの名前を変えて写す。値は表示しない。元のfileは残す
+
+   ```bash
+   install -d -m 700 ~/.config/r1code
+   [ -f ~/.config/t3-r1hn/env ] && sed 's/^T3CODE_/R1CODE_/' ~/.config/t3-r1hn/env > ~/.config/r1code/env && chmod 600 ~/.config/r1code/env
+   ```
+
+6. `r1code-build`を実行する。表示された再起動commandで起動する
+7. thread一覧とpairing済みclientを確かめる。`environment-id`と`secrets`を写すのでpairingはそのまま使える
+
+- `runtime/`・`caches/`・`logs/`・`worktrees/`は写さない。threadの古いworktreeは`~/.t3/worktrees/`のpathのまま使える
+- `~/.t3`はrollbackのために消さない
+
+### rollback
+
+- dotfiles-platformで移行のcommitを`git revert`してapplyする。`r1code`が消えて`t3-r1hn`が戻る。`t3-r1hn`は変更していない`~/.t3`と`~/.config/t3-r1hn/env`で起動する
+- `~/.local/share/t3-r1hn/current`のbuildは残っているので再buildは要らない
+- 移行後にr1 codeで作ったthreadは`~/.r1code`にだけ残る。T3側には現れない
 
 ### Macのdesktop app
 
-Macではupstreamのcask `t3-code`をclientとして使う。
-desktop appは通常は内蔵serverを起動し、そのserverは`claude`と`codex`のloginを直接使う。
-`r1hnd-service.nix`のactivationが`~/.t3/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。
+Macではupstreamのcask `t3-code`をclientとして使う。r1 codeのdesktop buildを入れたときも同じ扱いにする。
+desktop appは通常は内蔵serverを起動する。T3 Codeの内蔵serverは`claude`と`codex`のloginを直接使う。
+`r1hnd-service.nix`のactivationが`~/.t3/userdata/desktop-settings.json`と`~/.r1code/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。
 falseのdesktopは内蔵serverを起動せず、pairingで追加したenvironmentだけを使う。
-`t3-r1hn`が`~/.t3`を使用中のときはlocal environmentを有効にしてもdesktopは起動を拒む。
 
 desktopへのenvironmentの追加:
 
-1. Macの`t3-r1hn`のpairing URLを出す: `t3 pair`
+1. Macの`r1code`のpairing URLを出す: `r1code pair`
 2. desktopのSettings → Connections → Add environmentで「Remote link」を選び、URLを貼る
-3. homelabは同じ手順でhomelabの`t3 pair`のURLを使う。tailnetかT3 Connectで到達する
-
-`t3 connect`をsubcommandなしで実行しない。desktop appの更新はapp自身とcaskが行う。
+3. homelabは同じ手順でhomelabの`r1code pair`のURLを使う。tailnetで到達する
