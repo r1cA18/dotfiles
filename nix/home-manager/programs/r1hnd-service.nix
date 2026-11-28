@@ -38,18 +38,18 @@ let
   r1codeRoot = "${config.xdg.dataHome}/r1code";
   r1codeBin = "${r1codeRoot}/current/apps/server/dist/bin.mjs";
   r1codeEnvFile = "${config.xdg.configHome}/r1code/env";
+  # The service's data directory. The CLI names it too: in a linked git
+  # worktree `r1code pair` would otherwise look for a dev server in the
+  # worktree's own `.r1code` (upstream's `bun dev` behaviour).
+  r1codeHome = "${home}/.r1code";
   # The revision of r1cA18/r1-code that `r1code-build` builds by default.
   r1codeRepo = "git@github.com:r1cA18/r1-code.git";
-  r1codeRev = "8b536705388b426f0c1f6bf0378deb148df7bba4";
+  r1codeRev = "1c2b0cc4bac971d5d037103e5261b6b3a599503e";
   ledger = "${config.xdg.configHome}/r1hn/accounts.toml";
   logDir = "${home}/Library/Logs/r1hn";
-  # Desktop apps keep their settings in their homes: the T3 Code cask in
-  # `~/.t3`, an r1 code desktop build in `~/.r1code`, the home it shares with
-  # the r1code service.
-  desktopSettings = [
-    "${home}/.t3/userdata/desktop-settings.json"
-    "${home}/.r1code/userdata/desktop-settings.json"
-  ];
+  # The r1 code desktop app keeps its settings in `~/.r1code`, the home it
+  # shares with the r1code service.
+  desktopSettings = [ "${home}/.r1code/userdata/desktop-settings.json" ];
   launchdLabel = name: "org.dotfiles.${name}";
   configToml = "${config.xdg.configHome}/r1hn/config.toml";
 
@@ -157,15 +157,69 @@ let
     '';
   };
 
+  # Build r1 code's desktop app and install it as /Applications/r1 code.app
+  # (macOS). Like r1code-build it builds `r1codeRev`, in a clone of its own so
+  # the running service's build is not rebuilt, or the HEAD of a checkout
+  # given as the argument. The app has no update feed and is signed with the
+  # keychain's Apple Development identity, or ad hoc; see the revision's
+  # scripts/build-desktop-mac.sh.
+  r1codeDesktopBuild = pkgs.writeShellApplication {
+    name = "r1code-desktop-build";
+    runtimeInputs = [
+      node
+      pkgs.pnpm
+      pkgs.git
+      pkgs.rustc
+      pkgs.cargo
+    ];
+    text = ''
+      if [ $# -gt 0 ]; then
+        src=$(cd "$1" && pwd)
+      else
+        src=${r1codeRoot}/desktop-src
+        if [ ! -d "$src/.git" ]; then
+          git clone ${r1codeRepo} "$src"
+        fi
+        git -C "$src" fetch --quiet origin
+        git -C "$src" checkout --quiet --detach ${r1codeRev}
+      fi
+      cd "$src"
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "r1code-desktop-build: $src has uncommitted changes" >&2
+        exit 1
+      fi
+      if [ ! -f scripts/build-desktop-mac.sh ]; then
+        echo "r1code-desktop-build: $(git rev-parse --short HEAD) has no scripts/build-desktop-mac.sh" >&2
+        exit 1
+      fi
+      pnpm install --frozen-lockfile
+      bash scripts/build-desktop-mac.sh
+    '';
+  };
+
   # The CLI of the same build, for `r1code pair` and `r1code status`. Do not
   # run `r1code up` or `r1code service install`: they install the CLI's own
-  # service beside this one.
+  # service beside this one. It targets the service's home unless
+  # R1CODE_HOME or `--base-dir` names another; `pair` prefers a linked
+  # worktree's `.r1code` over R1CODE_HOME, so it gets the flag.
   r1codeCli = pkgs.writeShellApplication {
     name = "r1code";
     text = ''
       if [ ! -f ${r1codeBin} ]; then
         echo "r1code: no build yet; run r1code-build" >&2
         exit 1
+      fi
+      : "''${R1CODE_HOME:=${r1codeHome}}"
+      export R1CODE_HOME
+      if [ "''${1:-}" = pair ]; then
+        explicit=false
+        for arg in "$@"; do
+          case $arg in --base-dir | --base-dir=*) explicit=true ;; esac
+        done
+        if [ "$explicit" = false ]; then
+          shift
+          set -- pair --base-dir "$R1CODE_HOME" "$@"
+        fi
       fi
       exec ${node}/bin/node ${r1codeBin} "$@"
     '';
@@ -221,6 +275,7 @@ let
       fi
       : "''${R1CODE_R1HN_COMMAND:=${r1hn}/bin/r1hn acp}"
       export R1CODE_R1HN_COMMAND
+      export R1CODE_HOME=${r1codeHome}
       if [ -z "''${R1CODE_R1HN_GROUPS:-}" ]; then
         R1CODE_R1HN_GROUPS=$(${r1hn}/bin/r1hn group list --json \
           | jq -r '[.groups[] | select(.accounts | length > 0) | .name] | join(",")')
@@ -264,6 +319,7 @@ in
         r1codeBuild
         r1codeCli
       ]
+      ++ lib.optionals isDarwin [ r1codeDesktopBuild ]
       # dsh for the sessions r1hnd runs on dsh; macOS gets it from packages.nix.
       ++ lib.optionals isLinux [ pkgs.deepseek-harness ];
 
@@ -344,10 +400,9 @@ in
         run ${pkgs.coreutils}/bin/install -d -m 700 ${lib.escapeShellArg logDir}
       '';
 
-      # A desktop app would otherwise start its own server in its home (the T3
-      # Code cask's uses the logins of claude and codex directly). With the
-      # local environment off it only connects to environments added by
-      # pairing (r1code here and on homelab). Kept off on every activation;
+      # The desktop app would otherwise start its own server in the home the
+      # r1code service owns. With the local environment off it only connects
+      # to environments added by pairing (r1code here and on homelab). Kept off on every activation;
       # the files are merged so the apps' other settings stay.
       home.activation.desktopClientOnly = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         for settings in ${lib.escapeShellArgs desktopSettings}; do

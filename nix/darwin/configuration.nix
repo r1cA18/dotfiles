@@ -88,9 +88,6 @@
       "raycast"
       "stirling-pdf"
       "switchbar"
-      # T3 Code desktop as a client only: r1hnd-service.nix turns off its
-      # bundled server, so agents run on the t3-r1hn servers through r1hn.
-      "t3-code"
       "tailscale-app"
       "zed"
     ];

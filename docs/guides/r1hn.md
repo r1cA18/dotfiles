@@ -92,6 +92,7 @@ Orcaが管理する設定directoryは`r1hn account discover`で一覧できる�
 - r1 codeに出すgroupは起動時に台帳から読む。accountを持つgroupをすべて出す(`r1hn group list --json`)
 - `~/.config/r1code/env`の`R1CODE_R1HN_GROUPS`があればそれを優先する。fileは`KEY=value`の行をsystemdのEnvironmentFileと同じく文字通りに読む。`R1CODE_R1HN_COMMAND`・`R1CODE_LAN`・`R1CODE_PORT`・`R1CODE_SERVER_BROWSER_SANDBOX`も置ける。group名はこのrepositoryに書かない
 - `r1code up`と`r1code service install`は使わない。CLI自身のserviceが別に入る
+- `r1code` commandはserviceのhome(`~/.r1code`)を既定にする。`R1CODE_HOME`か`--base-dir`があればそれを使う。linked worktreeの中でも`r1code pair`はserviceのserverを探す
 
 ## config.tomlの管理するkey
 
@@ -228,10 +229,26 @@ r1 codeは`~/.t3`を読まない。hostごとに一度だけ手で移す。手�
 
 ### Macのdesktop app
 
-Macではupstreamのcask `t3-code`をclientとして使う。r1 codeのdesktop buildを入れたときも同じ扱いにする。
-desktop appは通常は内蔵serverを起動する。T3 Codeの内蔵serverは`claude`と`codex`のloginを直接使う。
-`r1hnd-service.nix`のactivationが`~/.t3/userdata/desktop-settings.json`と`~/.r1code/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。
+Macではr1 code自身のdesktop app(`/Applications/r1 code.app`)をclientとして使う。
+Electronのbuildは重いので`dot apply`では作らない。必要なときに次を実行する:
+
+```bash
+r1code-desktop-build
+```
+
+- 引数なしでは`~/.local/share/r1code/desktop-src`へcloneし`r1codeRev`をbuildする。serviceが動かす`src`のbuildは作り直さない
+- 引数にcheckoutを渡すとそのHEADをbuildする。未commitの変更があると止まる
+- 中身はr1-codeのrepositoryにある`build-desktop-mac.sh`(`scripts/`)である。そのrevisionに無いと止まる
+- update feedを埋め込まない(`R1CODE_DESKTOP_UPDATE_REPOSITORY`を外す)。appは更新を確認しない
+- keychainのApple Development identityで署名する。無ければad hocで署名する。notarizeしないのでこのMac専用である
+- 起動中のappは置き換えない。appを終了してから実行する
+- 以前のT3 Code cask(`t3-code`)は宣言から外した。Homebrewの`cleanup`は`none`なので消すときは`brew uninstall --cask t3-code`を実行する
+- T3 Codeとr1 codeのappは同じElectronのdata(`~/Library/Application Support/t3code-v2`)を使う。同時に起動しない
+
+desktop appは通常は内蔵serverを起動する。
+`r1hnd-service.nix`のactivationが`~/.r1code/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。
 falseのdesktopは内蔵serverを起動せず、pairingで追加したenvironmentだけを使う。
+appは`r1code` serviceと同じ`~/.r1code`をhomeにするが、serverはserviceだけが動かす。
 
 desktopへのenvironmentの追加:
 
