@@ -38,6 +38,10 @@ let
   r1codeRoot = "${config.xdg.dataHome}/r1code";
   r1codeBin = "${r1codeRoot}/current/apps/server/dist/bin.mjs";
   r1codeEnvFile = "${config.xdg.configHome}/r1code/env";
+  # The service's data directory. The CLI names it too: in a linked git
+  # worktree `r1code pair` would otherwise look for a dev server in the
+  # worktree's own `.r1code` (upstream's `bun dev` behaviour).
+  r1codeHome = "${home}/.r1code";
   # The revision of r1cA18/r1-code that `r1code-build` builds by default.
   r1codeRepo = "git@github.com:r1cA18/r1-code.git";
   r1codeRev = "8b536705388b426f0c1f6bf0378deb148df7bba4";
@@ -159,13 +163,27 @@ let
 
   # The CLI of the same build, for `r1code pair` and `r1code status`. Do not
   # run `r1code up` or `r1code service install`: they install the CLI's own
-  # service beside this one.
+  # service beside this one. It targets the service's home unless
+  # R1CODE_HOME or `--base-dir` names another; `pair` prefers a linked
+  # worktree's `.r1code` over R1CODE_HOME, so it gets the flag.
   r1codeCli = pkgs.writeShellApplication {
     name = "r1code";
     text = ''
       if [ ! -f ${r1codeBin} ]; then
         echo "r1code: no build yet; run r1code-build" >&2
         exit 1
+      fi
+      : "''${R1CODE_HOME:=${r1codeHome}}"
+      export R1CODE_HOME
+      if [ "''${1:-}" = pair ]; then
+        explicit=false
+        for arg in "$@"; do
+          case $arg in --base-dir | --base-dir=*) explicit=true ;; esac
+        done
+        if [ "$explicit" = false ]; then
+          shift
+          set -- pair --base-dir "$R1CODE_HOME" "$@"
+        fi
       fi
       exec ${node}/bin/node ${r1codeBin} "$@"
     '';
@@ -221,6 +239,7 @@ let
       fi
       : "''${R1CODE_R1HN_COMMAND:=${r1hn}/bin/r1hn acp}"
       export R1CODE_R1HN_COMMAND
+      export R1CODE_HOME=${r1codeHome}
       if [ -z "''${R1CODE_R1HN_GROUPS:-}" ]; then
         R1CODE_R1HN_GROUPS=$(${r1hn}/bin/r1hn group list --json \
           | jq -r '[.groups[] | select(.accounts | length > 0) | .name] | join(",")')
