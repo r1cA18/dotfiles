@@ -9,7 +9,7 @@ tags: [testing, ci]
 
 ## 普段の検証
 
-完了の基準は`scripts/check full`が0で終わること。formatter(Nixのsandboxで検査し書き換えない)、statix・deadnix・shellcheck、文書の参照先、unit testを順に実行する。編集したfileだけを見る`scripts/check fast <file>...`はagent hookが呼ぶ。契約は[repoの検査](repo-checks.md)を参照する。
+完了の基準は`scripts/check full`が0で終わること。local gateが正であり、GitHub Actionsは課金が止まっている間は手動実行(`workflow_dispatch`)のみ(local gate is authoritative; Actions are manual-only while billing is off)。mainのrulesetは必須checkを持たない。formatter(Nixのsandboxで検査し書き換えない)、statix・deadnix・shellcheck、文書の参照先、unit testを順に実行する。編集したfileだけを見る`scripts/check fast <file>...`はagent hookが呼ぶ。契約は[repoの検査](repo-checks.md)を参照する。
 
 ```bash
 bash scripts/test.sh
@@ -55,6 +55,6 @@ nix shell --no-write-lock-file --inputs-from . \
 
 テストは一時directoryとmock CLIを使う。普段のaccountでloginせずagentを起動せずsystemやHome Managerの設定も適用しない。Nix検証はstoreへのbuildと必要な依存downloadを行う。
 
-CIの`regression`jobはLinuxで`scripts/check full`とintegrationを実行しformatterなどの失敗とは独立して結果を出す。macOSのsystem build・agentからのhook発火・通知音・実terminalでの対話表示は別途確認が必要。テストの成功を全OSの実機適用成功とは扱わない。
+CIの`regression`jobは手動実行時にLinuxで`scripts/check full`とintegrationを実行しformatterなどの失敗とは独立して結果を出す。macOSのsystem build・agentからのhook発火・通知音・実terminalでの対話表示は別途確認が必要。テストの成功を全OSの実機適用成功とは扱わない。
 
 新しいテストは壊れたときの利用者への影響を基準に選ぶ。文言の完全一致や実装を写しただけのassertionを増やさず入力境界・変更保持・権限やaccountの分離を優先する。

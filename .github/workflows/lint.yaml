@@ -1,8 +1,9 @@
 name: Lint
+# Manual only while GitHub Actions billing is off. The local gate
+# `scripts/check full` is authoritative (docs/guides/testing.md). Restore the
+# pull_request and push triggers when Actions can run again.
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   check:
