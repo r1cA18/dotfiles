@@ -57,7 +57,7 @@ r1hn account list --check   # login状態を確認
 3. 登録する: `r1hn account add <id> --provider claude --config-dir <dir> --group <group>`
 4. `r1hn account list --check`と`r1hn run --group <group> --dry-run`で確認する
 
-Orcaが管理する設定directoryは`r1hn account discover`で一覧できる。
+新しい設定directoryへのloginと登録は`r1hn account login`でも行える。
 
 ## 台帳の場所
 
@@ -174,6 +174,26 @@ r1 codeはr1hn gatewayだけを持つcoding host(private repo `r1cA18/r1-code`)�
 | state        | `~/.r1code`                        | `~/.t3`                             |
 | 環境変数file | `~/.config/r1code/env`(`R1CODE_*`) | `~/.config/t3-r1hn/env`(`T3CODE_*`) |
 | CLI          | `r1code`                           | `t3`                                |
+
+### Orcaからの移行
+
+| Orcaでの操作                 | 移行先                                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| repo・既存worktreeを開く     | `r1code project add <path>`で既存directoryを登録                                        |
+| task用worktreeを作る         | r1 codeの新規threadでworktreeを選択                                                     |
+| agentと会話する              | r1 codeのthreadでr1hnのgroupを選択。会社repoは公式CLIから起動                           |
+| accountを追加する            | `r1hn account login`で登録し`r1hn account list --check`で確認                           |
+| 別hostにtaskを渡す           | `r1hn worker list`でworkerを選び`r1hn dispatch --to <worker> --cwd <worktree> "<task>"` |
+| 進捗を見る                   | `r1hn session watch <id>`                                                               |
+| 質問に答える・追加指示を出す | `r1hn session reply <id> "<answer>"`・`r1hn session ask <id> "<task>"`                  |
+| 結果や作業を回収する         | `r1hn session collect <id>`。sessionとgit作業も戻す場合は`--back`                       |
+
+Orcaの実行中sessionは終了までOrcaで扱う。対応するCLI transcriptは、
+`r1hn session import --since 7d --account <id> --cwd <path> --dry-run`で確認し、
+`--dry-run`を外すとr1hndで読み取り専用の履歴として参照できる。
+続きの作業はr1 codeでthreadを作り、branch・次の操作・未検証点を短く渡す。
+別hostへ渡す前に、taskごとのworktreeとgroupを確認する。会社repoのbranchや履歴は
+個人groupへ渡さない。
 
 ### serverのbuild
 

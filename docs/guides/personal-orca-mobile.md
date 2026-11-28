@@ -7,6 +7,8 @@ tags: [orca, mobile, self-hosting, tailscale]
 
 # 個人版Orcaと公式スマホアプリの接続
 
+Orcaの退役前の接続手順。移行先は[r1hnガイド](r1hn.md#orcaからの移行)を参照。
+
 ## 採用する構成
 
 個人版Orcaへの接続は公式Orca Mobileを使う。自前ホストであることだけを理由に
