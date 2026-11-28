@@ -161,6 +161,46 @@ let
     '';
   };
 
+  # Build r1 code's desktop app and install it as /Applications/r1 code.app
+  # (macOS). Like r1code-build it builds `r1codeRev`, in a clone of its own so
+  # the running service's build is not rebuilt, or the HEAD of a checkout
+  # given as the argument. The app has no update feed and is signed with the
+  # keychain's Apple Development identity, or ad hoc; see the revision's
+  # scripts/build-desktop-mac.sh.
+  r1codeDesktopBuild = pkgs.writeShellApplication {
+    name = "r1code-desktop-build";
+    runtimeInputs = [
+      node
+      pkgs.pnpm
+      pkgs.git
+      pkgs.rustc
+      pkgs.cargo
+    ];
+    text = ''
+      if [ $# -gt 0 ]; then
+        src=$(cd "$1" && pwd)
+      else
+        src=${r1codeRoot}/desktop-src
+        if [ ! -d "$src/.git" ]; then
+          git clone ${r1codeRepo} "$src"
+        fi
+        git -C "$src" fetch --quiet origin
+        git -C "$src" checkout --quiet --detach ${r1codeRev}
+      fi
+      cd "$src"
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "r1code-desktop-build: $src has uncommitted changes" >&2
+        exit 1
+      fi
+      if [ ! -f scripts/build-desktop-mac.sh ]; then
+        echo "r1code-desktop-build: $(git rev-parse --short HEAD) has no scripts/build-desktop-mac.sh" >&2
+        exit 1
+      fi
+      pnpm install --frozen-lockfile
+      bash scripts/build-desktop-mac.sh
+    '';
+  };
+
   # The CLI of the same build, for `r1code pair` and `r1code status`. Do not
   # run `r1code up` or `r1code service install`: they install the CLI's own
   # service beside this one. It targets the service's home unless
@@ -283,6 +323,7 @@ in
         r1codeBuild
         r1codeCli
       ]
+      ++ lib.optionals isDarwin [ r1codeDesktopBuild ]
       # dsh for the sessions r1hnd runs on dsh; macOS gets it from packages.nix.
       ++ lib.optionals isLinux [ pkgs.deepseek-harness ];
 
