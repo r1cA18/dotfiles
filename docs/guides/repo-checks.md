@@ -12,7 +12,7 @@ tags: [lint, ci, hooks, github]
 - 検査の入口は各repo直下の`scripts/check`に揃える。人もagentもCIも同じcommandを使う
 - 機械で判定できる規則だけをlinterとtestへ入れる。`AGENTS.md`には判断が要る規則だけを残し、完了条件は「`scripts/check full`が0で終わること」の1行にする
 - agent hookは規則を持たない。編集されたfileのrepoにある`scripts/check fast`を呼び、失敗を知らせるだけで止めない
-- CIはGitHub Actionsで`scripts/check full`を回す
+- CIはGitHub Actionsで`scripts/check full`を回す。課金が止まっている間はworkflowを`workflow_dispatch`だけにし、localの`scripts/check full`を正とする。必須checkは置かない
 - 個人repoの`main`はrulesetで保護し、変更はPRで入れる
 
 ## 置き場
@@ -93,7 +93,7 @@ Codexでhookの内容を変えたときは、Codexの`/hooks`から信頼し直�
 
 このrepoは公開repoなので、private repoからもreusable workflowを呼べる。dotfiles側の変更が全repoのCIへ波及しないよう、呼び出しはbranch名でなくcommit SHAで固定する。
 
-このrepo自身のCIは`.github/workflows/lint.yaml`の`regression` jobで`scripts/check full`とintegration testを回す。
+このrepo自身のCIは`.github/workflows/lint.yaml`の`regression` jobで(現在は手動実行のみ)`scripts/check full`とintegration testを回す。
 
 ### 料金
 
@@ -117,7 +117,7 @@ Codexでhookの内容を変えたときは、Codexの`/hooks`から信頼し直�
 1. 言語の雛形を`scripts/check`へcopyし、実行権限を付ける
 2. `scripts/check full`を緑にする。既存の違反が多い規則は外すか直してから入れる
 3. `AGENTS.md`の完了条件を`scripts/check full`の1行にし、検査で守られた規則の文を消す
-4. workflowの`check.yaml`を置き、PRで1回走らせる
+4. workflowの`check.yaml`を置き、PRで1回走らせる(Actionsが動かない間は置かずlocalの`scripts/check full`で代える)
 5. `protect-main.sh`で`check / check`を必須checkにする
 
 ## まだ入れていないもの
