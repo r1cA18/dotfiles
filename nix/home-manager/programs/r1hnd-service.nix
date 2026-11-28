@@ -47,13 +47,9 @@ let
   r1codeRev = "8b536705388b426f0c1f6bf0378deb148df7bba4";
   ledger = "${config.xdg.configHome}/r1hn/accounts.toml";
   logDir = "${home}/Library/Logs/r1hn";
-  # Desktop apps keep their settings in their homes: the T3 Code cask in
-  # `~/.t3`, an r1 code desktop build in `~/.r1code`, the home it shares with
-  # the r1code service.
-  desktopSettings = [
-    "${home}/.t3/userdata/desktop-settings.json"
-    "${home}/.r1code/userdata/desktop-settings.json"
-  ];
+  # The r1 code desktop app keeps its settings in `~/.r1code`, the home it
+  # shares with the r1code service.
+  desktopSettings = [ "${home}/.r1code/userdata/desktop-settings.json" ];
   launchdLabel = name: "org.dotfiles.${name}";
   configToml = "${config.xdg.configHome}/r1hn/config.toml";
 
@@ -404,10 +400,9 @@ in
         run ${pkgs.coreutils}/bin/install -d -m 700 ${lib.escapeShellArg logDir}
       '';
 
-      # A desktop app would otherwise start its own server in its home (the T3
-      # Code cask's uses the logins of claude and codex directly). With the
-      # local environment off it only connects to environments added by
-      # pairing (r1code here and on homelab). Kept off on every activation;
+      # The desktop app would otherwise start its own server in the home the
+      # r1code service owns. With the local environment off it only connects
+      # to environments added by pairing (r1code here and on homelab). Kept off on every activation;
       # the files are merged so the apps' other settings stay.
       home.activation.desktopClientOnly = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         for settings in ${lib.escapeShellArgs desktopSettings}; do

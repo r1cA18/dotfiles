@@ -51,7 +51,7 @@ dotfiles/
 │   │       ├── antigravity.nix # Antigravity CLI activation + updater
 │   │       ├── aside.nix     # Aside CLI installer (macOS)
 │   │       ├── r1hn.nix      # r1hn（account groupとagent起動。private input）
-│   │       ├── r1hnd-service.nix # homelabとMacのr1hndとT3 Code service
+│   │       ├── r1hnd-service.nix # homelabとMacのr1hndとr1 code service
 │   │       ├── syncthing.nix # Syncthingとvaultの.stignoreの配布
 │   │       ├── devin.nix      # Devin CLI user config defaults (binary: r1hn.nix)
 │   │       ├── nix-index.nix  # comma + nix-locate（nix-index-database）
@@ -131,10 +131,10 @@ dshは`nix/pkgs/deepseek-harness/`のcustom packageでmacOSに入れる。
 Linuxでは`r1hnd-service.nix`がhomelabに入れる。
 
 homelabとMacは`nix/home-manager/programs/r1hnd-service.nix`を読み込み、r1hnd(`r1hn serve`)と
-r1hn gatewayだけを使うT3 Codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
+r1hn gatewayだけを使うr1 codeのserviceを置く。homelabはsystemd user service、Macはlaunchd agentである。
 各serviceは台帳とbuildが揃うまで起動しない。
 同期されるvaultを書くのは`dotfiles.r1hn.serve.role = "primary"`のhomelabだけで、Macは既定の`coding`である。
-MacのT3 Code desktop(cask `t3-code`)は内蔵serverを止めたclientとして使う。
+Macのr1 code desktop(`r1code-desktop-build`で入れる)は内蔵serverを止めたclientとして使う。
 
 ## Agent 運用の基本方針
 

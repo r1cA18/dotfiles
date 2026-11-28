@@ -238,10 +238,12 @@ r1code-desktop-build
 
 - 引数なしでは`~/.local/share/r1code/desktop-src`へcloneし`r1codeRev`をbuildする。serviceが動かす`src`のbuildは作り直さない
 - 引数にcheckoutを渡すとそのHEADをbuildする。未commitの変更があると止まる
-- 中身はr1-codeの`scripts/build-desktop-mac.sh`である。そのrevisionに無いと止まる
+- 中身はr1-codeのrepositoryにある`build-desktop-mac.sh`(`scripts/`)である。そのrevisionに無いと止まる
 - update feedを埋め込まない(`R1CODE_DESKTOP_UPDATE_REPOSITORY`を外す)。appは更新を確認しない
 - keychainのApple Development identityで署名する。無ければad hocで署名する。notarizeしないのでこのMac専用である
 - 起動中のappは置き換えない。appを終了してから実行する
+- 以前のT3 Code cask(`t3-code`)は宣言から外した。Homebrewの`cleanup`は`none`なので消すときは`brew uninstall --cask t3-code`を実行する
+- T3 Codeとr1 codeのappは同じElectronのdata(`~/Library/Application Support/t3code-v2`)を使う。同時に起動しない
 
 desktop appは通常は内蔵serverを起動する。
 `r1hnd-service.nix`のactivationが`~/.r1code/userdata/desktop-settings.json`の`localEnvironmentEnabled`を毎回falseにする。

@@ -49,7 +49,7 @@ let
                 # (CI never fetches it); see programs/capabilities.nix.
                 inputs.r1hn.homeManagerModules.capabilities
                 (import ../home-manager/home.nix)
-                # The Mac is an r1hn worker like homelab: r1hnd and T3 Code
+                # The Mac is an r1hn worker like homelab: r1hnd and r1 code
                 # as launchd agents. A coding worker (the default role):
                 # sessions only, never a writer of the vault.
                 ../home-manager/programs/r1hnd-service.nix
