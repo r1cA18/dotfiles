@@ -44,7 +44,7 @@ let
   r1codeHome = "${home}/.r1code";
   # The revision of r1cA18/r1-code that `r1code-build` builds by default.
   r1codeRepo = "git@github.com:r1cA18/r1-code.git";
-  r1codeRev = "1c2b0cc4bac971d5d037103e5261b6b3a599503e";
+  r1codeRev = "f930f4443844b929211e1fe8c819bf8fce193196";
   ledger = "${config.xdg.configHome}/r1hn/accounts.toml";
   logDir = "${home}/Library/Logs/r1hn";
   # The r1 code desktop app keeps its settings in `~/.r1code`, the home it
