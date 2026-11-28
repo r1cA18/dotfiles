@@ -188,9 +188,11 @@ r1 codeはr1hn gatewayだけを持つcoding host(private repo `r1cA18/r1-code`)�
 | 質問に答える・追加指示を出す | `r1hn session reply <id> "<answer>"`・`r1hn session ask <id> "<task>"`                  |
 | 結果や作業を回収する         | `r1hn session collect <id>`。sessionとgit作業も戻す場合は`--back`                       |
 
-Orcaの実行中sessionは終了までOrcaで扱う。対応するCLI transcriptは、
-`r1hn session import --since 7d --account <id> --cwd <path> --dry-run`で確認し、
+Orcaの実行中sessionは終了までOrcaで扱う。個人ClaudeのCLI transcriptは、
+`r1hn session import --since 7d --account <claude-id> --cwd <path> --dry-run`で確認し、
 `--dry-run`を外すとr1hndで読み取り専用の履歴として参照できる。
+Codexでは作業directoryが不明な履歴も`--cwd`の結果に入る。会社の履歴も存在し得る
+homeでは、引き継ぎたいsessionを公式CLIで個別に再開する。
 続きの作業はr1 codeでthreadを作り、branch・次の操作・未検証点を短く渡す。
 別hostへ渡す前に、taskごとのworktreeとgroupを確認する。会社repoのbranchや履歴は
 個人groupへ渡さない。
