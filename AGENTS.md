@@ -51,7 +51,7 @@ macOS/Linux用のdotfiles。Nix (nix-darwin + home-manager) で管理。
 | account管理 (r1hn)     | `nix/home-manager/programs/r1hn.nix`、詳細は`docs/guides/r1hn.md`                      |
 | dsh package            | `nix/pkgs/deepseek-harness/`                                                           |
 | Syncthingの除外        | `nix/home-manager/programs/syncthing.nix`                                              |
-| Orca設定/CLI           | `nix/home-manager/programs/orca.nix`（CLI・credential helpers）                        |
+| r1 code・r1hnの運用    | `docs/guides/r1hn.md`                                                                  |
 | スキル追加/編集        | `agents/skills/` ディレクトリ                                                          |
 | Claude ルール          | `claude/rules/` ディレクトリ                                                           |
 | Claude フック          | `claude/hooks/` ディレクトリ                                                           |

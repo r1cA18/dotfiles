@@ -94,12 +94,6 @@ in
         subdir = "skills";
       };
 
-      # Orca skills
-      orca = {
-        path = inputs.orca-skills;
-        subdir = "skills";
-      };
-
       # Hugging Face skills (Apache-2.0): Python and ML catalog entries.
       huggingface = {
         path = inputs.huggingface-skills;

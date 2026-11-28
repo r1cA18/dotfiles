@@ -27,7 +27,6 @@
     ./programs/codex.nix
     ./programs/nix-index.nix
     ./programs/ghostty.nix
-    ./programs/orca.nix
     ./programs/aerospace.nix
     ./programs/linux-desktop.nix
     ./programs/karabiner.nix

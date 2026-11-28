@@ -192,11 +192,6 @@ let
     indexion-workspace = catalog [ "workflow" ] "Explore related repositories with indexion" { };
     i-have-adhd = catalog [ "style" ] "Next action first in replies" { };
     op-api-keys = catalog [ "security" ] "Read API keys through the 1Password CLI" { };
-    orca-cli = catalog [ "orca" ] "Drive Orca worktrees and terminals" { };
-    orca-computer-use = catalog [
-      "orca"
-      "mac"
-    ] "Orca computer use" { };
     workfolio = catalog [
       "work"
     ] "Workfolio time, overtime, invoices and income through its MCP tools" { };

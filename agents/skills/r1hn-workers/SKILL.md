@@ -67,6 +67,19 @@ To move an existing idle session instead:
 r1hn session move ID --to NAME
 ```
 
+For isolated work, create the task worktree before dispatch and pass its
+path explicitly. Start from the intended base ref:
+
+```bash
+git worktree add -b fix/task <task-path> <base-ref>
+r1hn dispatch --to NAME --cwd <task-path> "<task>"
+```
+
+For work on this machine, start a worktree thread in r1 code or run
+`r1hn session start --cwd <task-path>` and follow it with
+`r1hn session ask ID "<task>"`. Keep the session ID and returned workspace
+path with the task so you can reconnect and review its work.
+
 ## 3. Monitor
 
 ```bash

@@ -78,11 +78,9 @@ Codex の custom prompt は deprecated なので、`codex/prompts/` は skill �
 
 必要な宣言的設定だけ repo 内に切り出して、runtime state へ merge する。
 
-Orcaのlive settingsはOrca自身が`profile-state.db`で管理する。Home Managerは
-旧`orca-data.json`へのsettings mergeやSQLiteへの直接書き込みを行わない。
-`nix/home-manager/programs/orca-settings.json`は未適用の参照snapshotとして保持する。
-Orca 1.4.219のCLI helpにはsettings更新commandがないため、設定変更はOrca UIで行う。
-CLI symlinkとcredential helpersは`nix/home-manager/programs/orca.nix`で管理する。
+Orcaは段階的に退役する。個人開発のprojectとthreadはr1 codeへ移し、account homeと
+workerはr1hnで扱う。Orcaのappは既存sessionの引き継ぎ期間中に使えるようcaskを維持する。
+既存のOrca設定とsessionはOrca側に残る。移行時の操作は[r1hnガイド](guides/r1hn.md#orcaからの移行)を参照。
 
 ### 4. Orchestrationは役割と製品設定を分離
 
@@ -183,8 +181,5 @@ Home Managerはbootstrap・PATH・宣言設定を管理し、binary更新は`dot
 
 `skills` CLI 自体は upstream の配布形態が不安定なので、常設 package にはせず `bunx skills` を使う。
 
-外部skill installer(`bunx skills add`や`orca skills install`など)はこのマシンでは使わない。
-これらは`~/.claude/skills`や`~/.codex/skills`へ実体copyを置くため、agent-skillsの
-symlink-tree管理と衝突する。Orcaのskill updaterはhash比較でNix管理のsymlinkを
-「modified / unrecognized」と判定してskipするが、これは想定動作。
+外部skill installer(`bunx skills add`など)は管理済みのsymlinkと衝突する。
 skillの追加・更新はflake inputか`agents/skills/`経由で行い`dr`で配布する。

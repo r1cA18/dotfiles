@@ -262,22 +262,6 @@
         "type": "github"
       }
     },
-    "orca-skills": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1794287068,
-        "narHash": "sha256-xCrtCy5xBmpYGRDuFSjNQ0bl+DveE4rWu8zMlLJuN68=",
-        "owner": "stablyai",
-        "repo": "orca",
-        "rev": "fc8da7f6c63eee605faad4c3b6960bd40e752ae3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "stablyai",
-        "repo": "orca",
-        "type": "github"
-      }
-    },
     "r1hn": {
       "inputs": {
         "nixpkgs": [
@@ -316,7 +300,6 @@
         "nixpkgs": "nixpkgs",
         "notebooklm-skill": "notebooklm-skill",
         "openai-skills": "openai-skills",
-        "orca-skills": "orca-skills",
         "r1hn": "r1hn",
         "swiftui-agent-skill": "swiftui-agent-skill",
         "taste-skill": "taste-skill",
