@@ -84,7 +84,6 @@ let
     security-best-practices = baseline [ "security" ] "Secure-by-default coding review" { };
     session-handoff = baseline [ "session" ] "Hand unfinished work over between sessions and accounts" { };
     session-documentation = baseline [ "session" ] "Write a session up into the project's docs" { };
-    orchestration = baseline [ "agents" ] "Split work across agents and integrate it" { };
     youtube-transcript = baseline [ "media" ] "Fetch YouTube subtitles or audio as text (yt-dlp, whisper)" { };
     x-research = baseline [ "research" ] "Research recent discussion on X" { };
     post-review = baseline [ "review" ] "Review and clean up after implementing" { };
